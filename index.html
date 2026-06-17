@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WIS Tokens Casino</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="ambient-glow"></div>
+  <div class="ambient-grid"></div>
+  <div class="app">
+    <header class="hud">
+      <div class="brand">
+        <h1>Neon Floor Casino</h1>
+        <p>Walk the floor. Press E beside a table to play.</p>
+      </div>
+      <div class="stats">
+        <div class="stat-box">
+          <span class="label">Balance</span>
+          <span id="balance">0 WIS Tokens</span>
+        </div>
+        <div class="stat-box">
+          <span class="label">Nearby Table</span>
+          <span id="nearbyTable">None</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="game-shell">
+      <canvas id="gameCanvas" width="960" height="576"></canvas>
+      <div class="help">Move: WASD / Arrow Keys | Interact: E | Close menu: Esc</div>
+    </main>
+  </div>
+
+  <section id="modalBackdrop" class="modal-backdrop hidden">
+    <div id="roulettePanel" class="panel hidden" role="dialog" aria-modal="true">
+      <h2>Roulette Table</h2>
+      <p>Bet WIS Tokens on red, black, or an exact number.</p>
+      <div class="roulette-visual-wrap">
+        <div class="roulette-wheel-shell">
+          <div id="rouletteWheel" class="roulette-wheel"></div>
+          <div id="rouletteBall" class="roulette-ball"></div>
+          <div class="roulette-pin"></div>
+        </div>
+        <div id="rouletteSpinStatus" class="spin-status">Ready to spin</div>
+      </div>
+      <div class="row">
+        <label for="rouletteBet">Bet:</label>
+        <input id="rouletteBet" type="number" min="1" value="10" />
+      </div>
+      <div class="row">
+        <label for="rouletteChoice">Choice:</label>
+        <select id="rouletteChoice">
+          <option value="red">Red (1:1)</option>
+          <option value="black">Black (1:1)</option>
+          <option value="number">Exact Number (35:1)</option>
+        </select>
+      </div>
+      <div class="row" id="rouletteNumberRow">
+        <label for="rouletteNumber">Number:</label>
+        <input id="rouletteNumber" type="number" min="0" max="36" value="7" />
+      </div>
+      <div class="actions">
+        <button id="spinRouletteBtn">Spin</button>
+        <button class="ghost" data-close-panel>Leave Table</button>
+      </div>
+      <p id="rouletteResult" class="result"></p>
+    </div>
+
+    <div id="slotsPanel" class="panel hidden" role="dialog" aria-modal="true">
+      <h2>Slot Machine</h2>
+      <p>Spin 3 reels. Match symbols for payouts.</p>
+      <div class="row">
+        <label for="slotsBet">Bet:</label>
+        <input id="slotsBet" type="number" min="1" value="10" />
+      </div>
+      <div id="slotMachine" class="slot-machine">
+        <div class="slot-window"><div id="reel1" class="reel-strip"></div></div>
+        <div class="slot-window"><div id="reel2" class="reel-strip"></div></div>
+        <div class="slot-window"><div id="reel3" class="reel-strip"></div></div>
+      </div>
+      <div class="reels" id="slotReels">🍒 | 🍋 | ⭐</div>
+      <div class="actions">
+        <button id="spinSlotsBtn">Spin Reels</button>
+        <button class="ghost" data-close-panel>Leave Machine</button>
+      </div>
+      <p id="slotsResult" class="result"></p>
+      <p class="payout-guide">3x 🍒 = 4x bet, 3x 🍋 = 5x, 3x ⭐ = 10x, 3x 🔔 = 20x</p>
+    </div>
+  </section>
+
+  <script src="game.js"></script>
+</body>
+</html>
