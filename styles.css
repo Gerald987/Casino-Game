@@ -126,6 +126,51 @@ body {
   background: linear-gradient(90deg, rgba(17, 20, 32, 0.85), rgba(35, 26, 36, 0.85));
 }
 
+.mobile-joystick {
+  position: absolute;
+  left: 0.8rem;
+  bottom: 46px;
+  display: none;
+  pointer-events: none;
+}
+
+.joystick-base {
+  width: 132px;
+  height: 132px;
+  border-radius: 50%;
+  border: 2px solid rgba(242, 232, 197, 0.28);
+  background: radial-gradient(circle at center, rgba(220, 229, 250, 0.1), rgba(20, 27, 44, 0.15));
+  backdrop-filter: blur(2px);
+  pointer-events: auto;
+  touch-action: none;
+  position: relative;
+}
+
+.joystick-thumb {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 239, 200, 0.5);
+  background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.32), rgba(70, 90, 120, 0.18));
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.28);
+}
+
+.rotate-hint {
+  position: absolute;
+  inset: 0;
+  display: none;
+  place-items: center;
+  text-align: center;
+  padding: 1rem;
+  font-size: 0.95rem;
+  color: #fbe8bf;
+  background: rgba(5, 10, 20, 0.74);
+}
+
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -430,5 +475,25 @@ button:hover {
 
   .stat-box {
     min-width: 0;
+  }
+
+  .mobile-joystick {
+    display: flex;
+  }
+
+  .help {
+    font-size: 0.76rem;
+    line-height: 1.2;
+    padding-right: 0.55rem;
+  }
+}
+
+@media (max-width: 1024px) and (orientation: portrait) {
+  .rotate-hint {
+    display: grid;
+  }
+
+  .mobile-joystick {
+    display: none;
   }
 }

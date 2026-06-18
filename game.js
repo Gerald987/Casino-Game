@@ -21,6 +21,8 @@ const slotsBetInput = document.getElementById("slotsBet");
 const slotReels = document.getElementById("slotReels");
 const slotsResult = document.getElementById("slotsResult");
 const slotReelEls = ["reel1", "reel2", "reel3"].map((id) => document.getElementById(id));
+const joystickBase = document.getElementById("joystickBase");
+const joystickThumb = document.getElementById("joystickThumb");
 
 const WIDTH = canvas.width;
 const HEIGHT = canvas.height;
@@ -75,6 +77,9 @@ let isRouletteSpinning = false;
 let isSlotsSpinning = false;
 let rouletteWheelRotation = 0;
 let rouletteBallAngle = 0;
+let joystickPointerId = null;
+const joystickVector = { x: 0, y: 0 };
+const joystickMaxDistance = 36;
 
 const SLOT_SYMBOLS = ["🍒", "🍋", "⭐", "🔔"];
 const SLOT_CELL_HEIGHT = 74;
@@ -730,6 +735,11 @@ function updatePlayerPosition() {
     dy += player.speed;
   }
 
+  if (Math.abs(joystickVector.x) > 0.01 || Math.abs(joystickVector.y) > 0.01) {
+    dx += joystickVector.x * player.speed;
+    dy += joystickVector.y * player.speed;
+  }
+
   if (dx !== 0 && dy !== 0) {
     const invSqrt2 = 0.7071;
     dx *= invSqrt2;
@@ -789,6 +799,89 @@ function handleKeyUp(event) {
   }
 }
 
+function updateJoystickThumb(x, y) {
+  if (!joystickThumb) {
+    return;
+  }
+  joystickThumb.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+}
+
+function resetJoystick() {
+  joystickVector.x = 0;
+  joystickVector.y = 0;
+  updateJoystickThumb(0, 0);
+}
+
+function setJoystickFromPointer(clientX, clientY) {
+  if (!joystickBase) {
+    return;
+  }
+
+  const rect = joystickBase.getBoundingClientRect();
+  const centerX = rect.left + rect.width / 2;
+  const centerY = rect.top + rect.height / 2;
+  let dx = clientX - centerX;
+  let dy = clientY - centerY;
+
+  const distance = Math.hypot(dx, dy);
+  if (distance > joystickMaxDistance) {
+    const ratio = joystickMaxDistance / distance;
+    dx *= ratio;
+    dy *= ratio;
+  }
+
+  joystickVector.x = dx / joystickMaxDistance;
+  joystickVector.y = dy / joystickMaxDistance;
+  updateJoystickThumb(dx, dy);
+}
+
+function bindJoystick() {
+  if (!joystickBase) {
+    return;
+  }
+
+  joystickBase.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
+    joystickPointerId = event.pointerId;
+    joystickBase.setPointerCapture(event.pointerId);
+    setJoystickFromPointer(event.clientX, event.clientY);
+  });
+
+  joystickBase.addEventListener("pointermove", (event) => {
+    if (joystickPointerId !== event.pointerId) {
+      return;
+    }
+    event.preventDefault();
+    setJoystickFromPointer(event.clientX, event.clientY);
+  });
+
+  const release = (event) => {
+    if (joystickPointerId !== event.pointerId) {
+      return;
+    }
+    joystickPointerId = null;
+    resetJoystick();
+  };
+
+  joystickBase.addEventListener("pointerup", release);
+  joystickBase.addEventListener("pointercancel", release);
+}
+
+function handleCanvasTapInteract(event) {
+  if (event.pointerType !== "touch") {
+    return;
+  }
+
+  if (activePanel) {
+    return;
+  }
+
+  if (nearbyTable) {
+    event.preventDefault();
+    openPanel(nearbyTable.id);
+  }
+}
+
 rouletteChoiceSelect.addEventListener("change", () => {
   rouletteNumberRow.classList.toggle("hidden", rouletteChoiceSelect.value !== "number");
 });
@@ -802,6 +895,9 @@ document.querySelectorAll("[data-close-panel]").forEach((button) => {
 
 window.addEventListener("keydown", handleKeyDown);
 window.addEventListener("keyup", handleKeyUp);
+
+bindJoystick();
+canvas.addEventListener("pointerdown", handleCanvasTapInteract);
 
 slotReelEls.forEach((reelEl) => {
   renderReelStrip(reelEl, ["🍒", "🍋", "⭐"]);

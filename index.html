@@ -29,7 +29,13 @@
 
     <main class="game-shell">
       <canvas id="gameCanvas" width="960" height="576"></canvas>
-      <div class="help">Move: WASD / Arrow Keys | Interact: E | Close menu: Esc</div>
+      <div class="help">Move: WASD / Arrow Keys or joystick | Interact: E or tap the map near a game | Close menu: Esc</div>
+      <div class="mobile-joystick" id="mobileJoystick" aria-label="Movement joystick">
+        <div class="joystick-base" id="joystickBase">
+          <div class="joystick-thumb" id="joystickThumb"></div>
+        </div>
+      </div>
+      <div class="rotate-hint" id="rotateHint">Rotate to landscape for full casino controls.</div>
     </main>
   </div>
 
