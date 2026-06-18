@@ -548,18 +548,28 @@ async function spinSlots() {
   isSlotsSpinning = false;
 }
 
-function drawCard() {
+function createDeck() {
   const ranks = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
   const suits = ["♠", "♥", "♦", "♣"];
-  const rank = ranks[Math.floor(Math.random() * ranks.length)];
-  const suit = suits[Math.floor(Math.random() * suits.length)];
-  let value = Number(rank);
-  if (rank === "A") {
-    value = 11;
-  } else if (!Number.isFinite(value)) {
-    value = 10;
+  const deck = [];
+  for (const rank of ranks) {
+    for (const suit of suits) {
+      let value = Number(rank);
+      if (rank === "A") {
+        value = 11;
+      } else if (["J", "Q", "K"].includes(rank)) {
+        value = 10;
+      }
+      deck.push({ rank, suit, value });
+    }
   }
-  return { rank, suit, value };
+  return deck;
+}
+
+function drawCard(deck) {
+  const index = Math.floor(Math.random() * deck.length);
+  const [card] = deck.splice(index, 1);
+  return card;
 }
 
 function handTotal(cards) {
@@ -590,15 +600,15 @@ async function playBlackjack() {
   }
 
   isBlackjackDealing = true;
-  await sleep(220);
 
-  const playerCards = [drawCard(), drawCard()];
-  const dealerCards = [drawCard(), drawCard()];
+  const deck = createDeck();
+  const playerCards = [drawCard(deck), drawCard(deck)];
+  const dealerCards = [drawCard(deck), drawCard(deck)];
   let playerTotal = handTotal(playerCards);
   let dealerTotal = handTotal(dealerCards);
 
   while (dealerTotal < 17) {
-    dealerCards.push(drawCard());
+    dealerCards.push(drawCard(deck));
     dealerTotal = handTotal(dealerCards);
   }
 
@@ -613,8 +623,8 @@ async function playBlackjack() {
     message = `Bust at ${playerTotal}. You lost ${validation.bet} WIS Tokens.`;
   } else if (dealerTotal > 21 || playerTotal > dealerTotal) {
     totalMultiplier = playerNatural && !dealerNatural ? 2.5 : 2;
-    const net = Math.round(validation.bet * totalMultiplier - validation.bet);
-    message = `You win ${net} WIS Tokens (${playerTotal} vs ${dealerTotal}).`;
+    const netProfit = Math.round(validation.bet * (totalMultiplier - 1));
+    message = `You win ${netProfit} WIS Tokens (${playerTotal} vs ${dealerTotal}).`;
   } else if (playerTotal === dealerTotal) {
     totalMultiplier = 1;
     message = `Push at ${playerTotal}. Your bet was returned.`;
@@ -629,14 +639,6 @@ async function playBlackjack() {
 
   updateBalanceText();
   isBlackjackDealing = false;
-}
-
-function getPokerCounts(cards) {
-  const counts = {};
-  for (const card of cards) {
-    counts[card.rank] = (counts[card.rank] || 0) + 1;
-  }
-  return Object.values(counts).sort((a, b) => b - a);
 }
 
 function getRankValue(rank) {
@@ -658,33 +660,54 @@ function getRankValue(rank) {
 function evaluatePokerHand(cards) {
   const rankValues = cards.map((card) => getRankValue(card.rank)).sort((a, b) => a - b);
   const suits = cards.map((card) => card.suit);
-  const counts = getPokerCounts(cards);
-  const isFlush = suits.every((suit) => suit === suits[0]);
-  const uniqueRanks = [...new Set(rankValues)];
-  let isStraight = false;
-
-  if (uniqueRanks.length === 3) {
-    isStraight =
-      rankValues[2] - rankValues[0] === 2 ||
-      (rankValues[0] === 2 && rankValues[1] === 3 && rankValues[2] === 14);
+  const rankCountMap = {};
+  for (const value of rankValues) {
+    rankCountMap[value] = (rankCountMap[value] || 0) + 1;
   }
+  const rankCounts = Object.entries(rankCountMap)
+    .map(([value, count]) => ({ value: Number(value), count }))
+    .sort((a, b) => (b.count !== a.count ? b.count - a.count : b.value - a.value));
+  const isFlush = suits.every((suit) => suit === suits[0]);
+  const isAceLowStraight = rankValues[0] === 2 && rankValues[1] === 3 && rankValues[2] === 14;
+  const isStraight = (rankValues[1] - rankValues[0] === 1 && rankValues[2] - rankValues[1] === 1) || isAceLowStraight;
+  const straightHigh = isAceLowStraight ? 3 : rankValues[2];
+  const highCardsDesc = [...rankValues].sort((a, b) => b - a);
 
   if (isStraight && isFlush) {
-    return { rank: 6, label: "Straight Flush" };
+    return { rank: 6, label: "Straight Flush", tieBreak: [straightHigh] };
   }
-  if (counts[0] === 3) {
-    return { rank: 5, label: "Three of a Kind" };
+  if (rankCounts[0].count === 3) {
+    return { rank: 5, label: "Three of a Kind", tieBreak: [rankCounts[0].value] };
   }
   if (isStraight) {
-    return { rank: 4, label: "Straight" };
+    return { rank: 4, label: "Straight", tieBreak: [straightHigh] };
   }
   if (isFlush) {
-    return { rank: 3, label: "Flush" };
+    return { rank: 3, label: "Flush", tieBreak: highCardsDesc };
   }
-  if (counts[0] === 2) {
-    return { rank: 2, label: "Pair" };
+  if (rankCounts[0].count === 2) {
+    return { rank: 2, label: "Pair", tieBreak: [rankCounts[0].value, rankCounts[1].value] };
   }
-  return { rank: 1, label: "High Card", high: Math.max(...rankValues) };
+  return { rank: 1, label: "High Card", tieBreak: highCardsDesc };
+}
+
+function comparePokerHands(playerHand, dealerHand) {
+  if (playerHand.rank !== dealerHand.rank) {
+    return playerHand.rank > dealerHand.rank ? 1 : -1;
+  }
+
+  const maxTieLength = Math.max(playerHand.tieBreak.length, dealerHand.tieBreak.length);
+  for (let i = 0; i < maxTieLength; i += 1) {
+    const playerTie = playerHand.tieBreak[i];
+    const dealerTie = dealerHand.tieBreak[i];
+    if (playerTie === undefined || dealerTie === undefined) {
+      continue;
+    }
+    if (playerTie !== dealerTie) {
+      return playerTie > dealerTie ? 1 : -1;
+    }
+  }
+  return 0;
 }
 
 async function playPoker() {
@@ -701,33 +724,29 @@ async function playPoker() {
   }
 
   isPokerDealing = true;
-  await sleep(220);
 
-  const playerCards = [drawCard(), drawCard(), drawCard()];
-  const dealerCards = [drawCard(), drawCard(), drawCard()];
+  const deck = createDeck();
+  const playerCards = [drawCard(deck), drawCard(deck), drawCard(deck)];
+  const dealerCards = [drawCard(deck), drawCard(deck), drawCard(deck)];
   const playerHand = evaluatePokerHand(playerCards);
   const dealerHand = evaluatePokerHand(dealerCards);
+  const comparison = comparePokerHands(playerHand, dealerHand);
 
   wisTokens -= validation.bet;
 
   let totalMultiplier = 0;
   let message = "";
-  if (playerHand.rank > dealerHand.rank) {
+  if (comparison > 0) {
     totalMultiplier = 2;
     message = `You win with ${playerHand.label} against ${dealerHand.label}.`;
-  } else if (playerHand.rank < dealerHand.rank) {
+  } else if (comparison < 0) {
     message = `Dealer wins with ${dealerHand.label} against ${playerHand.label}.`;
-  } else if ((playerHand.high || 0) > (dealerHand.high || 0)) {
-    totalMultiplier = 2;
-    message = `You win on high card with ${playerHand.label}.`;
-  } else if ((playerHand.high || 0) < (dealerHand.high || 0)) {
-    message = `Dealer wins on high card with ${dealerHand.label}.`;
   } else {
     totalMultiplier = 1;
     message = `Push. Both hands are ${playerHand.label}.`;
   }
 
-  wisTokens += validation.bet * totalMultiplier;
+  wisTokens += Math.round(validation.bet * totalMultiplier);
   pokerHands.textContent = `Your hand: ${formatCards(playerCards)} (${playerHand.label}) | Dealer: ${formatCards(dealerCards)} (${dealerHand.label})`;
   pokerResult.textContent = message;
   pokerResult.style.color = totalMultiplier > 1 ? "#9af5a8" : totalMultiplier === 1 ? "#f7d683" : "#ff8787";
