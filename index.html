@@ -36,7 +36,7 @@
   <section id="modalBackdrop" class="modal-backdrop hidden">
     <div id="roulettePanel" class="panel hidden" role="dialog" aria-modal="true">
       <h2>Roulette Table</h2>
-      <p>Bet WIS Tokens on red, black, or an exact number.</p>
+      <p>Choose inside or outside bets with different payout odds.</p>
       <div class="roulette-visual-wrap">
         <div class="roulette-wheel-shell">
           <div id="rouletteWheel" class="roulette-wheel"></div>
@@ -49,12 +49,28 @@
         <label for="rouletteBet">Bet:</label>
         <input id="rouletteBet" type="number" min="1" value="10" />
       </div>
-      <div class="row">
+      <div class="row roulette-choice-row">
         <label for="rouletteChoice">Choice:</label>
-        <select id="rouletteChoice">
-          <option value="red">Red (1:1)</option>
-          <option value="black">Black (1:1)</option>
-          <option value="number">Exact Number (35:1)</option>
+        <select id="rouletteChoice" class="roulette-choice-select">
+          <optgroup label="Outside Bets">
+            <option value="red">Red (1:1)</option>
+            <option value="black">Black (1:1)</option>
+            <option value="odd">Odd (1:1)</option>
+            <option value="even">Even (1:1)</option>
+            <option value="low">1-18 (1:1)</option>
+            <option value="high">19-36 (1:1)</option>
+          </optgroup>
+          <optgroup label="Dozens & Columns">
+            <option value="dozen1">1st Dozen 1-12 (2:1)</option>
+            <option value="dozen2">2nd Dozen 13-24 (2:1)</option>
+            <option value="dozen3">3rd Dozen 25-36 (2:1)</option>
+            <option value="column1">Column 1 (2:1)</option>
+            <option value="column2">Column 2 (2:1)</option>
+            <option value="column3">Column 3 (2:1)</option>
+          </optgroup>
+          <optgroup label="Inside Bets">
+            <option value="number">Exact Number (35:1)</option>
+          </optgroup>
         </select>
       </div>
       <div class="row" id="rouletteNumberRow">
@@ -66,11 +82,12 @@
         <button class="ghost" data-close-panel>Leave Table</button>
       </div>
       <p id="rouletteResult" class="result"></p>
+      <p class="payout-guide">Outside bets return 2x total. Dozens and columns return 3x total. Exact number returns 36x total.</p>
     </div>
 
     <div id="slotsPanel" class="panel hidden" role="dialog" aria-modal="true">
       <h2>Slot Machine</h2>
-      <p>Spin 3 reels. Match symbols for payouts.</p>
+      <p>Spin a 3x3 machine. Matching lines pay out.</p>
       <div class="row">
         <label for="slotsBet">Bet:</label>
         <input id="slotsBet" type="number" min="1" value="10" />
@@ -86,7 +103,7 @@
         <button class="ghost" data-close-panel>Leave Machine</button>
       </div>
       <p id="slotsResult" class="result"></p>
-      <p class="payout-guide">3x 🍒 = 4x bet, 3x 🍋 = 5x, 3x ⭐ = 10x, 3x 🔔 = 20x</p>
+      <p class="payout-guide">Winning lines: 3 rows, 3 columns, 2 diagonals. 🍒 line=3x, 🍋 line=4x, ⭐ line=8x, 🔔 line=15x.</p>
     </div>
   </section>
 

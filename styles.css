@@ -145,6 +145,13 @@ body {
   box-shadow: 0 20px 45px rgba(0, 0, 0, 0.55);
 }
 
+#roulettePanel,
+#slotsPanel {
+  background:
+    linear-gradient(165deg, rgba(17, 20, 35, 0.95), rgba(14, 17, 30, 0.9)),
+    radial-gradient(circle at 20% 18%, rgba(255, 198, 109, 0.08), transparent 32%);
+}
+
 .panel h2 {
   margin: 0 0 0.35rem;
 }
@@ -173,6 +180,19 @@ body {
   color: var(--ink);
   border-radius: 10px;
   padding: 0.45rem 0.6rem;
+}
+
+.roulette-choice-row {
+  padding: 0.5rem;
+  border-radius: 12px;
+  border: 1px solid rgba(232, 193, 108, 0.3);
+  background: rgba(56, 38, 25, 0.3);
+}
+
+.roulette-choice-select {
+  font-weight: 700;
+  letter-spacing: 0.01rem;
+  box-shadow: 0 0 0 1px rgba(247, 206, 116, 0.2), 0 8px 16px rgba(0, 0, 0, 0.25);
 }
 
 .actions {
@@ -269,7 +289,7 @@ button:hover {
     #2f8d4a 349.92deg 360deg
   );
   transform: rotate(0deg);
-  transition: transform 4.6s cubic-bezier(0.1, 0.7, 0.06, 1);
+  will-change: transform;
 }
 
 .roulette-ball {
@@ -284,7 +304,7 @@ button:hover {
   top: 50%;
   transform: rotate(var(--ball-angle)) translateY(-68px);
   transform-origin: 50% 50%;
-  transition: transform 4.2s cubic-bezier(0.18, 0.72, 0.2, 1);
+  will-change: transform;
 }
 
 .roulette-pin {
@@ -315,18 +335,42 @@ button:hover {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.65rem;
+  box-shadow: inset 0 0 0 1px rgba(255, 218, 141, 0.2);
 }
 
 .slot-window {
-  height: 74px;
+  height: 222px;
   border-radius: 10px;
   overflow: hidden;
   background: linear-gradient(180deg, #1b2232, #101621);
   border: 2px solid rgba(188, 225, 255, 0.28);
+  position: relative;
+}
+
+.slot-window::before,
+.slot-window::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 18px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.slot-window::before {
+  top: 0;
+  background: linear-gradient(180deg, rgba(8, 12, 20, 0.75), transparent);
+}
+
+.slot-window::after {
+  bottom: 0;
+  background: linear-gradient(0deg, rgba(8, 12, 20, 0.75), transparent);
 }
 
 .reel-strip {
   transform: translateY(0);
+  will-change: transform;
 }
 
 .reel-symbol {
@@ -335,16 +379,18 @@ button:hover {
   place-items: center;
   font-size: 2rem;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .reel-strip.spinning {
-  transition-timing-function: cubic-bezier(0.14, 0.72, 0.18, 1);
+  filter: drop-shadow(0 0 2px rgba(255, 230, 171, 0.25));
 }
 
 .result {
   min-height: 1.6rem;
   margin-top: 0.65rem;
   font-weight: 700;
+  line-height: 1.35;
 }
 
 .payout-guide {

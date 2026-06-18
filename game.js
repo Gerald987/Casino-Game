@@ -74,9 +74,29 @@ let nearbyTable = null;
 let isRouletteSpinning = false;
 let isSlotsSpinning = false;
 let rouletteWheelRotation = 0;
+let rouletteBallAngle = 0;
 
 const SLOT_SYMBOLS = ["🍒", "🍋", "⭐", "🔔"];
 const SLOT_CELL_HEIGHT = 74;
+const SLOT_ROWS = 3;
+const SLOT_COLS = 3;
+
+const decorativeTables = [
+  { x: 125, y: 120, radius: 24, color: "#4f2f45" },
+  { x: 510, y: 120, radius: 20, color: "#3f3b59" },
+  { x: 845, y: 180, radius: 23, color: "#4e3b2c" },
+  { x: 170, y: 450, radius: 22, color: "#3a4b63" },
+  { x: 470, y: 430, radius: 24, color: "#5a3a42" },
+  { x: 830, y: 460, radius: 20, color: "#445254" }
+];
+
+const npcs = [
+  { x: 86, y: 76, size: 14, vx: 0.7, vy: 0.5, moodTime: 0, color: "#f7cb6f" },
+  { x: 900, y: 90, size: 14, vx: -0.6, vy: 0.4, moodTime: 0, color: "#95d8ff" },
+  { x: 890, y: 520, size: 14, vx: -0.5, vy: -0.6, moodTime: 0, color: "#dcb2ff" },
+  { x: 72, y: 520, size: 14, vx: 0.55, vy: -0.45, moodTime: 0, color: "#ffb8c0" },
+  { x: 460, y: 290, size: 14, vx: 0.45, vy: 0.65, moodTime: 0, color: "#bde3a6" }
+];
 
 const keyState = {
   ArrowUp: false,
@@ -179,11 +199,22 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function randomFloat(min, max) {
+  return min + Math.random() * (max - min);
+}
+
 function rouletteColorFromNumber(number) {
   if (number === 0) {
     return "green";
   }
   return number % 2 === 0 ? "black" : "red";
+}
+
+function rouletteColumnFromNumber(number) {
+  if (number < 1 || number > 36) {
+    return 0;
+  }
+  return ((number - 1) % 3) + 1;
 }
 
 function rouletteNumberToAngle(number) {
@@ -192,14 +223,76 @@ function rouletteNumberToAngle(number) {
 
 async function animateRoulette(rolledNumber) {
   const targetAngle = rouletteNumberToAngle(rolledNumber);
-  rouletteWheelRotation += 1800 + Math.random() * 360 + targetAngle;
-  const ballAngle = -2160 - Math.random() * 420 - targetAngle;
+  const startWheel = rouletteWheelRotation;
+  const startBall = rouletteBallAngle;
+  rouletteWheelRotation += 1080 + Math.random() * 240 + targetAngle;
+  rouletteBallAngle -= 1320 + Math.random() * 260 + targetAngle;
 
-  rouletteWheel.style.transform = `rotate(${rouletteWheelRotation.toFixed(2)}deg)`;
-  rouletteBall.style.setProperty("--ball-angle", `${ballAngle.toFixed(2)}deg`);
   rouletteSpinStatus.textContent = "Wheel spinning...";
 
-  await sleep(4300);
+  const wheelAnimation = rouletteWheel.animate(
+    [
+      { transform: `rotate(${startWheel.toFixed(2)}deg)` },
+      { transform: `rotate(${rouletteWheelRotation.toFixed(2)}deg)` }
+    ],
+    {
+      duration: 2600,
+      easing: "cubic-bezier(0.16, 0.74, 0.1, 1)",
+      fill: "forwards"
+    }
+  );
+
+  const ballAnimation = rouletteBall.animate(
+    [
+      { transform: `rotate(${startBall.toFixed(2)}deg) translateY(-68px)` },
+      { transform: `rotate(${rouletteBallAngle.toFixed(2)}deg) translateY(-68px)` }
+    ],
+    {
+      duration: 2300,
+      easing: "cubic-bezier(0.2, 0.72, 0.16, 1)",
+      fill: "forwards"
+    }
+  );
+
+  await Promise.all([
+    wheelAnimation.finished.catch(() => null),
+    ballAnimation.finished.catch(() => null)
+  ]);
+
+  rouletteWheel.style.transform = `rotate(${rouletteWheelRotation.toFixed(2)}deg)`;
+  rouletteBall.style.transform = `rotate(${rouletteBallAngle.toFixed(2)}deg) translateY(-68px)`;
+}
+
+function evaluateRouletteBet(choice, rolledNumber, rolledColor, pickedNumber) {
+  switch (choice) {
+    case "red":
+    case "black":
+      return { won: choice === rolledColor, totalMultiplier: 2 };
+    case "odd":
+      return { won: rolledNumber !== 0 && rolledNumber % 2 === 1, totalMultiplier: 2 };
+    case "even":
+      return { won: rolledNumber !== 0 && rolledNumber % 2 === 0, totalMultiplier: 2 };
+    case "low":
+      return { won: rolledNumber >= 1 && rolledNumber <= 18, totalMultiplier: 2 };
+    case "high":
+      return { won: rolledNumber >= 19 && rolledNumber <= 36, totalMultiplier: 2 };
+    case "dozen1":
+      return { won: rolledNumber >= 1 && rolledNumber <= 12, totalMultiplier: 3 };
+    case "dozen2":
+      return { won: rolledNumber >= 13 && rolledNumber <= 24, totalMultiplier: 3 };
+    case "dozen3":
+      return { won: rolledNumber >= 25 && rolledNumber <= 36, totalMultiplier: 3 };
+    case "column1":
+      return { won: rouletteColumnFromNumber(rolledNumber) === 1, totalMultiplier: 3 };
+    case "column2":
+      return { won: rouletteColumnFromNumber(rolledNumber) === 2, totalMultiplier: 3 };
+    case "column3":
+      return { won: rouletteColumnFromNumber(rolledNumber) === 3, totalMultiplier: 3 };
+    case "number":
+      return { won: pickedNumber === rolledNumber, totalMultiplier: 36 };
+    default:
+      return { won: false, totalMultiplier: 0 };
+  }
 }
 
 async function spinRoulette() {
@@ -233,18 +326,9 @@ async function spinRoulette() {
 
   wisTokens -= validation.bet;
 
-  let won = false;
-  let payout = 0;
-
-  if (choice === "number") {
-    if (pickedNumber === rolledNumber) {
-      won = true;
-      payout = validation.bet * 36;
-    }
-  } else if (choice === rolledColor) {
-    won = true;
-    payout = validation.bet * 2;
-  }
+  const result = evaluateRouletteBet(choice, rolledNumber, rolledColor, pickedNumber);
+  const won = result.won;
+  const payout = won ? validation.bet * result.totalMultiplier : 0;
 
   if (won) {
     wisTokens += payout;
@@ -262,14 +346,14 @@ async function spinRoulette() {
   isRouletteSpinning = false;
 }
 
-function createReelSequence(targetSymbol, minCycles) {
+function createReelSequence(finalTriplet, minCycles) {
   const sequence = [];
   for (let cycle = 0; cycle < minCycles; cycle += 1) {
     for (const symbol of SLOT_SYMBOLS) {
       sequence.push(symbol);
     }
   }
-  sequence.push(targetSymbol);
+  sequence.push(...finalTriplet);
   return sequence;
 }
 
@@ -281,28 +365,81 @@ function renderReelStrip(reelEl, sequence) {
 
 async function animateSlots(finalSymbols) {
   const animationPromises = slotReelEls.map((reelEl, index) => {
-    const minCycles = 10 + index * 2;
-    const sequence = createReelSequence(finalSymbols[index], minCycles);
+    const minCycles = 6 + index;
+    const finalTriplet = [
+      finalSymbols[0][index],
+      finalSymbols[1][index],
+      finalSymbols[2][index]
+    ];
+    const sequence = createReelSequence(finalTriplet, minCycles);
     renderReelStrip(reelEl, sequence);
-    reelEl.classList.add("spinning");
 
-    reelEl.style.transitionDuration = `${1500 + index * 500}ms`;
     reelEl.style.transform = "translateY(0px)";
+    void reelEl.offsetHeight;
 
-    const travel = (sequence.length - 1) * SLOT_CELL_HEIGHT;
+    const travel = (sequence.length - SLOT_ROWS) * SLOT_CELL_HEIGHT;
 
-    requestAnimationFrame(() => {
-      reelEl.style.transform = `translateY(-${travel}px)`;
-    });
+    const animation = reelEl.animate(
+      [
+        { transform: "translateY(0px)" },
+        { transform: `translateY(-${travel}px)` }
+      ],
+      {
+        duration: 900 + index * 260,
+        easing: "cubic-bezier(0.14, 0.72, 0.18, 1)",
+        fill: "forwards"
+      }
+    );
 
-    return sleep(1600 + index * 520);
+    animation.finished
+      .then(() => {
+        reelEl.style.transform = `translateY(-${travel}px)`;
+      })
+      .catch(() => null);
+
+    return animation.finished.catch(() => null);
   });
 
   await Promise.all(animationPromises);
+}
 
-  for (const reelEl of slotReelEls) {
-    reelEl.classList.remove("spinning");
+function generateSlotGrid() {
+  return Array.from({ length: SLOT_ROWS }, () =>
+    Array.from({ length: SLOT_COLS }, () => SLOT_SYMBOLS[Math.floor(Math.random() * SLOT_SYMBOLS.length)])
+  );
+}
+
+function evaluateSlotGridPayout(grid, bet) {
+  const lineMultipliers = {
+    "🍒": 3,
+    "🍋": 4,
+    "⭐": 8,
+    "🔔": 15
+  };
+
+  const lines = [
+    [[0, 0], [0, 1], [0, 2]],
+    [[1, 0], [1, 1], [1, 2]],
+    [[2, 0], [2, 1], [2, 2]],
+    [[0, 0], [1, 0], [2, 0]],
+    [[0, 1], [1, 1], [2, 1]],
+    [[0, 2], [1, 2], [2, 2]],
+    [[0, 0], [1, 1], [2, 2]],
+    [[0, 2], [1, 1], [2, 0]]
+  ];
+
+  let payout = 0;
+  let winningLines = 0;
+
+  for (const line of lines) {
+    const symbols = line.map(([row, col]) => grid[row][col]);
+    if (symbols[0] === symbols[1] && symbols[1] === symbols[2]) {
+      payout += bet * lineMultipliers[symbols[0]];
+      winningLines += 1;
+    }
   }
+
+  return { payout, winningLines };
 }
 
 async function spinSlots() {
@@ -319,37 +456,23 @@ async function spinSlots() {
 
   isSlotsSpinning = true;
 
-  const reels = [0, 0, 0].map(() => SLOT_SYMBOLS[Math.floor(Math.random() * SLOT_SYMBOLS.length)]);
-  await animateSlots(reels);
+  const grid = generateSlotGrid();
+  await animateSlots(grid);
 
-  slotReels.textContent = reels.join(" | ");
+  slotReels.textContent = grid.map((row) => row.join(" ")).join("  |  ");
 
   wisTokens -= validation.bet;
-  let payout = 0;
-
-  if (reels[0] === reels[1] && reels[1] === reels[2]) {
-    const multiplierBySymbol = {
-      "🍒": 4,
-      "🍋": 5,
-      "⭐": 10,
-      "🔔": 20
-    };
-    payout = validation.bet * multiplierBySymbol[reels[0]];
-  } else {
-    const cherryCount = reels.filter((symbol) => symbol === "🍒").length;
-    if (cherryCount === 2) {
-      payout = validation.bet * 2;
-    }
-  }
+  const score = evaluateSlotGridPayout(grid, validation.bet);
+  const payout = score.payout;
 
   wisTokens += payout;
   const net = payout - validation.bet;
 
   if (net >= 0) {
-    slotsResult.textContent = `Reels: ${reels.join(" ")} | You won ${net} WIS Tokens.`;
+    slotsResult.textContent = `3x3 board complete. Winning lines: ${score.winningLines}. You won ${net} WIS Tokens.`;
     slotsResult.style.color = "#9af5a8";
   } else {
-    slotsResult.textContent = `Reels: ${reels.join(" ")} | You lost ${validation.bet} WIS Tokens.`;
+    slotsResult.textContent = `No matching lines. You lost ${validation.bet} WIS Tokens.`;
     slotsResult.style.color = "#ff8787";
   }
 
@@ -389,6 +512,74 @@ function drawBackground() {
     ctx.moveTo(0, y);
     ctx.lineTo(WIDTH, y);
     ctx.stroke();
+  }
+}
+
+function drawDecorativeTables() {
+  for (const deco of decorativeTables) {
+    ctx.beginPath();
+    ctx.fillStyle = deco.color;
+    ctx.arc(deco.x, deco.y, deco.radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = "rgba(255, 227, 162, 0.35)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.fillStyle = "rgba(255, 245, 210, 0.18)";
+    ctx.fillRect(deco.x - 3, deco.y - deco.radius - 15, 6, 22);
+  }
+}
+
+function updateNpcs() {
+  for (const npc of npcs) {
+    npc.moodTime -= 1;
+    if (npc.moodTime <= 0) {
+      npc.vx = randomFloat(-0.9, 0.9);
+      npc.vy = randomFloat(-0.9, 0.9);
+      npc.moodTime = 30 + Math.floor(Math.random() * 100);
+    }
+
+    let nextX = npc.x + npc.vx;
+    let nextY = npc.y + npc.vy;
+
+    if (nextX < 10 || nextX > WIDTH - npc.size - 10) {
+      npc.vx *= -1;
+      nextX = npc.x + npc.vx;
+    }
+    if (nextY < 10 || nextY > HEIGHT - npc.size - 10) {
+      npc.vy *= -1;
+      nextY = npc.y + npc.vy;
+    }
+
+    const npcRect = { x: nextX, y: nextY, width: npc.size, height: npc.size };
+    let blocked = false;
+    for (const table of tables) {
+      if (intersectsRect(npcRect, table.hitbox)) {
+        blocked = true;
+        break;
+      }
+    }
+
+    if (blocked) {
+      npc.vx *= -1;
+      npc.vy *= -1;
+      continue;
+    }
+
+    npc.x = nextX;
+    npc.y = nextY;
+  }
+}
+
+function drawNpcs() {
+  for (const npc of npcs) {
+    ctx.fillStyle = npc.color;
+    ctx.fillRect(npc.x, npc.y, npc.size, npc.size);
+
+    ctx.fillStyle = "#101526";
+    ctx.fillRect(npc.x + 3, npc.y + 4, 3, 3);
+    ctx.fillRect(npc.x + npc.size - 6, npc.y + 4, 3, 3);
   }
 }
 
@@ -500,7 +691,7 @@ function drawPrompt() {
     return;
   }
 
-  const text = `Press E to play ${nearbyTable.label}`;
+  const text = nearbyTable.label;
   ctx.font = "bold 18px Segoe UI";
   const textWidth = ctx.measureText(text).width;
   const promptWidth = textWidth + 24;
@@ -558,14 +749,17 @@ function updatePlayerPosition() {
 
 function gameLoop() {
   updatePlayerPosition();
+  updateNpcs();
   resolveNearbyTable();
 
   drawBackground();
+  drawDecorativeTables();
 
   for (const table of tables) {
     drawTable(table, nearbyTable?.id === table.id);
   }
 
+  drawNpcs();
   drawPlayer();
   drawPrompt();
 
@@ -610,7 +804,7 @@ window.addEventListener("keydown", handleKeyDown);
 window.addEventListener("keyup", handleKeyUp);
 
 slotReelEls.forEach((reelEl) => {
-  renderReelStrip(reelEl, ["🍒"]);
+  renderReelStrip(reelEl, ["🍒", "🍋", "⭐"]);
 });
 
 updateBalanceText();
