@@ -3,6 +3,7 @@
   --bg-mid: #141828;
   --bg-glow: #2b1945;
   --panel: rgba(12, 16, 28, 0.9);
+  --panel-ui-scale: 1;
   --ink: #f2f4ff;
   --muted: #b8bedb;
   --gold: #f5c766;
@@ -560,5 +561,71 @@ button:hover {
 
   .mobile-joystick {
     display: none;
+  }
+}
+
+@media (max-width: 1200px) and (orientation: landscape) {
+  .modal-backdrop {
+    padding: 0.35rem;
+    align-items: start;
+  }
+
+  .panel {
+    width: min(94vw, calc(520px * var(--panel-ui-scale)));
+    max-height: 88vh;
+    overflow-y: auto;
+    padding: calc(0.9rem * var(--panel-ui-scale));
+    border-radius: calc(14px * var(--panel-ui-scale));
+  }
+
+  .panel h2 {
+    font-size: calc(1.22rem * var(--panel-ui-scale));
+  }
+
+  .panel p,
+  .spin-status,
+  .payout-guide,
+  .result {
+    font-size: calc(0.9rem * var(--panel-ui-scale));
+  }
+
+  .row {
+    gap: calc(0.75rem * var(--panel-ui-scale));
+    margin: calc(0.55rem * var(--panel-ui-scale)) 0;
+  }
+
+  .row label {
+    min-width: calc(66px * var(--panel-ui-scale));
+    font-size: calc(0.88rem * var(--panel-ui-scale));
+  }
+
+  .row input,
+  .row select {
+    padding: calc(0.42rem * var(--panel-ui-scale)) calc(0.56rem * var(--panel-ui-scale));
+    font-size: calc(0.88rem * var(--panel-ui-scale));
+  }
+
+  .roulette-visual-wrap {
+    transform: scale(var(--panel-ui-scale));
+    transform-origin: top center;
+    margin-bottom: calc(-16px * (1 - var(--panel-ui-scale)));
+  }
+
+  .slot-machine {
+    transform: scale(calc(0.94 * var(--panel-ui-scale)));
+    transform-origin: top center;
+    margin-bottom: calc(-30px * (1 - var(--panel-ui-scale)));
+  }
+
+  .actions {
+    position: sticky;
+    bottom: 0;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(13, 15, 24, 0.76) 46%);
+    padding-top: calc(0.44rem * var(--panel-ui-scale));
+  }
+
+  .actions button {
+    min-height: calc(40px * var(--panel-ui-scale));
+    font-size: calc(0.88rem * var(--panel-ui-scale));
   }
 }

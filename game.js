@@ -895,6 +895,22 @@ function handleCanvasTapInteract(event) {
   }
 }
 
+function updateResponsivePanelScale() {
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
+  const isLandscape = viewportWidth > viewportHeight;
+  const isMobileish = viewportWidth <= 1200;
+
+  let scale = 1;
+  if (isLandscape && isMobileish) {
+    const widthScale = viewportWidth / 1080;
+    const heightScale = viewportHeight / 650;
+    scale = clamp(Math.min(widthScale, heightScale), 0.58, 1);
+  }
+
+  document.documentElement.style.setProperty("--panel-ui-scale", scale.toFixed(3));
+}
+
 rouletteChoiceSelect.addEventListener("change", () => {
   rouletteNumberRow.classList.toggle("hidden", rouletteChoiceSelect.value !== "number");
 });
@@ -908,6 +924,8 @@ document.querySelectorAll("[data-close-panel]").forEach((button) => {
 
 window.addEventListener("keydown", handleKeyDown);
 window.addEventListener("keyup", handleKeyUp);
+window.addEventListener("resize", updateResponsivePanelScale);
+window.addEventListener("orientationchange", updateResponsivePanelScale);
 
 bindJoystick();
 canvas.addEventListener("pointerdown", handleCanvasTapInteract);
@@ -919,4 +937,5 @@ slotReelEls.forEach((reelEl) => {
 updateBalanceText();
 updateNearbyText();
 rouletteNumberRow.classList.add("hidden");
+updateResponsivePanelScale();
 gameLoop();
