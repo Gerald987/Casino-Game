@@ -7,6 +7,8 @@ const nearbyTableEl = document.getElementById("nearbyTable");
 const modalBackdrop = document.getElementById("modalBackdrop");
 const roulettePanel = document.getElementById("roulettePanel");
 const slotsPanel = document.getElementById("slotsPanel");
+const blackjackPanel = document.getElementById("blackjackPanel");
+const pokerPanel = document.getElementById("pokerPanel");
 
 const rouletteBetInput = document.getElementById("rouletteBet");
 const rouletteChoiceSelect = document.getElementById("rouletteChoice");
@@ -21,6 +23,12 @@ const slotsBetInput = document.getElementById("slotsBet");
 const slotReels = document.getElementById("slotReels");
 const slotsResult = document.getElementById("slotsResult");
 const slotReelEls = ["reel1", "reel2", "reel3"].map((id) => document.getElementById(id));
+const blackjackBetInput = document.getElementById("blackjackBet");
+const blackjackHands = document.getElementById("blackjackHands");
+const blackjackResult = document.getElementById("blackjackResult");
+const pokerBetInput = document.getElementById("pokerBet");
+const pokerHands = document.getElementById("pokerHands");
+const pokerResult = document.getElementById("pokerResult");
 const joystickBase = document.getElementById("joystickBase");
 const joystickThumb = document.getElementById("joystickThumb");
 
@@ -67,6 +75,38 @@ const tables = [
       width: 190,
       height: 150
     }
+  },
+  {
+    id: "blackjack",
+    name: "Blackjack Table",
+    x: 560,
+    y: 80,
+    width: 220,
+    height: 140,
+    color: "#2f7a4f",
+    label: "Blackjack",
+    hitbox: {
+      x: 560,
+      y: 80,
+      width: 220,
+      height: 140
+    }
+  },
+  {
+    id: "poker",
+    name: "Poker Table",
+    x: 180,
+    y: 340,
+    width: 220,
+    height: 140,
+    color: "#7a4f2f",
+    label: "Poker",
+    hitbox: {
+      x: 180,
+      y: 340,
+      width: 220,
+      height: 140
+    }
   }
 ];
 
@@ -75,6 +115,8 @@ let activePanel = null;
 let nearbyTable = null;
 let isRouletteSpinning = false;
 let isSlotsSpinning = false;
+let isBlackjackDealing = false;
+let isPokerDealing = false;
 let rouletteWheelRotation = 0;
 let rouletteBallAngle = 0;
 let joystickPointerId = null;
@@ -188,12 +230,20 @@ function openPanel(tableId) {
   modalBackdrop.classList.remove("hidden");
   roulettePanel.classList.add("hidden");
   slotsPanel.classList.add("hidden");
+  blackjackPanel.classList.add("hidden");
+  pokerPanel.classList.add("hidden");
 
   if (tableId === "roulette") {
     roulettePanel.classList.remove("hidden");
   }
   if (tableId === "slots") {
     slotsPanel.classList.remove("hidden");
+  }
+  if (tableId === "blackjack") {
+    blackjackPanel.classList.remove("hidden");
+  }
+  if (tableId === "poker") {
+    pokerPanel.classList.remove("hidden");
   }
 }
 
@@ -498,6 +548,194 @@ async function spinSlots() {
   isSlotsSpinning = false;
 }
 
+function drawCard() {
+  const ranks = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
+  const suits = ["♠", "♥", "♦", "♣"];
+  const rank = ranks[Math.floor(Math.random() * ranks.length)];
+  const suit = suits[Math.floor(Math.random() * suits.length)];
+  let value = Number(rank);
+  if (rank === "A") {
+    value = 11;
+  } else if (!Number.isFinite(value)) {
+    value = 10;
+  }
+  return { rank, suit, value };
+}
+
+function handTotal(cards) {
+  let total = cards.reduce((sum, card) => sum + card.value, 0);
+  let aces = cards.filter((card) => card.rank === "A").length;
+  while (total > 21 && aces > 0) {
+    total -= 10;
+    aces -= 1;
+  }
+  return total;
+}
+
+function formatCards(cards) {
+  return cards.map((card) => `${card.rank}${card.suit}`).join(" ");
+}
+
+async function playBlackjack() {
+  if (isBlackjackDealing) {
+    return;
+  }
+
+  const validation = validateBet(blackjackBetInput.value);
+  if (!validation.valid) {
+    blackjackResult.textContent = validation.message;
+    blackjackResult.style.color = "#ff8787";
+    blackjackHands.textContent = "";
+    return;
+  }
+
+  isBlackjackDealing = true;
+  await sleep(220);
+
+  const playerCards = [drawCard(), drawCard()];
+  const dealerCards = [drawCard(), drawCard()];
+  let playerTotal = handTotal(playerCards);
+  let dealerTotal = handTotal(dealerCards);
+
+  while (dealerTotal < 17) {
+    dealerCards.push(drawCard());
+    dealerTotal = handTotal(dealerCards);
+  }
+
+  wisTokens -= validation.bet;
+
+  const playerNatural = playerCards.length === 2 && playerTotal === 21;
+  const dealerNatural = dealerCards.length === 2 && dealerTotal === 21;
+  let totalMultiplier = 0;
+  let message = "";
+
+  if (playerTotal > 21) {
+    message = `Bust at ${playerTotal}. You lost ${validation.bet} WIS Tokens.`;
+  } else if (dealerTotal > 21 || playerTotal > dealerTotal) {
+    totalMultiplier = playerNatural && !dealerNatural ? 2.5 : 2;
+    const net = Math.round(validation.bet * totalMultiplier - validation.bet);
+    message = `You win ${net} WIS Tokens (${playerTotal} vs ${dealerTotal}).`;
+  } else if (playerTotal === dealerTotal) {
+    totalMultiplier = 1;
+    message = `Push at ${playerTotal}. Your bet was returned.`;
+  } else {
+    message = `Dealer wins ${dealerTotal} to ${playerTotal}. You lost ${validation.bet} WIS Tokens.`;
+  }
+
+  wisTokens += Math.round(validation.bet * totalMultiplier);
+  blackjackHands.textContent = `Your hand: ${formatCards(playerCards)} (${playerTotal}) | Dealer: ${formatCards(dealerCards)} (${dealerTotal})`;
+  blackjackResult.textContent = message;
+  blackjackResult.style.color = totalMultiplier > 1 ? "#9af5a8" : totalMultiplier === 1 ? "#f7d683" : "#ff8787";
+
+  updateBalanceText();
+  isBlackjackDealing = false;
+}
+
+function getPokerCounts(cards) {
+  const counts = {};
+  for (const card of cards) {
+    counts[card.rank] = (counts[card.rank] || 0) + 1;
+  }
+  return Object.values(counts).sort((a, b) => b - a);
+}
+
+function getRankValue(rank) {
+  if (rank === "A") {
+    return 14;
+  }
+  if (rank === "K") {
+    return 13;
+  }
+  if (rank === "Q") {
+    return 12;
+  }
+  if (rank === "J") {
+    return 11;
+  }
+  return Number(rank);
+}
+
+function evaluatePokerHand(cards) {
+  const rankValues = cards.map((card) => getRankValue(card.rank)).sort((a, b) => a - b);
+  const suits = cards.map((card) => card.suit);
+  const counts = getPokerCounts(cards);
+  const isFlush = suits.every((suit) => suit === suits[0]);
+  const uniqueRanks = [...new Set(rankValues)];
+  let isStraight = false;
+
+  if (uniqueRanks.length === 3) {
+    isStraight =
+      rankValues[2] - rankValues[0] === 2 ||
+      (rankValues[0] === 2 && rankValues[1] === 3 && rankValues[2] === 14);
+  }
+
+  if (isStraight && isFlush) {
+    return { rank: 6, label: "Straight Flush" };
+  }
+  if (counts[0] === 3) {
+    return { rank: 5, label: "Three of a Kind" };
+  }
+  if (isStraight) {
+    return { rank: 4, label: "Straight" };
+  }
+  if (isFlush) {
+    return { rank: 3, label: "Flush" };
+  }
+  if (counts[0] === 2) {
+    return { rank: 2, label: "Pair" };
+  }
+  return { rank: 1, label: "High Card", high: Math.max(...rankValues) };
+}
+
+async function playPoker() {
+  if (isPokerDealing) {
+    return;
+  }
+
+  const validation = validateBet(pokerBetInput.value);
+  if (!validation.valid) {
+    pokerResult.textContent = validation.message;
+    pokerResult.style.color = "#ff8787";
+    pokerHands.textContent = "";
+    return;
+  }
+
+  isPokerDealing = true;
+  await sleep(220);
+
+  const playerCards = [drawCard(), drawCard(), drawCard()];
+  const dealerCards = [drawCard(), drawCard(), drawCard()];
+  const playerHand = evaluatePokerHand(playerCards);
+  const dealerHand = evaluatePokerHand(dealerCards);
+
+  wisTokens -= validation.bet;
+
+  let totalMultiplier = 0;
+  let message = "";
+  if (playerHand.rank > dealerHand.rank) {
+    totalMultiplier = 2;
+    message = `You win with ${playerHand.label} against ${dealerHand.label}.`;
+  } else if (playerHand.rank < dealerHand.rank) {
+    message = `Dealer wins with ${dealerHand.label} against ${playerHand.label}.`;
+  } else if ((playerHand.high || 0) > (dealerHand.high || 0)) {
+    totalMultiplier = 2;
+    message = `You win on high card with ${playerHand.label}.`;
+  } else if ((playerHand.high || 0) < (dealerHand.high || 0)) {
+    message = `Dealer wins on high card with ${dealerHand.label}.`;
+  } else {
+    totalMultiplier = 1;
+    message = `Push. Both hands are ${playerHand.label}.`;
+  }
+
+  wisTokens += validation.bet * totalMultiplier;
+  pokerHands.textContent = `Your hand: ${formatCards(playerCards)} (${playerHand.label}) | Dealer: ${formatCards(dealerCards)} (${dealerHand.label})`;
+  pokerResult.textContent = message;
+  pokerResult.style.color = totalMultiplier > 1 ? "#9af5a8" : totalMultiplier === 1 ? "#f7d683" : "#ff8787";
+
+  updateBalanceText();
+  isPokerDealing = false;
+}
+
 function drawBackground() {
   const floorGradient = ctx.createLinearGradient(0, 0, WIDTH, HEIGHT);
   floorGradient.addColorStop(0, "#20253d");
@@ -681,6 +919,32 @@ function drawSlotsTable(table, isNearby) {
   ctx.fillText(table.label, table.x + table.width / 2, table.y + table.height - 16);
 }
 
+function drawCardTable(table, isNearby, accentColor) {
+  ctx.fillStyle = "#2a2439";
+  ctx.fillRect(table.x, table.y, table.width, table.height);
+
+  ctx.strokeStyle = isNearby ? "#f7d683" : "#e8ecff";
+  ctx.lineWidth = isNearby ? 4 : 2;
+  ctx.strokeRect(table.x, table.y, table.width, table.height);
+
+  const cx = table.x + table.width / 2;
+  const cy = table.y + table.height / 2 - 8;
+  const rx = table.width / 2 - 22;
+  const ry = table.height / 2 - 26;
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+  ctx.fillStyle = accentColor;
+  ctx.fill();
+
+  ctx.fillStyle = "#f4fbff";
+  ctx.font = "bold 15px Segoe UI";
+  ctx.textAlign = "center";
+  ctx.fillText("♠ ♥ ♦ ♣", cx, cy + 6);
+
+  ctx.font = "bold 18px Segoe UI";
+  ctx.fillText(table.label, table.x + table.width / 2, table.y + table.height - 16);
+}
+
 function drawTable(table, isNearby) {
   if (table.id === "roulette") {
     drawRouletteTable(table, isNearby);
@@ -688,6 +952,14 @@ function drawTable(table, isNearby) {
   }
   if (table.id === "slots") {
     drawSlotsTable(table, isNearby);
+    return;
+  }
+  if (table.id === "blackjack") {
+    drawCardTable(table, isNearby, "#2d6e4f");
+    return;
+  }
+  if (table.id === "poker") {
+    drawCardTable(table, isNearby, "#6b4230");
     return;
   }
 }
@@ -917,6 +1189,8 @@ rouletteChoiceSelect.addEventListener("change", () => {
 
 document.getElementById("spinRouletteBtn").addEventListener("click", spinRoulette);
 document.getElementById("spinSlotsBtn").addEventListener("click", spinSlots);
+document.getElementById("dealBlackjackBtn").addEventListener("click", playBlackjack);
+document.getElementById("dealPokerBtn").addEventListener("click", playPoker);
 
 document.querySelectorAll("[data-close-panel]").forEach((button) => {
   button.addEventListener("click", closePanel);
