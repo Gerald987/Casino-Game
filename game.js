@@ -100,7 +100,20 @@ const npcs = [
   { x: 900, y: 90, size: 14, vx: -0.6, vy: 0.4, moodTime: 0, color: "#95d8ff" },
   { x: 890, y: 520, size: 14, vx: -0.5, vy: -0.6, moodTime: 0, color: "#dcb2ff" },
   { x: 72, y: 520, size: 14, vx: 0.55, vy: -0.45, moodTime: 0, color: "#ffb8c0" },
-  { x: 460, y: 290, size: 14, vx: 0.45, vy: 0.65, moodTime: 0, color: "#bde3a6" }
+  { x: 460, y: 290, size: 14, vx: 0.45, vy: 0.65, moodTime: 0, color: "#bde3a6" },
+  { x: 155, y: 78, size: 14, vx: 0.62, vy: 0.34, moodTime: 0, color: "#ffdb93" },
+  { x: 300, y: 70, size: 14, vx: -0.58, vy: 0.42, moodTime: 0, color: "#96f0df" },
+  { x: 500, y: 70, size: 14, vx: 0.4, vy: 0.58, moodTime: 0, color: "#b8c7ff" },
+  { x: 650, y: 95, size: 14, vx: -0.65, vy: 0.3, moodTime: 0, color: "#ffd1df" },
+  { x: 815, y: 95, size: 14, vx: 0.52, vy: 0.46, moodTime: 0, color: "#ffe3a1" },
+  { x: 540, y: 250, size: 14, vx: -0.42, vy: 0.68, moodTime: 0, color: "#abd3f4" },
+  { x: 835, y: 255, size: 14, vx: -0.5, vy: 0.5, moodTime: 0, color: "#f0b8d2" },
+  { x: 845, y: 330, size: 14, vx: -0.56, vy: 0.38, moodTime: 0, color: "#c5ef9b" },
+  { x: 90, y: 300, size: 14, vx: 0.6, vy: -0.36, moodTime: 0, color: "#f2d1a8" },
+  { x: 145, y: 360, size: 14, vx: 0.48, vy: -0.52, moodTime: 0, color: "#a6e6ff" },
+  { x: 515, y: 500, size: 14, vx: -0.6, vy: -0.44, moodTime: 0, color: "#d8c2ff" },
+  { x: 680, y: 500, size: 14, vx: 0.54, vy: -0.41, moodTime: 0, color: "#f7c88f" },
+  { x: 770, y: 520, size: 14, vx: -0.58, vy: -0.38, moodTime: 0, color: "#bceea7" }
 ];
 
 const keyState = {
