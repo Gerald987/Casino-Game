@@ -111,6 +111,38 @@
       <p id="slotsResult" class="result"></p>
       <p class="payout-guide">Winning lines: 3 rows, 3 columns, 2 diagonals. 🍒 line=3x, 🍋 line=4x, ⭐ line=8x, 🔔 line=15x.</p>
     </div>
+
+    <div id="blackjackPanel" class="panel hidden" role="dialog" aria-modal="true">
+      <h2>Blackjack Table</h2>
+      <p>Beat the dealer without going over 21.</p>
+      <div class="row">
+        <label for="blackjackBet">Bet:</label>
+        <input id="blackjackBet" type="number" min="1" value="10" />
+      </div>
+      <div class="actions">
+        <button id="dealBlackjackBtn">Deal Hand</button>
+        <button class="ghost" data-close-panel>Leave Table</button>
+      </div>
+      <p id="blackjackHands" class="result"></p>
+      <p id="blackjackResult" class="result"></p>
+      <p class="payout-guide">Win returns 2x total. Push returns your bet. Natural blackjack returns 2.5x total.</p>
+    </div>
+
+    <div id="pokerPanel" class="panel hidden" role="dialog" aria-modal="true">
+      <h2>Poker Table</h2>
+      <p>3-card showdown against the dealer.</p>
+      <div class="row">
+        <label for="pokerBet">Bet:</label>
+        <input id="pokerBet" type="number" min="1" value="10" />
+      </div>
+      <div class="actions">
+        <button id="dealPokerBtn">Play Hand</button>
+        <button class="ghost" data-close-panel>Leave Table</button>
+      </div>
+      <p id="pokerHands" class="result"></p>
+      <p id="pokerResult" class="result"></p>
+      <p class="payout-guide">Win returns 2x total. Push returns your bet.</p>
+    </div>
   </section>
 
   <script src="game.js"></script>
