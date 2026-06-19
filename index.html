@@ -115,6 +115,12 @@
     <div id="blackjackPanel" class="panel hidden" role="dialog" aria-modal="true">
       <h2>Blackjack Table</h2>
       <p>Beat the dealer without going over 21.</p>
+      <div class="card-board blackjack-board">
+        <div class="card-lane-title">Dealer</div>
+        <div id="dealerBlackjackCards" class="card-lane"></div>
+        <div class="card-lane-title">You</div>
+        <div id="playerBlackjackCards" class="card-lane"></div>
+      </div>
       <div class="row">
         <label for="blackjackBet">Bet:</label>
         <input id="blackjackBet" type="number" min="1" value="10" />
@@ -133,6 +139,13 @@
     <div id="pokerPanel" class="panel hidden" role="dialog" aria-modal="true">
       <h2>Poker Table</h2>
       <p>Texas Hold'em: 2 hole cards, 5 community cards, and 3 NPC opponents.</p>
+      <div class="card-board poker-board">
+        <div class="card-lane-title">Community</div>
+        <div id="pokerBoardCards" class="card-lane"></div>
+        <div class="card-lane-title">Your Hole Cards</div>
+        <div id="pokerPlayerCards" class="card-lane"></div>
+        <div id="pokerNpcRows" class="npc-rows"></div>
+      </div>
       <div class="row">
         <label for="pokerBet">Bet:</label>
         <input id="pokerBet" type="number" min="1" value="10" />
@@ -140,12 +153,29 @@
       <div class="actions">
         <button id="dealPokerBtn">Deal Hand</button>
         <button id="callPokerBtn" class="ghost">Call</button>
+        <button id="checkPokerBtn" class="ghost">Check</button>
+        <button id="raisePokerBtn" class="ghost">Raise</button>
         <button id="foldPokerBtn" class="ghost">Fold</button>
         <button class="ghost" data-close-panel>Leave Table</button>
       </div>
       <p id="pokerHands" class="result"></p>
       <p id="pokerResult" class="result"></p>
-      <p class="payout-guide">Ante starts the hand. Call adds a second bet. Win pays 5x ante total, chopped pot pays 3x ante total.</p>
+      <p class="payout-guide">Hold'em rounds: preflop, flop, turn, river. Every round allows call, raise, check, or fold.</p>
+    </div>
+
+    <div id="barPanel" class="panel hidden" role="dialog" aria-modal="true">
+      <h2>Center Bar</h2>
+      <p>Grab free drinks from the bartender.</p>
+      <div class="bar-offer">
+        <div class="bar-offer-name" id="barDrinkName">Signature Drink</div>
+      </div>
+      <div class="actions">
+        <button id="refreshDrinkBtn" class="ghost">New Offer</button>
+        <button id="buyDrinkBtn">Get Free Drink</button>
+        <button class="ghost" data-close-panel>Leave Bar</button>
+      </div>
+      <p id="barResult" class="result"></p>
+      <p class="payout-guide">Drinks are free and for flavor only.</p>
     </div>
   </section>
 
