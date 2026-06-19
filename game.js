@@ -26,9 +26,15 @@ const slotReelEls = ["reel1", "reel2", "reel3"].map((id) => document.getElementB
 const blackjackBetInput = document.getElementById("blackjackBet");
 const blackjackHands = document.getElementById("blackjackHands");
 const blackjackResult = document.getElementById("blackjackResult");
+const dealBlackjackBtn = document.getElementById("dealBlackjackBtn");
+const hitBlackjackBtn = document.getElementById("hitBlackjackBtn");
+const standBlackjackBtn = document.getElementById("standBlackjackBtn");
 const pokerBetInput = document.getElementById("pokerBet");
 const pokerHands = document.getElementById("pokerHands");
 const pokerResult = document.getElementById("pokerResult");
+const dealPokerBtn = document.getElementById("dealPokerBtn");
+const callPokerBtn = document.getElementById("callPokerBtn");
+const foldPokerBtn = document.getElementById("foldPokerBtn");
 const joystickBase = document.getElementById("joystickBase");
 const joystickThumb = document.getElementById("joystickThumb");
 
@@ -115,8 +121,8 @@ let activePanel = null;
 let nearbyTable = null;
 let isRouletteSpinning = false;
 let isSlotsSpinning = false;
-let isBlackjackDealing = false;
-let isPokerDealing = false;
+let blackjackRound = null;
+let pokerRound = null;
 let rouletteWheelRotation = 0;
 let rouletteBallAngle = 0;
 let joystickPointerId = null;
@@ -127,6 +133,7 @@ const SLOT_SYMBOLS = ["🍒", "🍋", "⭐", "🔔"];
 const SLOT_CELL_HEIGHT = 74;
 const SLOT_ROWS = 3;
 const SLOT_COLS = 3;
+const POKER_NPC_NAMES = ["Maya", "Rico", "Skye", "Juno", "Vince", "Nina", "Axel", "Iris"];
 
 const decorativeTables = [
   { x: 125, y: 120, radius: 24, color: "#4f2f45" },
@@ -586,8 +593,45 @@ function formatCards(cards) {
   return cards.map((card) => `${card.rank}${card.suit}`).join(" ");
 }
 
-async function playBlackjack() {
-  if (isBlackjackDealing) {
+function setBlackjackButtonsInRound(inRound) {
+  dealBlackjackBtn.disabled = inRound;
+  hitBlackjackBtn.disabled = !inRound;
+  standBlackjackBtn.disabled = !inRound;
+}
+
+function renderBlackjackHands(hideDealerHole = true) {
+  if (!blackjackRound) {
+    blackjackHands.textContent = "";
+    return;
+  }
+
+  const playerTotal = handTotal(blackjackRound.playerCards);
+  if (hideDealerHole) {
+    const visibleDealer = `${blackjackRound.dealerCards[0].rank}${blackjackRound.dealerCards[0].suit} ??`;
+    blackjackHands.textContent = `Your hand: ${formatCards(blackjackRound.playerCards)} (${playerTotal}) | Dealer: ${visibleDealer}`;
+    return;
+  }
+
+  const dealerTotal = handTotal(blackjackRound.dealerCards);
+  blackjackHands.textContent = `Your hand: ${formatCards(blackjackRound.playerCards)} (${playerTotal}) | Dealer: ${formatCards(blackjackRound.dealerCards)} (${dealerTotal})`;
+}
+
+function finishBlackjackRound(totalMultiplier, message, tone) {
+  if (!blackjackRound) {
+    return;
+  }
+
+  wisTokens += Math.round(blackjackRound.bet * totalMultiplier);
+  renderBlackjackHands(false);
+  blackjackResult.textContent = message;
+  blackjackResult.style.color = tone;
+  blackjackRound = null;
+  setBlackjackButtonsInRound(false);
+  updateBalanceText();
+}
+
+async function startBlackjackRound() {
+  if (blackjackRound) {
     return;
   }
 
@@ -599,46 +643,184 @@ async function playBlackjack() {
     return;
   }
 
-  isBlackjackDealing = true;
+  const deck = createDeck();
+  blackjackRound = {
+    bet: validation.bet,
+    deck,
+    playerCards: [drawCard(deck), drawCard(deck)],
+    dealerCards: [drawCard(deck), drawCard(deck)]
+  };
+
+  wisTokens -= validation.bet;
+  setBlackjackButtonsInRound(true);
+  renderBlackjackHands(true);
+
+  const playerTotal = handTotal(blackjackRound.playerCards);
+  const dealerTotal = handTotal(blackjackRound.dealerCards);
+  const playerNatural = blackjackRound.playerCards.length === 2 && playerTotal === 21;
+  const dealerNatural = blackjackRound.dealerCards.length === 2 && dealerTotal === 21;
+
+  if (playerNatural || dealerNatural) {
+    if (playerNatural && dealerNatural) {
+      finishBlackjackRound(1, "Both have blackjack. Push.", "#f7d683");
+      return;
+    }
+    if (playerNatural) {
+      finishBlackjackRound(2.5, "Blackjack! You win 1.5x your bet.", "#9af5a8");
+      return;
+    }
+    finishBlackjackRound(0, "Dealer has blackjack. You lost the hand.", "#ff8787");
+    return;
+  }
+
+  blackjackResult.textContent = "Your move: Hit or Stand.";
+  blackjackResult.style.color = "#f7d683";
+  updateBalanceText();
+}
+
+function hitBlackjack() {
+  if (!blackjackRound) {
+    return;
+  }
+
+  blackjackRound.playerCards.push(drawCard(blackjackRound.deck));
+  const playerTotal = handTotal(blackjackRound.playerCards);
+  renderBlackjackHands(true);
+
+  if (playerTotal > 21) {
+    finishBlackjackRound(0, `Bust at ${playerTotal}. You lost ${blackjackRound.bet} WIS Tokens.`, "#ff8787");
+    return;
+  }
+
+  if (playerTotal === 21) {
+    standBlackjack();
+    return;
+  }
+
+  blackjackResult.textContent = `You drew to ${playerTotal}. Hit or Stand.`;
+  blackjackResult.style.color = "#f7d683";
+}
+
+async function standBlackjack() {
+  if (!blackjackRound) {
+    return;
+  }
+
+  while (handTotal(blackjackRound.dealerCards) < 17) {
+    blackjackRound.dealerCards.push(drawCard(blackjackRound.deck));
+    renderBlackjackHands(false);
+    await sleep(280);
+  }
+
+  const playerTotal = handTotal(blackjackRound.playerCards);
+  const dealerTotal = handTotal(blackjackRound.dealerCards);
+
+  if (dealerTotal > 21 || playerTotal > dealerTotal) {
+    const netProfit = blackjackRound.bet;
+    finishBlackjackRound(2, `You win ${netProfit} WIS Tokens (${playerTotal} vs ${dealerTotal}).`, "#9af5a8");
+    return;
+  }
+
+  if (playerTotal === dealerTotal) {
+    finishBlackjackRound(1, `Push at ${playerTotal}. Your bet was returned.`, "#f7d683");
+    return;
+  }
+
+  finishBlackjackRound(0, `Dealer wins ${dealerTotal} to ${playerTotal}. You lost ${blackjackRound.bet} WIS Tokens.`, "#ff8787");
+}
+
+function setPokerButtonsInRound(inRound) {
+  dealPokerBtn.disabled = inRound;
+  callPokerBtn.disabled = !inRound;
+  foldPokerBtn.disabled = !inRound;
+}
+
+function getRandomNpcNames(count) {
+  const shuffled = [...POKER_NPC_NAMES].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, count);
+}
+
+function formatCommunityCards(cards, revealCount) {
+  return cards
+    .map((card, index) => (index < revealCount ? `${card.rank}${card.suit}` : "??"))
+    .join(" ");
+}
+
+function renderPokerHands(showdown = false) {
+  if (!pokerRound) {
+    pokerHands.textContent = "";
+    return;
+  }
+
+  const board = formatCommunityCards(pokerRound.communityCards, pokerRound.revealCount || 0);
+
+  if (!showdown) {
+    const opponents = pokerRound.opponents.map((opponent) => `${opponent.name}: ?? ??`).join(" | ");
+    pokerHands.textContent = `Your hole cards: ${formatCards(pokerRound.playerCards)} | Board: ${board} | Opponents: ${opponents}`;
+    return;
+  }
+
+  const opponents = pokerRound.opponents
+    .map((opponent) => `${opponent.name}: ${formatCards(opponent.cards)} (${opponent.hand.label})`)
+    .join(" | ");
+  pokerHands.textContent = `Your hole cards: ${formatCards(pokerRound.playerCards)} (${pokerRound.playerHand.label}) | Board: ${board} | ${opponents}`;
+}
+
+function finishPokerRound(totalMultiplierOnAnte, message, tone) {
+  if (!pokerRound) {
+    return;
+  }
+
+  wisTokens += Math.round(pokerRound.ante * totalMultiplierOnAnte);
+  pokerRound = null;
+  setPokerButtonsInRound(false);
+  pokerResult.textContent = message;
+  pokerResult.style.color = tone;
+  updateBalanceText();
+}
+
+async function startPokerRound() {
+  if (pokerRound) {
+    return;
+  }
+
+  const validation = validateBet(pokerBetInput.value);
+  if (!validation.valid) {
+    pokerResult.textContent = validation.message;
+    pokerResult.style.color = "#ff8787";
+    pokerHands.textContent = "";
+    return;
+  }
 
   const deck = createDeck();
   const playerCards = [drawCard(deck), drawCard(deck)];
-  const dealerCards = [drawCard(deck), drawCard(deck)];
-  let playerTotal = handTotal(playerCards);
-  let dealerTotal = handTotal(dealerCards);
+  const npcNames = getRandomNpcNames(3);
+  const opponents = npcNames.map((name) => ({
+    name,
+    cards: [drawCard(deck), drawCard(deck)]
+  }));
+  const communityCards = [drawCard(deck), drawCard(deck), drawCard(deck), drawCard(deck), drawCard(deck)];
 
-  while (dealerTotal < 17) {
-    dealerCards.push(drawCard(deck));
-    dealerTotal = handTotal(dealerCards);
+  const playerHand = evaluateBestPokerHand([...playerCards, ...communityCards]);
+  for (const opponent of opponents) {
+    opponent.hand = evaluateBestPokerHand([...opponent.cards, ...communityCards]);
   }
 
   wisTokens -= validation.bet;
+  pokerRound = {
+    ante: validation.bet,
+    playerCards,
+    opponents,
+    communityCards,
+    revealCount: 0,
+    playerHand
+  };
 
-  const playerNatural = playerCards.length === 2 && playerTotal === 21;
-  const dealerNatural = dealerCards.length === 2 && dealerTotal === 21;
-  let totalMultiplier = 0;
-  let message = "";
-
-  if (playerTotal > 21) {
-    message = `Bust at ${playerTotal}. You lost ${validation.bet} WIS Tokens.`;
-  } else if (dealerTotal > 21 || playerTotal > dealerTotal) {
-    totalMultiplier = playerNatural && !dealerNatural ? 2.5 : 2;
-    const netProfit = Math.round(validation.bet * (totalMultiplier - 1));
-    message = `You win ${netProfit} WIS Tokens (${playerTotal} vs ${dealerTotal}).`;
-  } else if (playerTotal === dealerTotal) {
-    totalMultiplier = 1;
-    message = `Push at ${playerTotal}. Your bet was returned.`;
-  } else {
-    message = `Dealer wins ${dealerTotal} to ${playerTotal}. You lost ${validation.bet} WIS Tokens.`;
-  }
-
-  wisTokens += Math.round(validation.bet * totalMultiplier);
-  blackjackHands.textContent = `Your hand: ${formatCards(playerCards)} (${playerTotal}) | Dealer: ${formatCards(dealerCards)} (${dealerTotal})`;
-  blackjackResult.textContent = message;
-  blackjackResult.style.color = totalMultiplier > 1 ? "#9af5a8" : totalMultiplier === 1 ? "#f7d683" : "#ff8787";
-
+  setPokerButtonsInRound(true);
+  renderPokerHands(false);
+  pokerResult.textContent = "Choose: Call to continue, or Fold to surrender ante.";
+  pokerResult.style.color = "#f7d683";
   updateBalanceText();
-  isBlackjackDealing = false;
 }
 
 function getRankValue(rank) {
@@ -657,38 +839,89 @@ function getRankValue(rank) {
   return Number(rank);
 }
 
-function evaluatePokerHand(cards) {
-  const rankValues = cards.map((card) => getRankValue(card.rank)).sort((a, b) => a - b);
+function evaluateFiveCardHand(cards) {
+  const values = cards.map((card) => getRankValue(card.rank)).sort((a, b) => b - a);
   const suits = cards.map((card) => card.suit);
-  const rankCountMap = {};
-  for (const value of rankValues) {
-    rankCountMap[value] = (rankCountMap[value] || 0) + 1;
+  const isFlush = suits.every((suit) => suit === suits[0]);
+
+  const uniqueDesc = [...new Set(values)];
+  let straightHigh = 0;
+  if (uniqueDesc.length === 5) {
+    const max = uniqueDesc[0];
+    const min = uniqueDesc[4];
+    if (max - min === 4) {
+      straightHigh = max;
+    } else if (JSON.stringify(uniqueDesc) === JSON.stringify([14, 5, 4, 3, 2])) {
+      straightHigh = 5;
+    }
   }
-  const rankCounts = Object.entries(rankCountMap)
+  const isStraight = straightHigh > 0;
+
+  const countsMap = {};
+  for (const value of values) {
+    countsMap[value] = (countsMap[value] || 0) + 1;
+  }
+  const groups = Object.entries(countsMap)
     .map(([value, count]) => ({ value: Number(value), count }))
     .sort((a, b) => (b.count !== a.count ? b.count - a.count : b.value - a.value));
-  const isFlush = suits.every((suit) => suit === suits[0]);
-  const isAceLowStraight = rankValues[0] === 2 && rankValues[1] === 3 && rankValues[2] === 14;
-  const isStraight = (rankValues[1] - rankValues[0] === 1 && rankValues[2] - rankValues[1] === 1) || isAceLowStraight;
-  const straightHigh = isAceLowStraight ? 3 : rankValues[2];
-  const highCardsDesc = [...rankValues].sort((a, b) => b - a);
 
   if (isStraight && isFlush) {
-    return { rank: 6, label: "Straight Flush", tieBreak: [straightHigh] };
+    return { rank: 8, label: "Straight Flush", tieBreak: [straightHigh] };
   }
-  if (rankCounts[0].count === 3) {
-    return { rank: 5, label: "Three of a Kind", tieBreak: [rankCounts[0].value] };
+  if (groups[0].count === 4) {
+    return { rank: 7, label: "Four of a Kind", tieBreak: [groups[0].value, groups[1].value] };
+  }
+  if (groups[0].count === 3 && groups[1].count === 2) {
+    return { rank: 6, label: "Full House", tieBreak: [groups[0].value, groups[1].value] };
+  }
+  if (isFlush) {
+    return { rank: 5, label: "Flush", tieBreak: values };
   }
   if (isStraight) {
     return { rank: 4, label: "Straight", tieBreak: [straightHigh] };
   }
-  if (isFlush) {
-    return { rank: 3, label: "Flush", tieBreak: highCardsDesc };
+  if (groups[0].count === 3) {
+    const kickers = groups.filter((group) => group.count === 1).map((group) => group.value).sort((a, b) => b - a);
+    return { rank: 3, label: "Three of a Kind", tieBreak: [groups[0].value, ...kickers] };
   }
-  if (rankCounts[0].count === 2) {
-    return { rank: 2, label: "Pair", tieBreak: [rankCounts[0].value, rankCounts[1].value] };
+  if (groups[0].count === 2 && groups[1].count === 2) {
+    const highPair = Math.max(groups[0].value, groups[1].value);
+    const lowPair = Math.min(groups[0].value, groups[1].value);
+    const kicker = groups.find((group) => group.count === 1).value;
+    return { rank: 2, label: "Two Pair", tieBreak: [highPair, lowPair, kicker] };
   }
-  return { rank: 1, label: "High Card", tieBreak: highCardsDesc };
+  if (groups[0].count === 2) {
+    const kickers = groups.filter((group) => group.count === 1).map((group) => group.value).sort((a, b) => b - a);
+    return { rank: 1, label: "Pair", tieBreak: [groups[0].value, ...kickers] };
+  }
+  return { rank: 0, label: "High Card", tieBreak: values };
+}
+
+function evaluateBestPokerHand(sevenCards) {
+  let best = null;
+
+  for (let i = 0; i < sevenCards.length - 4; i += 1) {
+    for (let j = i + 1; j < sevenCards.length - 3; j += 1) {
+      for (let k = j + 1; k < sevenCards.length - 2; k += 1) {
+        for (let l = k + 1; l < sevenCards.length - 1; l += 1) {
+          for (let m = l + 1; m < sevenCards.length; m += 1) {
+            const candidate = evaluateFiveCardHand([
+              sevenCards[i],
+              sevenCards[j],
+              sevenCards[k],
+              sevenCards[l],
+              sevenCards[m]
+            ]);
+            if (!best || comparePokerHands(candidate, best) > 0) {
+              best = candidate;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return best;
 }
 
 function comparePokerHands(playerHand, dealerHand) {
@@ -710,49 +943,96 @@ function comparePokerHands(playerHand, dealerHand) {
   return 0;
 }
 
-async function playPoker() {
-  if (isPokerDealing) {
+function findPokerWinners(players) {
+  let bestHand = players[0].hand;
+  let winners = [players[0]];
+
+  for (let i = 1; i < players.length; i += 1) {
+    const contender = players[i];
+    const comparison = comparePokerHands(contender.hand, bestHand);
+    if (comparison > 0) {
+      bestHand = contender.hand;
+      winners = [contender];
+    } else if (comparison === 0) {
+      winners.push(contender);
+    }
+  }
+
+  return winners;
+}
+
+function foldPoker() {
+  if (!pokerRound) {
     return;
   }
 
-  const validation = validateBet(pokerBetInput.value);
-  if (!validation.valid) {
-    pokerResult.textContent = validation.message;
+  const lostAnte = pokerRound.ante;
+  pokerRound = null;
+  setPokerButtonsInRound(false);
+  pokerResult.textContent = `You folded and lost ${lostAnte} WIS Tokens.`;
+  pokerResult.style.color = "#ff8787";
+  pokerHands.textContent = "";
+}
+
+async function callPoker() {
+  if (!pokerRound) {
+    return;
+  }
+
+  const callValidation = validateBet(pokerRound.ante);
+  if (!callValidation.valid) {
+    pokerResult.textContent = `Need ${pokerRound.ante} WIS Tokens to call.`;
     pokerResult.style.color = "#ff8787";
-    pokerHands.textContent = "";
     return;
   }
 
-  isPokerDealing = true;
+  wisTokens -= pokerRound.ante;
+  updateBalanceText();
+  pokerResult.textContent = "Flop...";
+  pokerResult.style.color = "#f7d683";
+  pokerRound.revealCount = 3;
+  renderPokerHands(false);
+  await sleep(380);
 
-  const deck = createDeck();
-  const playerCards = [drawCard(deck), drawCard(deck), drawCard(deck)];
-  const dealerCards = [drawCard(deck), drawCard(deck), drawCard(deck)];
-  const playerHand = evaluatePokerHand(playerCards);
-  const dealerHand = evaluatePokerHand(dealerCards);
-  const comparison = comparePokerHands(playerHand, dealerHand);
+  pokerResult.textContent = "Turn...";
+  pokerRound.revealCount = 4;
+  renderPokerHands(false);
+  await sleep(320);
 
-  wisTokens -= validation.bet;
+  pokerResult.textContent = "River...";
+  pokerRound.revealCount = 5;
+  renderPokerHands(false);
+  await sleep(340);
 
-  let totalMultiplier = 0;
-  let message = "";
-  if (comparison > 0) {
-    totalMultiplier = 2;
-    message = `You win with ${playerHand.label} against ${dealerHand.label}.`;
-  } else if (comparison < 0) {
-    message = `Dealer wins with ${dealerHand.label} against ${playerHand.label}.`;
-  } else {
-    totalMultiplier = 1;
-    message = `Push. Both hands are ${playerHand.label}.`;
+  const contenders = [
+    { name: "You", hand: pokerRound.playerHand, isPlayer: true },
+    ...pokerRound.opponents.map((opponent) => ({ name: opponent.name, hand: opponent.hand, isPlayer: false }))
+  ];
+  const winners = findPokerWinners(contenders);
+  const playerIsWinner = winners.some((winner) => winner.isPlayer);
+  renderPokerHands(true);
+
+  if (playerIsWinner && winners.length === 1) {
+    finishPokerRound(5, `You win with ${pokerRound.playerHand.label} against ${contenders.length - 1} NPC players.`, "#9af5a8");
+    return;
   }
 
-  wisTokens += Math.round(validation.bet * totalMultiplier);
-  pokerHands.textContent = `Your hand: ${formatCards(playerCards)} (${playerHand.label}) | Dealer: ${formatCards(dealerCards)} (${dealerHand.label})`;
-  pokerResult.textContent = message;
-  pokerResult.style.color = totalMultiplier > 1 ? "#9af5a8" : totalMultiplier === 1 ? "#f7d683" : "#ff8787";
+  if (playerIsWinner) {
+    const winnerNames = winners.map((winner) => winner.name).join(", ");
+    finishPokerRound(3, `Split pot with ${winnerNames}. Best hand: ${pokerRound.playerHand.label}.`, "#f7d683");
+    return;
+  }
 
-  updateBalanceText();
-  isPokerDealing = false;
+  const winnerNames = winners.map((winner) => winner.name).join(", ");
+  finishPokerRound(0, `${winnerNames} win this hand. Your ${pokerRound.playerHand.label} was beaten.`, "#ff8787");
+}
+
+async function playPoker() {
+  await startPokerRound();
+}
+
+async function playBlackjack() {
+  await startBlackjackRound();
 }
 
 function drawBackground() {
@@ -1208,8 +1488,12 @@ rouletteChoiceSelect.addEventListener("change", () => {
 
 document.getElementById("spinRouletteBtn").addEventListener("click", spinRoulette);
 document.getElementById("spinSlotsBtn").addEventListener("click", spinSlots);
-document.getElementById("dealBlackjackBtn").addEventListener("click", playBlackjack);
-document.getElementById("dealPokerBtn").addEventListener("click", playPoker);
+dealBlackjackBtn.addEventListener("click", playBlackjack);
+hitBlackjackBtn.addEventListener("click", hitBlackjack);
+standBlackjackBtn.addEventListener("click", standBlackjack);
+dealPokerBtn.addEventListener("click", playPoker);
+callPokerBtn.addEventListener("click", callPoker);
+foldPokerBtn.addEventListener("click", foldPoker);
 
 document.querySelectorAll("[data-close-panel]").forEach((button) => {
   button.addEventListener("click", closePanel);
@@ -1230,5 +1514,7 @@ slotReelEls.forEach((reelEl) => {
 updateBalanceText();
 updateNearbyText();
 rouletteNumberRow.classList.add("hidden");
+setBlackjackButtonsInRound(false);
+setPokerButtonsInRound(false);
 updateResponsivePanelScale();
 gameLoop();

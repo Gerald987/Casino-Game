@@ -121,6 +121,8 @@
       </div>
       <div class="actions">
         <button id="dealBlackjackBtn">Deal Hand</button>
+        <button id="hitBlackjackBtn" class="ghost">Hit</button>
+        <button id="standBlackjackBtn" class="ghost">Stand</button>
         <button class="ghost" data-close-panel>Leave Table</button>
       </div>
       <p id="blackjackHands" class="result"></p>
@@ -130,18 +132,20 @@
 
     <div id="pokerPanel" class="panel hidden" role="dialog" aria-modal="true">
       <h2>Poker Table</h2>
-      <p>3-card showdown against the dealer.</p>
+      <p>Texas Hold'em: 2 hole cards, 5 community cards, and 3 NPC opponents.</p>
       <div class="row">
         <label for="pokerBet">Bet:</label>
         <input id="pokerBet" type="number" min="1" value="10" />
       </div>
       <div class="actions">
-        <button id="dealPokerBtn">Play Hand</button>
+        <button id="dealPokerBtn">Deal Hand</button>
+        <button id="callPokerBtn" class="ghost">Call</button>
+        <button id="foldPokerBtn" class="ghost">Fold</button>
         <button class="ghost" data-close-panel>Leave Table</button>
       </div>
       <p id="pokerHands" class="result"></p>
       <p id="pokerResult" class="result"></p>
-      <p class="payout-guide">Win returns 2x total. Push returns your bet.</p>
+      <p class="payout-guide">Ante starts the hand. Call adds a second bet. Win pays 5x ante total, chopped pot pays 3x ante total.</p>
     </div>
   </section>
 
