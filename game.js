@@ -53,7 +53,7 @@ const joystickThumb = document.getElementById("joystickThumb");
 const WIDTH = canvas.width;
 const HEIGHT = canvas.height;
 const INTERACT_KEY = "e";
-const INTERACT_KEY_DISPLAY = INTERACT_KEY.toUpperCase();
+const INTERACT_KEY_TEXT = INTERACT_KEY.toUpperCase();
 
 const player = {
   x: 120,
@@ -2614,7 +2614,7 @@ function drawAvatar(x, y, size, primaryColor, secondaryColor) {
 }
 
 function drawBackground() {
-  const floorGradient = ctx.createLinearGradient(0, 0, 0, HEIGHT);
+  const floorGradient = ctx.createLinearGradient(0, 0, WIDTH, HEIGHT);
   floorGradient.addColorStop(0, "#251929");
   floorGradient.addColorStop(0.28, "#1b2233");
   floorGradient.addColorStop(0.72, "#111926");
@@ -2892,7 +2892,7 @@ function drawPrompt() {
     return;
   }
 
-  const text = `${INTERACT_KEY_DISPLAY} - ${nearbyTable.label}`;
+  const text = `${INTERACT_KEY_TEXT} - ${nearbyTable.label}`;
   ctx.font = "bold 18px Segoe UI";
   const textWidth = ctx.measureText(text).width;
   const promptWidth = textWidth + 28;
