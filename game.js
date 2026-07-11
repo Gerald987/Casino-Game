@@ -2530,38 +2530,147 @@ async function playBlackjack() {
   await startBlackjackRound();
 }
 
+function roundedRectPath(x, y, width, height, radius) {
+  const r = Math.min(radius, width / 2, height / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + width - r, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + r);
+  ctx.lineTo(x + width, y + height - r);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+  ctx.lineTo(x + r, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function fillRoundedRect(x, y, width, height, radius, fillStyle) {
+  roundedRectPath(x, y, width, height, radius);
+  ctx.fillStyle = fillStyle;
+  ctx.fill();
+}
+
+function strokeRoundedRect(x, y, width, height, radius, strokeStyle, lineWidth = 1) {
+  roundedRectPath(x, y, width, height, radius);
+  ctx.strokeStyle = strokeStyle;
+  ctx.lineWidth = lineWidth;
+  ctx.stroke();
+}
+
+function fillCircle(x, y, radius, fillStyle) {
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, Math.PI * 2);
+  ctx.fillStyle = fillStyle;
+  ctx.fill();
+}
+
+function strokeCircle(x, y, radius, strokeStyle, lineWidth = 1) {
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, Math.PI * 2);
+  ctx.strokeStyle = strokeStyle;
+  ctx.lineWidth = lineWidth;
+  ctx.stroke();
+}
+
+function drawChip(x, y, radius, baseColor, ringColor) {
+  fillCircle(x, y, radius + 3, "rgba(0, 0, 0, 0.28)");
+  fillCircle(x, y, radius, baseColor);
+  strokeCircle(x, y, radius - 2, ringColor, 2);
+  strokeCircle(x, y, radius - 6, ringColor, 1.5);
+}
+
+function drawAvatar(x, y, size, primaryColor, secondaryColor) {
+  const cx = x + size / 2;
+  const cy = y + size / 2;
+  fillCircle(cx, y + size - 2, size * 0.52, "rgba(0, 0, 0, 0.24)");
+  fillCircle(cx, y + size * 0.42, size * 0.22, "#f7ddc2");
+  fillCircle(cx, y + size * 0.44, size * 0.25, "rgba(0, 0, 0, 0.2)");
+  fillCircle(cx, y + size * 0.38, size * 0.22, "#f7ddc2");
+  fillRoundedRect(x + size * 0.16, y + size * 0.52, size * 0.68, size * 0.42, size * 0.2, primaryColor);
+  fillRoundedRect(x + size * 0.26, y + size * 0.52, size * 0.48, size * 0.18, size * 0.09, secondaryColor);
+  fillCircle(cx - size * 0.07, y + size * 0.38, size * 0.028, "#0d1623");
+  fillCircle(cx + size * 0.07, y + size * 0.38, size * 0.028, "#0d1623");
+}
+
 function drawBackground() {
-  const floorGradient = ctx.createLinearGradient(0, 0, WIDTH, HEIGHT);
-  floorGradient.addColorStop(0, "#20253d");
-  floorGradient.addColorStop(0.55, "#1b1f33");
-  floorGradient.addColorStop(1, "#161a2b");
+  const floorGradient = ctx.createLinearGradient(0, 0, 0, HEIGHT);
+  floorGradient.addColorStop(0, "#251929");
+  floorGradient.addColorStop(0.28, "#1b2233");
+  floorGradient.addColorStop(0.72, "#111926");
+  floorGradient.addColorStop(1, "#0b1018");
   ctx.fillStyle = floorGradient;
   ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
-  ctx.fillStyle = "rgba(244, 201, 92, 0.07)";
-  for (let i = 0; i < 14; i += 1) {
-    const x = 40 + i * 70;
-    const y = 40 + (i % 3) * 180;
+  const wallGlow = ctx.createLinearGradient(0, 0, WIDTH, 0);
+  wallGlow.addColorStop(0, "rgba(235, 182, 83, 0.16)");
+  wallGlow.addColorStop(0.5, "rgba(255, 246, 214, 0.06)");
+  wallGlow.addColorStop(1, "rgba(103, 150, 255, 0.12)");
+  ctx.fillStyle = wallGlow;
+  ctx.fillRect(0, 0, WIDTH, 44);
+  ctx.fillRect(0, HEIGHT - 40, WIDTH, 40);
+
+  const runnerGradient = ctx.createLinearGradient(0, 0, WIDTH, HEIGHT);
+  runnerGradient.addColorStop(0, "#5a1424");
+  runnerGradient.addColorStop(0.5, "#391322");
+  runnerGradient.addColorStop(1, "#1e1020");
+  fillRoundedRect(76, 46, WIDTH - 152, HEIGHT - 92, 68, runnerGradient);
+  strokeRoundedRect(82, 52, WIDTH - 164, HEIGHT - 104, 62, "rgba(255, 215, 132, 0.18)", 2);
+
+  ctx.save();
+  ctx.strokeStyle = "rgba(255, 224, 161, 0.07)";
+  ctx.lineWidth = 2;
+  for (let i = -2; i < 17; i += 1) {
+    const x = 90 + i * 62;
     ctx.beginPath();
-    ctx.arc(x, y, 26, 0, Math.PI * 2);
+    ctx.moveTo(x, 54);
+    ctx.lineTo(x + 70, HEIGHT - 54);
+    ctx.stroke();
+  }
+  for (let i = 0; i < 7; i += 1) {
+    const y = 110 + i * 68;
+    ctx.beginPath();
+    ctx.moveTo(96, y);
+    ctx.lineTo(WIDTH - 96, y);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  const lightSources = [
+    ...tables.map((table) => ({
+      x: table.x + table.width / 2,
+      y: table.y + table.height / 2,
+      radius: Math.max(table.width, table.height) * 0.8
+    })),
+    {
+      x: centerBar.x + centerBar.width / 2,
+      y: centerBar.y + centerBar.height / 2,
+      radius: 180
+    }
+  ];
+
+  for (const source of lightSources) {
+    const glow = ctx.createRadialGradient(source.x, source.y, 12, source.x, source.y, source.radius);
+    glow.addColorStop(0, "rgba(255, 230, 150, 0.16)");
+    glow.addColorStop(0.45, "rgba(255, 176, 96, 0.08)");
+    glow.addColorStop(1, "rgba(255, 176, 96, 0)");
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(source.x, source.y, source.radius, 0, Math.PI * 2);
     ctx.fill();
   }
-
 }
 
 function drawDecorativeTables() {
   for (const deco of decorativeTables) {
-    ctx.beginPath();
-    ctx.fillStyle = deco.color;
-    ctx.arc(deco.x, deco.y, deco.radius, 0, Math.PI * 2);
-    ctx.fill();
+    fillCircle(deco.x, deco.y + deco.radius + 6, deco.radius * 0.92, "rgba(0, 0, 0, 0.24)");
+    fillCircle(deco.x, deco.y, deco.radius + 6, "#4c2d22");
+    fillCircle(deco.x, deco.y, deco.radius, deco.color);
+    strokeCircle(deco.x, deco.y, deco.radius + 2, "rgba(255, 227, 162, 0.35)", 2);
 
-    ctx.strokeStyle = "rgba(255, 227, 162, 0.35)";
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    ctx.fillStyle = "rgba(255, 245, 210, 0.18)";
-    ctx.fillRect(deco.x - 3, deco.y - deco.radius - 15, 6, 22);
+    fillRoundedRect(deco.x - 4, deco.y - deco.radius - 18, 8, 26, 4, "rgba(255, 245, 210, 0.18)");
+    drawChip(deco.x - deco.radius * 0.34, deco.y + 2, 6, "#b23f54", "#f9d98f");
+    drawChip(deco.x + deco.radius * 0.22, deco.y - 4, 6, "#226f89", "#d3f0ff");
   }
 }
 
@@ -2569,21 +2678,19 @@ function drawCenterBar() {
   const cx = centerBar.x + centerBar.width / 2;
   const cy = centerBar.y + centerBar.height / 2;
 
-  ctx.fillStyle = "#2a1720";
-  ctx.fillRect(centerBar.x, centerBar.y, centerBar.width, centerBar.height);
+  fillRoundedRect(centerBar.x, centerBar.y, centerBar.width, centerBar.height, 28, "#26161f");
+  strokeRoundedRect(centerBar.x, centerBar.y, centerBar.width, centerBar.height, 28, "rgba(255, 221, 153, 0.55)", 2);
+  fillRoundedRect(centerBar.x + 10, centerBar.y + 12, centerBar.width - 20, centerBar.height - 24, 22, "#543122");
+  fillRoundedRect(centerBar.x + 18, centerBar.y + 18, centerBar.width - 36, 18, 9, "#9d6a3e");
+  fillRoundedRect(centerBar.x + 18, centerBar.y + 18, centerBar.width - 36, 5, 5, "rgba(255, 242, 195, 0.38)");
+  fillRoundedRect(centerBar.x + 24, centerBar.y + 42, centerBar.width - 48, centerBar.height - 62, 14, "#2d1920");
 
-  ctx.strokeStyle = "rgba(255, 221, 153, 0.55)";
-  ctx.lineWidth = 2;
-  ctx.strokeRect(centerBar.x, centerBar.y, centerBar.width, centerBar.height);
-
-  ctx.fillStyle = "#4f2a1f";
-  ctx.fillRect(centerBar.x + 10, centerBar.y + 12, centerBar.width - 20, centerBar.height - 24);
-
-  ctx.fillStyle = "#8a5d39";
-  ctx.fillRect(centerBar.x + 18, centerBar.y + 18, centerBar.width - 36, 14);
-
-  ctx.fillStyle = "rgba(255, 234, 177, 0.17)";
-  ctx.fillRect(centerBar.x + 18, centerBar.y + 20, centerBar.width - 36, 4);
+  for (let i = 0; i < 5; i += 1) {
+    const bottleX = centerBar.x + 31 + i * 25;
+    const bottleColor = ["#7ac4ff", "#f6ce76", "#b89dff", "#8fe5c8", "#ff9dac"][i];
+    fillRoundedRect(bottleX, centerBar.y + 53, 12, 24, 5, bottleColor);
+    fillRoundedRect(bottleX + 3, centerBar.y + 48, 6, 8, 3, "#f5ead0");
+  }
 
   const stoolOffsets = [
     [-58, -50],
@@ -2595,14 +2702,10 @@ function drawCenterBar() {
   ];
 
   for (const [ox, oy] of stoolOffsets) {
-    ctx.beginPath();
-    ctx.fillStyle = "#49324f";
-    ctx.arc(cx + ox, cy + oy, 12, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.strokeStyle = "rgba(208, 196, 255, 0.5)";
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
+    fillCircle(cx + ox, cy + oy + 12, 11, "rgba(0, 0, 0, 0.24)");
+    fillCircle(cx + ox, cy + oy, 12, "#51365a");
+    strokeCircle(cx + ox, cy + oy, 12, "rgba(208, 196, 255, 0.5)", 1.5);
+    fillRoundedRect(cx + ox - 2, cy + oy + 10, 4, 15, 2, "#cab3ff");
   }
 
   ctx.fillStyle = "#f6e4be";
@@ -2649,12 +2752,7 @@ function updateNpcs() {
 
 function drawNpcs() {
   for (const npc of npcs) {
-    ctx.fillStyle = npc.color;
-    ctx.fillRect(npc.x, npc.y, npc.size, npc.size);
-
-    ctx.fillStyle = "#101526";
-    ctx.fillRect(npc.x + 3, npc.y + 4, 3, 3);
-    ctx.fillRect(npc.x + npc.size - 6, npc.y + 4, 3, 3);
+    drawAvatar(npc.x, npc.y, npc.size, npc.color, "rgba(255, 255, 255, 0.26)");
   }
 }
 
@@ -2663,22 +2761,14 @@ function drawRouletteTable(table, isNearby) {
   const cy = table.y + table.height / 2;
   const radius = Math.min(table.width, table.height) * 0.36;
 
-  ctx.fillStyle = "#223b2f";
-  ctx.fillRect(table.x, table.y, table.width, table.height);
+  fillRoundedRect(table.x, table.y, table.width, table.height, 24, "#19261f");
+  strokeRoundedRect(table.x, table.y, table.width, table.height, 24, isNearby ? "#f7d683" : "rgba(232, 236, 255, 0.75)", isNearby ? 4 : 2);
+  fillRoundedRect(table.x + 10, table.y + 10, table.width - 20, table.height - 20, 20, "#275339");
 
-  ctx.strokeStyle = isNearby ? "#f7d683" : "#e8ecff";
-  ctx.lineWidth = isNearby ? 4 : 2;
-  ctx.strokeRect(table.x, table.y, table.width, table.height);
-
-  ctx.beginPath();
-  ctx.fillStyle = "#5c2d2d";
-  ctx.arc(cx, cy, radius + 10, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.beginPath();
-  ctx.fillStyle = "#101010";
-  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-  ctx.fill();
+  fillCircle(cx, cy, radius + 14, "#6e432f");
+  fillCircle(cx, cy, radius + 8, "#1b1b1b");
+  fillCircle(cx, cy, radius, "#0e1216");
+  fillCircle(cx, cy, radius * 0.18, "#dcb670");
 
   for (let i = 0; i < 37; i += 1) {
     const start = (Math.PI * 2 * i) / 37;
@@ -2694,6 +2784,11 @@ function drawRouletteTable(table, isNearby) {
     ctx.fill();
   }
 
+  drawChip(table.x + 28, table.y + table.height - 26, 8, "#c4454f", "#ffe8a4");
+  drawChip(table.x + 48, table.y + table.height - 22, 8, "#2d7d9d", "#d8f2ff");
+  fillRoundedRect(table.x + table.width - 66, table.y + 18, 40, 20, 10, "rgba(5, 10, 18, 0.45)");
+  strokeRoundedRect(table.x + table.width - 66, table.y + 18, 40, 20, 10, "rgba(255, 239, 187, 0.24)");
+
   ctx.fillStyle = "#f4fbff";
   ctx.font = "bold 16px Segoe UI";
   ctx.textAlign = "center";
@@ -2701,12 +2796,8 @@ function drawRouletteTable(table, isNearby) {
 }
 
 function drawSlotsTable(table, isNearby) {
-  ctx.fillStyle = "#2b193d";
-  ctx.fillRect(table.x, table.y, table.width, table.height);
-
-  ctx.strokeStyle = isNearby ? "#f7d683" : "#e8ecff";
-  ctx.lineWidth = isNearby ? 4 : 2;
-  ctx.strokeRect(table.x, table.y, table.width, table.height);
+  fillRoundedRect(table.x, table.y, table.width, table.height, 24, "#241733");
+  strokeRoundedRect(table.x, table.y, table.width, table.height, 24, isNearby ? "#f7d683" : "rgba(232, 236, 255, 0.75)", isNearby ? 4 : 2);
 
   const machineY = table.y + 17;
   const machineHeight = 62;
@@ -2714,17 +2805,16 @@ function drawSlotsTable(table, isNearby) {
   const totalWidth = table.width - pad * 2;
   const reelWidth = (totalWidth - 12) / 3;
 
-  ctx.fillStyle = "#7a2d42";
-  ctx.fillRect(table.x + 8, machineY - 9, table.width - 16, machineHeight + 17);
+  fillRoundedRect(table.x + 8, machineY - 9, table.width - 16, machineHeight + 17, 18, "#8b2441");
+  fillRoundedRect(table.x + 28, table.y + 10, table.width - 56, 12, 6, "#ffd97f");
+  for (let i = 0; i < 5; i += 1) {
+    fillCircle(table.x + 22 + i * 30, table.y + table.height - 30, 5, i % 2 === 0 ? "#ffd978" : "#9ecbff");
+  }
 
   for (let i = 0; i < 3; i += 1) {
     const rx = table.x + pad + i * (reelWidth + 6);
-    ctx.fillStyle = "#0f1a2f";
-    ctx.fillRect(rx, machineY, reelWidth, machineHeight);
-
-    ctx.strokeStyle = "rgba(207, 231, 255, 0.5)";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(rx, machineY, reelWidth, machineHeight);
+    fillRoundedRect(rx, machineY, reelWidth, machineHeight, 10, "#101621");
+    strokeRoundedRect(rx, machineY, reelWidth, machineHeight, 10, "rgba(207, 231, 255, 0.5)", 2);
 
     ctx.fillStyle = "#f9cf73";
     ctx.font = "22px Segoe UI Emoji";
@@ -2739,12 +2829,9 @@ function drawSlotsTable(table, isNearby) {
 }
 
 function drawCardTable(table, isNearby, accentColor) {
-  ctx.fillStyle = "#2a2439";
-  ctx.fillRect(table.x, table.y, table.width, table.height);
-
-  ctx.strokeStyle = isNearby ? "#f7d683" : "#e8ecff";
-  ctx.lineWidth = isNearby ? 4 : 2;
-  ctx.strokeRect(table.x, table.y, table.width, table.height);
+  fillRoundedRect(table.x, table.y, table.width, table.height, 24, "#2a2439");
+  strokeRoundedRect(table.x, table.y, table.width, table.height, 24, isNearby ? "#f7d683" : "rgba(232, 236, 255, 0.75)", isNearby ? 4 : 2);
+  fillRoundedRect(table.x + 10, table.y + 12, table.width - 20, table.height - 26, 18, "#3f281f");
 
   const cx = table.x + table.width / 2;
   const cy = table.y + table.height / 2 - 6;
@@ -2754,6 +2841,14 @@ function drawCardTable(table, isNearby, accentColor) {
   ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
   ctx.fillStyle = accentColor;
   ctx.fill();
+  ctx.strokeStyle = "rgba(255, 229, 178, 0.22)";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  fillRoundedRect(table.x + 18, table.y + 24, 20, 32, 6, "#f4ede1");
+  fillRoundedRect(table.x + table.width - 38, table.y + 24, 20, 32, 6, "#f4ede1");
+  drawChip(table.x + 42, table.y + table.height - 22, 8, "#286f89", "#dff6ff");
+  drawChip(table.x + table.width - 40, table.y + table.height - 22, 8, "#c34652", "#ffe1a0");
 
   ctx.fillStyle = "#f4fbff";
   ctx.font = "bold 14px Segoe UI";
@@ -2784,15 +2879,9 @@ function drawTable(table, isNearby) {
 }
 
 function drawPlayer() {
-  ctx.fillStyle = player.color;
-  ctx.fillRect(player.x, player.y, player.size, player.size);
-  ctx.strokeStyle = "#061823";
-  ctx.lineWidth = 2;
-  ctx.strokeRect(player.x, player.y, player.size, player.size);
-
-  ctx.fillStyle = "#061823";
-  ctx.fillRect(player.x + 4, player.y + 5, 4, 4);
-  ctx.fillRect(player.x + 12, player.y + 5, 4, 4);
+  fillCircle(player.x + player.size / 2, player.y + player.size + 3, player.size * 0.62, "rgba(0, 0, 0, 0.28)");
+  drawAvatar(player.x, player.y, player.size, "#edf5ff", "#5db4ff");
+  strokeCircle(player.x + player.size / 2, player.y + player.size / 2, player.size * 0.58, "rgba(93, 180, 255, 0.45)", 2);
 }
 
 function drawPrompt() {
@@ -2800,22 +2889,20 @@ function drawPrompt() {
     return;
   }
 
-  const text = nearbyTable.label;
+  const text = `E • ${nearbyTable.label}`;
   ctx.font = "bold 18px Segoe UI";
   const textWidth = ctx.measureText(text).width;
-  const promptWidth = textWidth + 24;
-  const promptHeight = 34;
+  const promptWidth = textWidth + 28;
+  const promptHeight = 40;
   const px = WIDTH / 2 - promptWidth / 2;
   const py = HEIGHT - 80;
 
-  ctx.fillStyle = "rgba(3, 12, 21, 0.85)";
-  ctx.fillRect(px, py, promptWidth, promptHeight);
-  ctx.strokeStyle = "#87dfff";
-  ctx.strokeRect(px, py, promptWidth, promptHeight);
+  fillRoundedRect(px, py, promptWidth, promptHeight, 18, "rgba(3, 12, 21, 0.88)");
+  strokeRoundedRect(px, py, promptWidth, promptHeight, 18, "rgba(247, 214, 131, 0.78)", 2);
 
   ctx.fillStyle = "#dff4ff";
   ctx.textAlign = "left";
-  ctx.fillText(text, px + 12, py + 22);
+  ctx.fillText(text, px + 14, py + 25);
 }
 
 function updatePlayerPosition() {
