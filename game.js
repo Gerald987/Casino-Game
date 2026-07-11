@@ -2604,9 +2604,8 @@ function drawChip(x, y, radius, baseColor, ringColor) {
 function drawAvatar(x, y, size, primaryColor, secondaryColor) {
   const cx = x + size / 2;
   const cy = y + size / 2;
-  fillCircle(cx, y + size - 2, size * 0.52, "rgba(0, 0, 0, 0.24)");
+  fillCircle(cx, y + size + 2, size * 0.52, "rgba(0, 0, 0, 0.24)");
   fillCircle(cx, y + size * 0.42, size * 0.22, "#f7ddc2");
-  fillCircle(cx, y + size * 0.44, size * 0.25, "rgba(0, 0, 0, 0.2)");
   fillCircle(cx, y + size * 0.38, size * 0.22, "#f7ddc2");
   fillRoundedRect(x + size * 0.16, y + size * 0.52, size * 0.68, size * 0.42, size * 0.2, primaryColor);
   fillRoundedRect(x + size * 0.26, y + size * 0.52, size * 0.48, size * 0.18, size * 0.09, secondaryColor);
