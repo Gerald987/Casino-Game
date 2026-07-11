@@ -146,6 +146,25 @@ const centerBar = {
   }
 };
 
+const backgroundLightSources = [
+  ...tables.map((table) => ({
+    x: table.x + table.width / 2,
+    y: table.y + table.height / 2,
+    radius: Math.max(table.width, table.height) * 0.8
+  })),
+  {
+    x: centerBar.x + centerBar.width / 2,
+    y: centerBar.y + centerBar.height / 2,
+    radius: 180
+  }
+].map((source) => {
+  const gradient = ctx.createRadialGradient(source.x, source.y, 12, source.x, source.y, source.radius);
+  gradient.addColorStop(0, "rgba(255, 230, 150, 0.16)");
+  gradient.addColorStop(0.45, "rgba(255, 176, 96, 0.08)");
+  gradient.addColorStop(1, "rgba(255, 176, 96, 0)");
+  return { ...source, gradient };
+});
+
 let wisTokens = 1000;
 let activePanel = null;
 let nearbyTable = null;
@@ -2638,25 +2657,8 @@ function drawBackground() {
   }
   ctx.restore();
 
-  const lightSources = [
-    ...tables.map((table) => ({
-      x: table.x + table.width / 2,
-      y: table.y + table.height / 2,
-      radius: Math.max(table.width, table.height) * 0.8
-    })),
-    {
-      x: centerBar.x + centerBar.width / 2,
-      y: centerBar.y + centerBar.height / 2,
-      radius: 180
-    }
-  ];
-
-  for (const source of lightSources) {
-    const glow = ctx.createRadialGradient(source.x, source.y, 12, source.x, source.y, source.radius);
-    glow.addColorStop(0, "rgba(255, 230, 150, 0.16)");
-    glow.addColorStop(0.45, "rgba(255, 176, 96, 0.08)");
-    glow.addColorStop(1, "rgba(255, 176, 96, 0)");
-    ctx.fillStyle = glow;
+  for (const source of backgroundLightSources) {
+    ctx.fillStyle = source.gradient;
     ctx.beginPath();
     ctx.arc(source.x, source.y, source.radius, 0, Math.PI * 2);
     ctx.fill();
@@ -2891,7 +2893,7 @@ function drawPrompt() {
     return;
   }
 
-  const text = `${INTERACT_KEY_DISPLAY} • ${nearbyTable.label}`;
+  const text = `${INTERACT_KEY_DISPLAY} - ${nearbyTable.label}`;
   ctx.font = "bold 18px Segoe UI";
   const textWidth = ctx.measureText(text).width;
   const promptWidth = textWidth + 28;
