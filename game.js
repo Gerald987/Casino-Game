@@ -52,6 +52,8 @@ const joystickThumb = document.getElementById("joystickThumb");
 
 const WIDTH = canvas.width;
 const HEIGHT = canvas.height;
+const INTERACT_KEY = "e";
+const INTERACT_PROMPT_KEY = INTERACT_KEY.toUpperCase();
 
 const player = {
   x: 120,
@@ -2889,7 +2891,7 @@ function drawPrompt() {
     return;
   }
 
-  const text = `E • ${nearbyTable.label}`;
+  const text = `${INTERACT_PROMPT_KEY} • ${nearbyTable.label}`;
   ctx.font = "bold 18px Segoe UI";
   const textWidth = ctx.measureText(text).width;
   const promptWidth = textWidth + 28;
@@ -2975,7 +2977,7 @@ function handleKeyDown(event) {
     keyState[key] = true;
   }
 
-  if (key === "e" && nearbyTable && !activePanel) {
+  if (key === INTERACT_KEY && nearbyTable && !activePanel) {
     openPanel(nearbyTable.id);
   }
 

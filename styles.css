@@ -1,6 +1,7 @@
 :root {
   --bg-deep: #090d17;
   --bg-mid: #151c2d;
+  --bg-rich-end: #1e1320;
   --panel: rgba(12, 15, 24, 0.92);
   --panel-ui-scale: 1;
   --app-max-width: 1040px;
@@ -36,7 +37,7 @@ body {
   background:
     radial-gradient(circle at 18% 22%, var(--bg-radial-a), transparent 34%),
     radial-gradient(circle at 82% 15%, var(--bg-radial-b), transparent 32%),
-    linear-gradient(160deg, var(--bg-deep), var(--bg-mid) 55%, #1e1320);
+    linear-gradient(160deg, var(--bg-deep), var(--bg-mid) 55%, var(--bg-rich-end));
   overflow-x: hidden;
   position: relative;
   padding: clamp(0.35rem, 1vw, 1rem) 0;
