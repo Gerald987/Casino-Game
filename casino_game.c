@@ -10,6 +10,9 @@ typedef struct {
 
 #define MAX_BLACKJACK_CARDS 16
 #define ROULETTE_EXACT_PAYOUT_MULTIPLIER 36 /* 35:1 winnings + original bet */
+#define PROMPT_BUFFER_SIZE 96
+#define RANK_ARRAY_SIZE 15
+#define SUIT_ARRAY_SIZE 4
 
 enum {
   HAND_HIGH_CARD = 0,
@@ -51,12 +54,12 @@ static int read_int(const char *prompt, int min, int max) {
 }
 
 static int read_bet(int balance) {
-  char prompt[96];
+  char prompt[PROMPT_BUFFER_SIZE];
   snprintf(prompt, sizeof(prompt), "Enter bet (1-%d): ", balance);
   return read_int(prompt, 1, balance);
 }
 
-static int random_blackjack_value(void) {
+static int draw_blackjack_card_value(void) {
   int r = (rand() % 13) + 1;
   if (r == 1) return 11;
   if (r >= 10) return 10;
@@ -225,10 +228,10 @@ static void play_blackjack(int *balance) {
   int dealer_values[MAX_BLACKJACK_CARDS] = {0};
   int player_count = 2;
   int dealer_count = 2;
-  player_values[0] = random_blackjack_value();
-  player_values[1] = random_blackjack_value();
-  dealer_values[0] = random_blackjack_value();
-  dealer_values[1] = random_blackjack_value();
+  player_values[0] = draw_blackjack_card_value();
+  player_values[1] = draw_blackjack_card_value();
+  dealer_values[0] = draw_blackjack_card_value();
+  dealer_values[1] = draw_blackjack_card_value();
 
   while (1) {
     int player_total = score_blackjack_hand(player_values, player_count);
@@ -244,7 +247,7 @@ static void play_blackjack(int *balance) {
       printf("Maximum hand size reached. Standing automatically.\n");
       break;
     }
-    player_values[player_count++] = random_blackjack_value();
+    player_values[player_count++] = draw_blackjack_card_value();
   }
 
   int dealer_total = score_blackjack_hand(dealer_values, dealer_count);
@@ -252,7 +255,7 @@ static void play_blackjack(int *balance) {
     if (dealer_count >= MAX_BLACKJACK_CARDS) {
       break;
     }
-    dealer_values[dealer_count++] = random_blackjack_value();
+    dealer_values[dealer_count++] = draw_blackjack_card_value();
     dealer_total = score_blackjack_hand(dealer_values, dealer_count);
   }
   int player_total = score_blackjack_hand(player_values, player_count);
@@ -305,8 +308,8 @@ static void print_hand(const Card *cards, int n) {
 }
 
 static int evaluate_five_card_hand(const Card *h) {
-  int rank_counts[15] = {0};
-  int suit_counts[4] = {0};
+  int rank_counts[RANK_ARRAY_SIZE] = {0};
+  int suit_counts[SUIT_ARRAY_SIZE] = {0};
   int ranks[5];
 
   for (int i = 0; i < 5; i++) {
@@ -432,7 +435,7 @@ static void play_poker(int *balance) {
 
 static void visit_bar(void) {
   size_t drink_count = sizeof(BAR_DRINKS) / sizeof(BAR_DRINKS[0]);
-  int idx = rand() % (int)drink_count;
+  size_t idx = (size_t)(rand() % (int)drink_count);
   printf("Bartender serves: %s (free)\n", BAR_DRINKS[idx]);
 }
 
