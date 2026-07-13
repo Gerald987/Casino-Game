@@ -124,7 +124,7 @@ static void play_roulette(int *balance) {
   }
 }
 
-static const char slot_symbol_for_value(int value) {
+static char slot_symbol_for_value(int value) {
   switch (value) {
     case 0: return 'C';
     case 1: return 'L';
