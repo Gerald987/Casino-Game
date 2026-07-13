@@ -289,7 +289,7 @@ const CASINO_THEMES = [
     }
   },
   {
-    name: "Amethyst Mirage",
+    name: "Amethyst Aurora",
     vars: {
       "--bg-deep": "#130a23",
       "--bg-mid": "#2b1850",
@@ -479,7 +479,7 @@ const CASINO_THEMES = [
     }
   },
   {
-    name: "Champagne Glow",
+    name: "Champagne Spark",
     vars: {
       "--bg-deep": "#1a130a",
       "--bg-mid": "#3f2d17",
@@ -821,7 +821,7 @@ const CASINO_THEMES = [
     }
   },
   {
-    name: "Solar Flare",
+    name: "Solar Ember",
     vars: {
       "--bg-deep": "#1a0f06",
       "--bg-mid": "#47270f",
