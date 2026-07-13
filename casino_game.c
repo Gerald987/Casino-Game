@@ -13,6 +13,10 @@ typedef struct {
 #define PROMPT_BUFFER_SIZE 96
 #define RANK_ARRAY_SIZE 15
 #define SUIT_ARRAY_SIZE 4
+#define BLACKJACK_CARD_RANKS 13
+#define ROULETTE_SLOTS 37
+#define SLOT_SYMBOL_COUNT 4
+#define BAR_DRINK_COUNT 8
 
 enum {
   HAND_HIGH_CARD = 0,
@@ -34,6 +38,18 @@ static const char *BAR_DRINKS[] = {
   "Lucky Lantern", "Neon Clover", "Golden Fizz", "Seven Star Sour",
   "Dealer's Twist", "Moonlit Tonic", "Emerald Rush", "House Edge Cooler"
 };
+_Static_assert(BAR_DRINK_COUNT == (int)(sizeof(BAR_DRINKS) / sizeof(BAR_DRINKS[0])),
+  "BAR_DRINK_COUNT must match BAR_DRINKS length");
+
+static int uniform_random(int upper_bound) {
+  if (upper_bound <= 1) return 0;
+  int limit = RAND_MAX - (RAND_MAX % upper_bound);
+  int value;
+  do {
+    value = rand();
+  } while (value >= limit);
+  return value % upper_bound;
+}
 
 static void clear_input(void) {
   int c;
@@ -60,7 +76,7 @@ static int read_bet(int balance) {
 }
 
 static int draw_blackjack_card_value(void) {
-  int r = (rand() % 13) + 1;
+  int r = uniform_random(BLACKJACK_CARD_RANKS) + 1;
   if (r == 1) return 11;
   if (r >= 10) return 10;
   return r;
@@ -110,7 +126,7 @@ static void play_roulette(int *balance) {
   }
 
   *balance -= bet;
-  int spin = rand() % 37;
+  int spin = uniform_random(ROULETTE_SLOTS);
   int is_zero = (spin == 0);
   int is_red = is_red_roulette_number(spin);
   int won = 0;
@@ -172,7 +188,7 @@ static void play_slots(int *balance) {
   int reels[3][3];
   for (int r = 0; r < 3; r++) {
     for (int c = 0; c < 3; c++) {
-      reels[r][c] = rand() % 4;
+      reels[r][c] = uniform_random(SLOT_SYMBOL_COUNT);
     }
   }
 
@@ -289,7 +305,7 @@ static void init_deck(Card *deck) {
 
 static void shuffle_deck(Card *deck, int n) {
   for (int i = n - 1; i > 0; i--) {
-    int j = rand() % (i + 1);
+    int j = uniform_random(i + 1);
     Card tmp = deck[i];
     deck[i] = deck[j];
     deck[j] = tmp;
@@ -434,8 +450,7 @@ static void play_poker(int *balance) {
 }
 
 static void visit_bar(void) {
-  size_t drink_count = sizeof(BAR_DRINKS) / sizeof(BAR_DRINKS[0]);
-  size_t idx = (size_t)(rand() % (int)drink_count);
+  int idx = uniform_random(BAR_DRINK_COUNT);
   printf("Bartender serves: %s (free)\n", BAR_DRINKS[idx]);
 }
 
