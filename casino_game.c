@@ -132,7 +132,7 @@ static void play_roulette(int *balance) {
 
   if (won) {
     int payout = bet * payout_multiplier;
-    int net_win = payout - bet;
+    int net_win = (payout_multiplier - 1) * bet;
     *balance += payout;
     printf("Roulette landed on %d. You win %d tokens.\n", spin, net_win);
   } else {
@@ -255,7 +255,7 @@ static void play_blackjack(int *balance) {
 
   if (dealer_total > 21 || player_total > dealer_total) {
     int payout = bet * 2;
-    int net_win = payout - bet;
+    int net_win = bet;
     *balance += payout;
     printf("You win %d tokens.\n", net_win);
   } else if (player_total == dealer_total) {
@@ -412,7 +412,7 @@ static void play_poker(int *balance) {
 
   if (player_rank > best_npc) {
     int payout = bet * 2;
-    int net_win = payout - bet;
+    int net_win = bet;
     *balance += payout;
     printf("You win %d tokens.\n", net_win);
   } else if (player_rank == best_npc) {
@@ -449,11 +449,25 @@ int main(void) {
       printf("Thanks for playing.\n");
       break;
     }
-    if (choice == 1) play_roulette(&balance);
-    if (choice == 2) play_slots(&balance);
-    if (choice == 3) play_blackjack(&balance);
-    if (choice == 4) play_poker(&balance);
-    if (choice == 5) visit_bar();
+    switch (choice) {
+      case 1:
+        play_roulette(&balance);
+        break;
+      case 2:
+        play_slots(&balance);
+        break;
+      case 3:
+        play_blackjack(&balance);
+        break;
+      case 4:
+        play_poker(&balance);
+        break;
+      case 5:
+        visit_bar();
+        break;
+      default:
+        break;
+    }
   }
   return 0;
 }
