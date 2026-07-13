@@ -60,6 +60,18 @@ static int random_rank_for_blackjack(void) {
   return r;
 }
 
+static int is_red_roulette_number(int number) {
+  static const int red_numbers[] = {
+    1, 3, 5, 7, 9, 12, 14, 16, 18, 19,
+    21, 23, 25, 27, 30, 32, 34, 36
+  };
+  if (number <= 0 || number > 36) return 0;
+  for (size_t i = 0; i < sizeof(red_numbers) / sizeof(red_numbers[0]); i++) {
+    if (red_numbers[i] == number) return 1;
+  }
+  return 0;
+}
+
 static int score_blackjack_hand(const int *cards, int count) {
   int total = 0;
   int aces = 0;
@@ -94,31 +106,32 @@ static void play_roulette(int *balance) {
   *balance -= bet;
   int spin = rand() % 37;
   int is_zero = (spin == 0);
-  int is_red = (!is_zero) && (spin % 2 == 1);
+  int is_red = is_red_roulette_number(spin);
   int won = 0;
-  int multiplier = 0;
+  int payout_multiplier = 0;
 
   if (choice == 1 && is_red) {
     won = 1;
-    multiplier = 2;
+    payout_multiplier = 2;
   } else if (choice == 2 && !is_red && !is_zero) {
     won = 1;
-    multiplier = 2;
+    payout_multiplier = 2;
   } else if (choice == 3 && !is_zero && (spin % 2 == 1)) {
     won = 1;
-    multiplier = 2;
+    payout_multiplier = 2;
   } else if (choice == 4 && !is_zero && (spin % 2 == 0)) {
     won = 1;
-    multiplier = 2;
+    payout_multiplier = 2;
   } else if (choice == 5 && spin == number_choice) {
     won = 1;
-    multiplier = 36;
+    payout_multiplier = 36;
   }
 
   if (won) {
-    int payout = bet * multiplier;
+    int payout = bet * payout_multiplier;
+    int net_win = payout - bet;
     *balance += payout;
-    printf("Roulette landed on %d. You win %d tokens.\n", spin, payout - bet);
+    printf("Roulette landed on %d. You win %d tokens.\n", spin, net_win);
   } else {
     printf("Roulette landed on %d. You lost %d tokens.\n", spin, bet);
   }
@@ -189,9 +202,10 @@ static void play_slots(int *balance) {
   }
 
   if (lines > 0) {
-    int payout = bet * (1 + multiplier_total);
+    int net_win = bet * multiplier_total;
+    int payout = bet + net_win;
     *balance += payout;
-    printf("Winning lines: %d. You win %d tokens.\n", lines, payout - bet);
+    printf("Winning lines: %d. You win %d tokens.\n", lines, net_win);
   } else {
     printf("No winning lines. You lost %d tokens.\n", bet);
   }
@@ -239,8 +253,9 @@ static void play_blackjack(int *balance) {
 
   if (dealer_total > 21 || player_total > dealer_total) {
     int payout = bet * 2;
+    int net_win = payout - bet;
     *balance += payout;
-    printf("You win %d tokens.\n", payout - bet);
+    printf("You win %d tokens.\n", net_win);
   } else if (player_total == dealer_total) {
     *balance += bet;
     printf("Push. Bet returned.\n");
@@ -395,8 +410,9 @@ static void play_poker(int *balance) {
 
   if (player_rank > best_npc) {
     int payout = bet * 2;
+    int net_win = payout - bet;
     *balance += payout;
-    printf("You win %d tokens.\n", payout - bet);
+    printf("You win %d tokens.\n", net_win);
   } else if (player_rank == best_npc) {
     *balance += bet;
     printf("Tie. Bet returned.\n");
