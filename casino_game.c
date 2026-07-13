@@ -8,6 +8,9 @@ typedef struct {
   int suit;
 } Card;
 
+#define MAX_BLACKJACK_CARDS 16
+#define ROULETTE_EXACT_PAYOUT_MULTIPLIER 36 /* 35:1 winnings + original bet */
+
 enum {
   HAND_HIGH_CARD = 0,
   HAND_PAIR = 1,
@@ -124,7 +127,7 @@ static void play_roulette(int *balance) {
     payout_multiplier = 2;
   } else if (choice == 5 && spin == number_choice) {
     won = 1;
-    payout_multiplier = 36;
+    payout_multiplier = ROULETTE_EXACT_PAYOUT_MULTIPLIER;
   }
 
   if (won) {
@@ -202,10 +205,9 @@ static void play_slots(int *balance) {
   }
 
   if (lines > 0) {
-    int net_win = bet * multiplier_total;
-    int payout = bet + net_win;
-    *balance += payout;
-    printf("Winning lines: %d. You win %d tokens.\n", lines, net_win);
+    int winnings = bet * multiplier_total;
+    *balance += bet + winnings;
+    printf("Winning lines: %d. You win %d tokens.\n", lines, winnings);
   } else {
     printf("No winning lines. You lost %d tokens.\n", bet);
   }
@@ -219,8 +221,8 @@ static void play_blackjack(int *balance) {
   int bet = read_bet(*balance);
   *balance -= bet;
 
-  int player_cards[16] = {0};
-  int dealer_cards[16] = {0};
+  int player_cards[MAX_BLACKJACK_CARDS] = {0};
+  int dealer_cards[MAX_BLACKJACK_CARDS] = {0};
   int player_count = 2;
   int dealer_count = 2;
   player_cards[0] = random_rank_for_blackjack();
