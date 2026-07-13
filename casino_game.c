@@ -56,7 +56,7 @@ static int read_bet(int balance) {
   return read_int(prompt, 1, balance);
 }
 
-static int random_rank_for_blackjack(void) {
+static int random_blackjack_value(void) {
   int r = (rand() % 13) + 1;
   if (r == 1) return 11;
   if (r >= 10) return 10;
@@ -221,18 +221,18 @@ static void play_blackjack(int *balance) {
   int bet = read_bet(*balance);
   *balance -= bet;
 
-  int player_cards[MAX_BLACKJACK_CARDS] = {0};
-  int dealer_cards[MAX_BLACKJACK_CARDS] = {0};
+  int player_values[MAX_BLACKJACK_CARDS] = {0};
+  int dealer_values[MAX_BLACKJACK_CARDS] = {0};
   int player_count = 2;
   int dealer_count = 2;
-  player_cards[0] = random_rank_for_blackjack();
-  player_cards[1] = random_rank_for_blackjack();
-  dealer_cards[0] = random_rank_for_blackjack();
-  dealer_cards[1] = random_rank_for_blackjack();
+  player_values[0] = random_blackjack_value();
+  player_values[1] = random_blackjack_value();
+  dealer_values[0] = random_blackjack_value();
+  dealer_values[1] = random_blackjack_value();
 
   while (1) {
-    int player_total = score_blackjack_hand(player_cards, player_count);
-    printf("Dealer shows: %d\n", dealer_cards[0]);
+    int player_total = score_blackjack_hand(player_values, player_count);
+    printf("Dealer shows: %d\n", dealer_values[0]);
     printf("Your total: %d\n", player_total);
     if (player_total > 21) {
       printf("Bust. You lost %d tokens.\n", bet);
@@ -240,15 +240,22 @@ static void play_blackjack(int *balance) {
     }
     int action = read_int("Action: 1) Hit 2) Stand\nSelect: ", 1, 2);
     if (action == 2) break;
-    player_cards[player_count++] = random_rank_for_blackjack();
+    if (player_count >= MAX_BLACKJACK_CARDS) {
+      printf("Maximum hand size reached. Standing automatically.\n");
+      break;
+    }
+    player_values[player_count++] = random_blackjack_value();
   }
 
-  int dealer_total = score_blackjack_hand(dealer_cards, dealer_count);
+  int dealer_total = score_blackjack_hand(dealer_values, dealer_count);
   while (dealer_total < 17) {
-    dealer_cards[dealer_count++] = random_rank_for_blackjack();
-    dealer_total = score_blackjack_hand(dealer_cards, dealer_count);
+    if (dealer_count >= MAX_BLACKJACK_CARDS) {
+      break;
+    }
+    dealer_values[dealer_count++] = random_blackjack_value();
+    dealer_total = score_blackjack_hand(dealer_values, dealer_count);
   }
-  int player_total = score_blackjack_hand(player_cards, player_count);
+  int player_total = score_blackjack_hand(player_values, player_count);
 
   printf("Dealer total: %d\n", dealer_total);
   printf("Your total: %d\n", player_total);
@@ -424,7 +431,8 @@ static void play_poker(int *balance) {
 }
 
 static void visit_bar(void) {
-  int idx = rand() % (int)(sizeof(BAR_DRINKS) / sizeof(BAR_DRINKS[0]));
+  size_t drink_count = sizeof(BAR_DRINKS) / sizeof(BAR_DRINKS[0]);
+  int idx = rand() % (int)drink_count;
   printf("Bartender serves: %s (free)\n", BAR_DRINKS[idx]);
 }
 
