@@ -17,6 +17,8 @@ const barResultEl = document.getElementById("barResult");
 const barShelfEl = document.getElementById("barShelf");
 const coinFlipPanel = document.getElementById("coinFlipPanel");
 const baccaratPanel = document.getElementById("baccaratPanel");
+const checkinPanel = document.getElementById("checkinPanel");
+const elevatorPanel = document.getElementById("elevatorPanel");
 
 const rouletteBetInput = document.getElementById("rouletteBet");
 const rouletteChoiceSelect = document.getElementById("rouletteChoice");
@@ -69,72 +71,79 @@ const player = {
   color: "#f4f7ff"
 };
 
+// Returns the visual height of a humanoid drawn by drawHumanoid(x, y, size, …).
+// The figure spans from y+size/16 (head top) to y+35.5*(size/16) (leg bottom).
+function humanoidHitboxH(size) {
+  return Math.round(34.5 * (size / 16));
+}
+const PLAYER_HITBOX_H = humanoidHitboxH(player.size); // ≈ 43 for size 20
+
 const tables = [
   {
     id: "roulette",
     name: "Roulette Table",
-    x: 90,
-    y: 75,
-    width: 188,
-    height: 120,
+    x: 165,
+    y: 50,
+    width: 210,
+    height: 130,
     color: "#8f2f2f",
     label: "Roulette",
-    hitbox: { x: 90, y: 75, width: 188, height: 120 }
+    hitbox: { x: 165, y: 50, width: 210, height: 130 }
   },
   {
     id: "coinflip",
     name: "Coin Flip Table",
-    x: 546,
-    y: 75,
-    width: 188,
-    height: 120,
+    x: 535,
+    y: 50,
+    width: 210,
+    height: 130,
     color: "#3f2a6a",
     label: "Coin Flip",
-    hitbox: { x: 546, y: 75, width: 188, height: 120 }
+    hitbox: { x: 535, y: 50, width: 210, height: 130 }
   },
   {
     id: "blackjack",
     name: "Blackjack Table",
-    x: 1002,
-    y: 75,
-    width: 188,
-    height: 120,
+    x: 905,
+    y: 50,
+    width: 210,
+    height: 130,
     color: "#2f7a4f",
     label: "Blackjack",
-    hitbox: { x: 1002, y: 75, width: 188, height: 120 }
+    hitbox: { x: 905, y: 50, width: 210, height: 130 }
   },
   {
     id: "poker",
     name: "Poker Table",
-    x: 90,
-    y: 495,
-    width: 188,
-    height: 120,
+    x: 165,
+    y: 540,
+    width: 210,
+    height: 130,
     color: "#7a4f2f",
     label: "Poker",
-    hitbox: { x: 90, y: 495, width: 188, height: 120 }
+    hitbox: { x: 165, y: 540, width: 210, height: 130 }
   },
   {
     id: "baccarat",
     name: "Baccarat Table",
-    x: 546,
-    y: 495,
-    width: 188,
-    height: 120,
+    x: 535,
+    y: 540,
+    width: 210,
+    height: 130,
     color: "#1a3a5a",
     label: "Baccarat",
-    hitbox: { x: 546, y: 495, width: 188, height: 120 }
+    hitbox: { x: 535, y: 540, width: 210, height: 130 }
   },
   {
     id: "slots",
     name: "Slot Machine",
-    x: 1002,
-    y: 495,
-    width: 166,
-    height: 126,
+    x: 905,
+    y: 540,
+    width: 190,
+    height: 130,
     color: "#2f6b9a",
     label: "Slots",
-    hitbox: { x: 1002, y: 495, width: 166, height: 126 }
+    hitbox: { x: 905, y: 540, width: 190, height: 130 }
   }
 ];
 
@@ -142,30 +151,30 @@ const centerBar = {
   id: "bar",
   name: "Center Bar",
   label: "Center Bar",
-  x: 490,
-  y: 268,
-  width: 300,
-  height: 154,
+  x: 460,
+  y: 275,
+  width: 360,
+  height: 170,
   hitbox: {
-    x: 490,
-    y: 268,
-    width: 300,
-    height: 154
+    x: 460,
+    y: 275,
+    width: 360,
+    height: 170
   }
 };
 
 const performanceStage = {
-  x: 14,
-  y: 210,
-  width: 62,
-  height: 300,
-  hitbox: { x: 14, y: 210, width: 62, height: 300 }
+  x: 0,
+  y: 220,
+  width: 110,
+  height: 280,
+  hitbox: { x: 0, y: 220, width: 110, height: 280 }
 };
 
 const entrance = {
-  x: 1207,
+  x: 1210,
   y: 290,
-  width: 62,
+  width: 70,
   height: 140
 };
 
@@ -1210,53 +1219,130 @@ const CASINO_THEMES = [
 ];
 
 const decorativeTables = [
-  { x: 350, y: 120, radius: 22, color: "#4f2f45" },
-  { x: 870, y: 120, radius: 20, color: "#3f3b59" },
-  { x: 340, y: 622, radius: 22, color: "#4e3b2c" },
-  { x: 870, y: 622, radius: 22, color: "#3a4b63" },
-  { x: 140, y: 362, radius: 21, color: "#5a3a42" },
-  { x: 1152, y: 362, radius: 22, color: "#445254" },
-  { x: 408, y: 248, radius: 20, color: "#3f4a5a" },
-  { x: 874, y: 248, radius: 20, color: "#5a3f3f" },
-  { x: 408, y: 460, radius: 20, color: "#3a5a3a" },
-  { x: 874, y: 460, radius: 20, color: "#4a3a5a" },
-  { x: 640, y: 162, radius: 19, color: "#4a2a4a" },
-  { x: 640, y: 540, radius: 19, color: "#2a4a3a" }
+  { x: 385, y: 115, radius: 22, color: "#4f2f45" },
+  { x: 755, y: 115, radius: 20, color: "#3f3b59" },
+  { x: 385, y: 615, radius: 22, color: "#4e3b2c" },
+  { x: 755, y: 615, radius: 22, color: "#3a4b63" },
+  { x: 148, y: 360, radius: 21, color: "#5a3a42" },
+  { x: 1148, y: 360, radius: 22, color: "#445254" },
+  { x: 445, y: 248, radius: 20, color: "#3f4a5a" },
+  { x: 835, y: 248, radius: 20, color: "#5a3f3f" },
+  { x: 445, y: 472, radius: 20, color: "#3a5a3a" },
+  { x: 835, y: 472, radius: 20, color: "#4a3a5a" },
+  { x: 640, y: 172, radius: 19, color: "#4a2a4a" },
+  { x: 640, y: 548, radius: 19, color: "#2a4a3a" }
 ];
 
 const npcs = [
-  // Staff (8) — white uniforms, each anchored near a specific table/area
-  { x: 460, y: 345, size: 16, vx: 0.3, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#f7ddc2", role: "staff", anchor: { x: 460, y: 345 }, roamRadius: 55 },
-  { x: 810, y: 345, size: 16, vx: -0.3, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#dba88a", role: "staff", anchor: { x: 810, y: 345 }, roamRadius: 55 },
-  { x: 240, y: 290, size: 16, vx: 0.28, vy: -0.22, moodTime: 0, color: "#f0f0fa", skin: "#c47a52", role: "staff", anchor: { x: 240, y: 290 }, roamRadius: 65 },
-  { x: 1088, y: 290, size: 16, vx: -0.28, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#f7ddc2", role: "staff", anchor: { x: 1088, y: 290 }, roamRadius: 65 },
+  // Staff (8) — white uniforms, anchored near tables/bar
+  { x: 455, y: 330, size: 16, vx: 0.3, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#f7ddc2", role: "staff", anchor: { x: 455, y: 330 }, roamRadius: 55 },
+  { x: 825, y: 330, size: 16, vx: -0.3, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#dba88a", role: "staff", anchor: { x: 825, y: 330 }, roamRadius: 55 },
+  { x: 280, y: 240, size: 16, vx: 0.28, vy: -0.22, moodTime: 0, color: "#f0f0fa", skin: "#c47a52", role: "staff", anchor: { x: 280, y: 240 }, roamRadius: 65 },
+  { x: 1015, y: 240, size: 16, vx: -0.28, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#f7ddc2", role: "staff", anchor: { x: 1015, y: 240 }, roamRadius: 65 },
   { x: 640, y: 244, size: 16, vx: 0.25, vy: -0.25, moodTime: 0, color: "#f0f0fa", skin: "#8a5a38", role: "staff", anchor: { x: 640, y: 244 }, roamRadius: 60 },
-  { x: 640, y: 474, size: 16, vx: 0.25, vy: 0.25, moodTime: 0, color: "#f0f0fa", skin: "#dba88a", role: "staff", anchor: { x: 640, y: 474 }, roamRadius: 60 },
-  { x: 360, y: 380, size: 16, vx: -0.28, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#f7ddc2", role: "staff", anchor: { x: 360, y: 380 }, roamRadius: 58 },
-  { x: 920, y: 380, size: 16, vx: 0.28, vy: -0.22, moodTime: 0, color: "#f0f0fa", skin: "#c47a52", role: "staff", anchor: { x: 920, y: 380 }, roamRadius: 58 },
+  { x: 640, y: 475, size: 16, vx: 0.25, vy: 0.25, moodTime: 0, color: "#f0f0fa", skin: "#dba88a", role: "staff", anchor: { x: 640, y: 475 }, roamRadius: 60 },
+  { x: 280, y: 480, size: 16, vx: -0.28, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#f7ddc2", role: "staff", anchor: { x: 280, y: 480 }, roamRadius: 58 },
+  { x: 1015, y: 480, size: 16, vx: 0.28, vy: -0.22, moodTime: 0, color: "#f0f0fa", skin: "#c47a52", role: "staff", anchor: { x: 1015, y: 480 }, roamRadius: 58 },
   // Customers (20) — colourful clothing, roaming the full map
-  { x: 310, y: 115, size: 16, vx: 0.38, vy: 0.28, moodTime: 0, color: "#f7cb6f", skin: "#f7ddc2", role: "customer" },
-  { x: 820, y: 115, size: 16, vx: -0.32, vy: 0.3, moodTime: 0, color: "#95d8ff", skin: "#dba88a", role: "customer" },
-  { x: 310, y: 450, size: 16, vx: -0.28, vy: -0.38, moodTime: 0, color: "#dcb2ff", skin: "#c47a52", role: "customer" },
-  { x: 820, y: 450, size: 16, vx: 0.35, vy: -0.3, moodTime: 0, color: "#ffb8c0", skin: "#f7ddc2", role: "customer" },
-  { x: 90, y: 220, size: 16, vx: 0.3, vy: 0.4, moodTime: 0, color: "#bde3a6", skin: "#8a5a38", role: "customer" },
-  { x: 90, y: 450, size: 16, vx: 0.38, vy: 0.22, moodTime: 0, color: "#ffdb93", skin: "#dba88a", role: "customer" },
-  { x: 1190, y: 220, size: 16, vx: -0.35, vy: 0.3, moodTime: 0, color: "#96f0df", skin: "#f7ddc2", role: "customer" },
-  { x: 1190, y: 450, size: 16, vx: -0.3, vy: 0.35, moodTime: 0, color: "#b8c7ff", skin: "#c47a52", role: "customer" },
-  { x: 950, y: 115, size: 16, vx: -0.38, vy: 0.25, moodTime: 0, color: "#ffd1df", skin: "#f7ddc2", role: "customer" },
-  { x: 300, y: 560, size: 16, vx: 0.32, vy: 0.3, moodTime: 0, color: "#ffe3a1", skin: "#dba88a", role: "customer" },
-  { x: 640, y: 215, size: 16, vx: -0.28, vy: 0.38, moodTime: 0, color: "#abd3f4", skin: "#8a5a38", role: "customer" },
-  { x: 640, y: 475, size: 16, vx: 0.3, vy: 0.32, moodTime: 0, color: "#f0b8d2", skin: "#f7ddc2", role: "customer" },
-  { x: 165, y: 340, size: 16, vx: 0.35, vy: 0.28, moodTime: 0, color: "#c5ef9b", skin: "#dba88a", role: "customer" },
-  { x: 1115, y: 340, size: 16, vx: -0.3, vy: -0.28, moodTime: 0, color: "#f2d1a8", skin: "#c47a52", role: "customer" },
-  { x: 295, y: 60, size: 16, vx: 0.38, vy: -0.32, moodTime: 0, color: "#a6e6ff", skin: "#f7ddc2", role: "customer" },
-  { x: 1190, y: 590, size: 16, vx: -0.3, vy: -0.35, moodTime: 0, color: "#d8c2ff", skin: "#8a5a38", role: "customer" },
-  { x: 400, y: 560, size: 16, vx: 0.28, vy: -0.3, moodTime: 0, color: "#f7c88f", skin: "#dba88a", role: "customer" },
-  { x: 870, y: 560, size: 16, vx: -0.32, vy: -0.28, moodTime: 0, color: "#bceea7", skin: "#f7ddc2", role: "customer" },
-  { x: 380, y: 215, size: 16, vx: -0.3, vy: 0.32, moodTime: 0, color: "#ff9eb0", skin: "#c47a52", role: "customer" },
+  { x: 385, y: 120, size: 16, vx: 0.38, vy: 0.28, moodTime: 0, color: "#f7cb6f", skin: "#f7ddc2", role: "customer" },
+  { x: 750, y: 120, size: 16, vx: -0.32, vy: 0.3, moodTime: 0, color: "#95d8ff", skin: "#dba88a", role: "customer" },
+  { x: 385, y: 470, size: 16, vx: -0.28, vy: -0.38, moodTime: 0, color: "#dcb2ff", skin: "#c47a52", role: "customer" },
+  { x: 750, y: 468, size: 16, vx: 0.35, vy: -0.3, moodTime: 0, color: "#ffb8c0", skin: "#f7ddc2", role: "customer" },
+  { x: 148, y: 170, size: 16, vx: 0.3, vy: 0.4, moodTime: 0, color: "#bde3a6", skin: "#8a5a38", role: "customer" },
+  { x: 148, y: 550, size: 16, vx: 0.38, vy: 0.22, moodTime: 0, color: "#ffdb93", skin: "#dba88a", role: "customer" },
+  { x: 1172, y: 190, size: 16, vx: -0.35, vy: 0.3, moodTime: 0, color: "#96f0df", skin: "#f7ddc2", role: "customer" },
+  { x: 1172, y: 460, size: 16, vx: -0.3, vy: 0.35, moodTime: 0, color: "#b8c7ff", skin: "#c47a52", role: "customer" },
+  { x: 1140, y: 130, size: 16, vx: -0.38, vy: 0.25, moodTime: 0, color: "#ffd1df", skin: "#f7ddc2", role: "customer" },
+  { x: 148, y: 600, size: 16, vx: 0.32, vy: 0.3, moodTime: 0, color: "#ffe3a1", skin: "#dba88a", role: "customer" },
+  { x: 640, y: 220, size: 16, vx: -0.28, vy: 0.38, moodTime: 0, color: "#abd3f4", skin: "#8a5a38", role: "customer" },
+  { x: 655, y: 490, size: 16, vx: 0.3, vy: 0.32, moodTime: 0, color: "#f0b8d2", skin: "#f7ddc2", role: "customer" },
+  { x: 178, y: 360, size: 16, vx: 0.35, vy: 0.28, moodTime: 0, color: "#c5ef9b", skin: "#dba88a", role: "customer" },
+  { x: 1112, y: 355, size: 16, vx: -0.3, vy: -0.28, moodTime: 0, color: "#f2d1a8", skin: "#c47a52", role: "customer" },
+  { x: 320, y: 205, size: 16, vx: 0.38, vy: -0.32, moodTime: 0, color: "#a6e6ff", skin: "#f7ddc2", role: "customer" },
+  { x: 1172, y: 598, size: 16, vx: -0.3, vy: -0.35, moodTime: 0, color: "#d8c2ff", skin: "#8a5a38", role: "customer" },
+  { x: 430, y: 590, size: 16, vx: 0.28, vy: -0.3, moodTime: 0, color: "#f7c88f", skin: "#dba88a", role: "customer" },
+  { x: 870, y: 572, size: 16, vx: -0.32, vy: -0.28, moodTime: 0, color: "#bceea7", skin: "#f7ddc2", role: "customer" },
+  { x: 390, y: 215, size: 16, vx: -0.3, vy: 0.32, moodTime: 0, color: "#ff9eb0", skin: "#c47a52", role: "customer" },
   { x: 870, y: 215, size: 16, vx: 0.3, vy: -0.3, moodTime: 0, color: "#e8d055", skin: "#dba88a", role: "customer" }
 ];
 
+// ── Room system ───────────────────────────────────────────────────────────────
+let currentRoom = "casino"; // "casino" | "lobby" | "backstage"
+
+// Transition zones: player centre must fall inside zone.x/y/width/height
+const ROOM_TRANSITIONS = {
+  casino: [
+    // Right entrance door → hotel lobby
+    { zone: { x: 1218, y: 280, width: 62, height: 150 }, targetRoom: "lobby",     targetX: 100, targetY: 345 },
+    // Top-left wall door (above stage) → backstage
+    { zone: { x: 0,    y: 90,  width: 22, height: 130 }, targetRoom: "backstage", targetX: 1150, targetY: 345 }
+  ],
+  lobby: [
+    // Left wall casino door → casino floor
+    { zone: { x: 0, y: 295, width: 28, height: 130 }, targetRoom: "casino", targetX: 1190, targetY: 345 }
+  ],
+  backstage: [
+    // Right wall stage door → casino floor
+    { zone: { x: 1256, y: 285, width: 24, height: 150 }, targetRoom: "casino", targetX: 38, targetY: 95 }
+  ]
+};
+
+// ── Lobby data ────────────────────────────────────────────────────────────────
+const lobbyObstacles = [
+  { x: 50,  y: 78, width: 148, height: 152 }, // Lift shaft 1
+  { x: 218, y: 78, width: 148, height: 152 }, // Lift shaft 2
+  { x: 380, y: 80, width: 640, height: 80  }, // Check-in desk
+  { x: 530, y: 240, width: 220, height: 178 }, // Fountain basin
+  { x: 80,  y: 325, width: 210, height: 195 }, // Left sofa group
+  { x: 860, y: 325, width: 210, height: 195 }, // Right sofa group
+  { x: 465, y: 382, width: 90,  height: 68  }, // Coffee table L
+  { x: 725, y: 382, width: 90,  height: 68  }, // Coffee table R
+  { x: 1050, y: 80, width: 150, height: 150 }, // Concierge desk
+];
+
+const lobbyInteractables = [
+  { id: "elevator", name: "Hotel Lifts",     label: "Take Lift",  hitbox: { x: 50,  y: 78, width: 316, height: 152 } },
+  { id: "checkin",  name: "Check-in Desk",   label: "Check In",   hitbox: { x: 380, y: 80, width: 640, height: 80  } }
+];
+
+const lobbyNpcs = [
+  // Receptionists anchored behind desk
+  { x: 490, y: 162, size: 16, vx: 0.12, vy: 0.08, moodTime: 0, color: "#eeeef8", skin: "#f7ddc2", role: "staff", anchor: { x: 490, y: 162 }, roamRadius: 52 },
+  { x: 640, y: 162, size: 16, vx: -0.12, vy: 0.08, moodTime: 0, color: "#eeeef8", skin: "#dba88a", role: "staff", anchor: { x: 640, y: 162 }, roamRadius: 52 },
+  { x: 800, y: 162, size: 16, vx: 0.14, vy: 0.1,  moodTime: 0, color: "#eeeef8", skin: "#c47a52", role: "staff", anchor: { x: 800, y: 162 }, roamRadius: 52 },
+  // Concierge near desk
+  { x: 1090, y: 185, size: 16, vx: 0.18, vy: 0.14, moodTime: 0, color: "#d4a84a", skin: "#f7ddc2", role: "staff", anchor: { x: 1090, y: 185 }, roamRadius: 42 },
+  // Guests walking around
+  { x: 240, y: 420, size: 16, vx: 0.3,  vy: 0.22, moodTime: 0, color: "#ff9dac", skin: "#f7ddc2", role: "customer" },
+  { x: 660, y: 525, size: 16, vx: -0.28, vy: 0.2, moodTime: 0, color: "#95d8ff", skin: "#dba88a", role: "customer" },
+  { x: 880, y: 445, size: 16, vx: 0.22, vy: -0.28, moodTime: 0, color: "#dcb2ff", skin: "#c47a52", role: "customer" },
+  { x: 450, y: 595, size: 16, vx: 0.28, vy: -0.2, moodTime: 0, color: "#f7cb6f", skin: "#dba88a", role: "customer" },
+  { x: 785, y: 315, size: 16, vx: 0.2,  vy: 0.28, moodTime: 0, color: "#bde3a6", skin: "#8a5a38", role: "customer" },
+  { x: 1025, y: 580, size: 16, vx: -0.25, vy: -0.2, moodTime: 0, color: "#ffb8c0", skin: "#f7ddc2", role: "customer" }
+];
+
+// ── Backstage data ────────────────────────────────────────────────────────────
+const backstageObstacles = [
+  { x: 50,  y: 80,  width: 290, height: 100 }, // Dressing tables left
+  { x: 420, y: 80,  width: 290, height: 100 }, // Dressing tables right
+  { x: 780, y: 80,  width: 320, height: 100 }, // Equipment rack
+  { x: 50,  y: 335, width: 260, height: 160 }, // Break area sofa
+  { x: 650, y: 335, width: 220, height: 130 }, // Mixing desk
+  { x: 960, y: 255, width: 240, height: 170 }, // Storage boxes
+  { x: 1090, y: 80, width: 150, height: 160 }, // Amp stack
+];
+
+const backstageNpcs = [
+  // Stage techs near equipment
+  { x: 885, y: 145, size: 16, vx: 0.18, vy: 0.12, moodTime: 0, color: "#333344", skin: "#f7ddc2", role: "staff", anchor: { x: 885, y: 145 }, roamRadius: 65 },
+  { x: 980, y: 150, size: 16, vx: -0.2, vy: 0.14, moodTime: 0, color: "#2a2a3a", skin: "#dba88a", role: "staff", anchor: { x: 980, y: 150 }, roamRadius: 65 },
+  // Performers at dressing tables
+  { x: 145, y: 155, size: 16, vx: 0.14, vy: 0.1,  moodTime: 0, color: "#ff9dac", skin: "#c47a52", role: "customer", anchor: { x: 145, y: 155 }, roamRadius: 46 },
+  { x: 440, y: 158, size: 16, vx: -0.14, vy: 0.1, moodTime: 0, color: "#a0d8ff", skin: "#8a5a38", role: "customer", anchor: { x: 440, y: 158 }, roamRadius: 46 },
+  // Crew in break area
+  { x: 185, y: 435, size: 16, vx: 0.22, vy: 0.18, moodTime: 0, color: "#889099", skin: "#f7ddc2", role: "staff", anchor: { x: 185, y: 435 }, roamRadius: 72 },
+  { x: 270, y: 460, size: 16, vx: -0.18, vy: 0.22, moodTime: 0, color: "#667788", skin: "#dba88a", role: "staff", anchor: { x: 270, y: 460 }, roamRadius: 72 }
+];
 
 const keyState = {
   ArrowUp: false,
