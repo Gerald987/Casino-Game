@@ -55,6 +55,9 @@ const joystickThumb = document.getElementById("joystickThumb");
 
 const WIDTH = canvas.width;
 const HEIGHT = canvas.height;
+const ZOOM = 2;
+const STAFF_MAX_SPEED = 0.42;
+const CUSTOMER_MAX_SPEED = 0.5;
 const INTERACT_KEY = "e";
 const INTERACT_KEY_TEXT = INTERACT_KEY.toUpperCase();
 
@@ -149,6 +152,21 @@ const centerBar = {
     width: 300,
     height: 154
   }
+};
+
+const performanceStage = {
+  x: 14,
+  y: 210,
+  width: 62,
+  height: 300,
+  hitbox: { x: 14, y: 210, width: 62, height: 300 }
+};
+
+const entrance = {
+  x: 1207,
+  y: 290,
+  width: 62,
+  height: 140
 };
 
 const backgroundLightSources = [
@@ -1207,37 +1225,38 @@ const decorativeTables = [
 ];
 
 const npcs = [
-  // Staff (8) — white uniforms, scattered near bar and tables
-  { x: 478, y: 342, size: 16, vx: 0.4, vy: 0.3, moodTime: 0, color: "#f0f0fa", skin: "#f7ddc2", role: "staff" },
-  { x: 802, y: 342, size: 16, vx: -0.4, vy: 0.3, moodTime: 0, color: "#f0f0fa", skin: "#dba88a", role: "staff" },
-  { x: 206, y: 342, size: 16, vx: 0.5, vy: -0.3, moodTime: 0, color: "#f0f0fa", skin: "#c47a52", role: "staff" },
-  { x: 1088, y: 342, size: 16, vx: -0.5, vy: 0.3, moodTime: 0, color: "#f0f0fa", skin: "#f7ddc2", role: "staff" },
-  { x: 640, y: 244, size: 16, vx: 0.4, vy: -0.4, moodTime: 0, color: "#f0f0fa", skin: "#8a5a38", role: "staff" },
-  { x: 640, y: 474, size: 16, vx: 0.4, vy: 0.4, moodTime: 0, color: "#f0f0fa", skin: "#dba88a", role: "staff" },
-  { x: 350, y: 380, size: 16, vx: -0.4, vy: 0.3, moodTime: 0, color: "#f0f0fa", skin: "#f7ddc2", role: "staff" },
-  { x: 930, y: 380, size: 16, vx: 0.4, vy: -0.3, moodTime: 0, color: "#f0f0fa", skin: "#c47a52", role: "staff" },
-  // Customers (20) — colourful clothing, wandering
-  { x: 86, y: 78, size: 16, vx: 0.7, vy: 0.5, moodTime: 0, color: "#f7cb6f", skin: "#f7ddc2", role: "customer" },
-  { x: 1196, y: 90, size: 16, vx: -0.6, vy: 0.4, moodTime: 0, color: "#95d8ff", skin: "#dba88a", role: "customer" },
-  { x: 1188, y: 612, size: 16, vx: -0.5, vy: -0.6, moodTime: 0, color: "#dcb2ff", skin: "#c47a52", role: "customer" },
-  { x: 72, y: 604, size: 16, vx: 0.55, vy: -0.45, moodTime: 0, color: "#ffb8c0", skin: "#f7ddc2", role: "customer" },
-  { x: 456, y: 418, size: 16, vx: 0.45, vy: 0.65, moodTime: 0, color: "#bde3a6", skin: "#8a5a38", role: "customer" },
-  { x: 160, y: 82, size: 16, vx: 0.62, vy: 0.34, moodTime: 0, color: "#ffdb93", skin: "#dba88a", role: "customer" },
-  { x: 420, y: 70, size: 16, vx: -0.58, vy: 0.42, moodTime: 0, color: "#96f0df", skin: "#f7ddc2", role: "customer" },
-  { x: 720, y: 68, size: 16, vx: 0.4, vy: 0.58, moodTime: 0, color: "#b8c7ff", skin: "#c47a52", role: "customer" },
-  { x: 870, y: 88, size: 16, vx: -0.65, vy: 0.3, moodTime: 0, color: "#ffd1df", skin: "#f7ddc2", role: "customer" },
-  { x: 1108, y: 88, size: 16, vx: 0.52, vy: 0.46, moodTime: 0, color: "#ffe3a1", skin: "#dba88a", role: "customer" },
-  { x: 726, y: 328, size: 16, vx: -0.42, vy: 0.68, moodTime: 0, color: "#abd3f4", skin: "#8a5a38", role: "customer" },
-  { x: 1144, y: 328, size: 16, vx: -0.5, vy: 0.5, moodTime: 0, color: "#f0b8d2", skin: "#f7ddc2", role: "customer" },
-  { x: 1140, y: 456, size: 16, vx: -0.56, vy: 0.38, moodTime: 0, color: "#c5ef9b", skin: "#dba88a", role: "customer" },
-  { x: 90, y: 362, size: 16, vx: 0.6, vy: -0.36, moodTime: 0, color: "#f2d1a8", skin: "#c47a52", role: "customer" },
-  { x: 145, y: 460, size: 16, vx: 0.48, vy: -0.52, moodTime: 0, color: "#a6e6ff", skin: "#f7ddc2", role: "customer" },
-  { x: 700, y: 626, size: 16, vx: -0.6, vy: -0.44, moodTime: 0, color: "#d8c2ff", skin: "#8a5a38", role: "customer" },
-  { x: 900, y: 628, size: 16, vx: 0.54, vy: -0.41, moodTime: 0, color: "#f7c88f", skin: "#dba88a", role: "customer" },
-  { x: 1000, y: 610, size: 16, vx: -0.58, vy: -0.38, moodTime: 0, color: "#bceea7", skin: "#f7ddc2", role: "customer" },
-  { x: 348, y: 418, size: 16, vx: 0.5, vy: -0.4, moodTime: 0, color: "#ff9eb0", skin: "#c47a52", role: "customer" },
-  { x: 470, y: 180, size: 16, vx: -0.5, vy: 0.5, moodTime: 0, color: "#e8d055", skin: "#dba88a", role: "customer" }
+  // Staff (8) — white uniforms, each anchored near a specific table/area
+  { x: 460, y: 345, size: 16, vx: 0.3, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#f7ddc2", role: "staff", anchor: { x: 460, y: 345 }, roamRadius: 55 },
+  { x: 810, y: 345, size: 16, vx: -0.3, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#dba88a", role: "staff", anchor: { x: 810, y: 345 }, roamRadius: 55 },
+  { x: 240, y: 290, size: 16, vx: 0.28, vy: -0.22, moodTime: 0, color: "#f0f0fa", skin: "#c47a52", role: "staff", anchor: { x: 240, y: 290 }, roamRadius: 65 },
+  { x: 1088, y: 290, size: 16, vx: -0.28, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#f7ddc2", role: "staff", anchor: { x: 1088, y: 290 }, roamRadius: 65 },
+  { x: 640, y: 244, size: 16, vx: 0.25, vy: -0.25, moodTime: 0, color: "#f0f0fa", skin: "#8a5a38", role: "staff", anchor: { x: 640, y: 244 }, roamRadius: 60 },
+  { x: 640, y: 474, size: 16, vx: 0.25, vy: 0.25, moodTime: 0, color: "#f0f0fa", skin: "#dba88a", role: "staff", anchor: { x: 640, y: 474 }, roamRadius: 60 },
+  { x: 360, y: 380, size: 16, vx: -0.28, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#f7ddc2", role: "staff", anchor: { x: 360, y: 380 }, roamRadius: 58 },
+  { x: 920, y: 380, size: 16, vx: 0.28, vy: -0.22, moodTime: 0, color: "#f0f0fa", skin: "#c47a52", role: "staff", anchor: { x: 920, y: 380 }, roamRadius: 58 },
+  // Customers (20) — colourful clothing, roaming the full map
+  { x: 310, y: 115, size: 16, vx: 0.38, vy: 0.28, moodTime: 0, color: "#f7cb6f", skin: "#f7ddc2", role: "customer" },
+  { x: 820, y: 115, size: 16, vx: -0.32, vy: 0.3, moodTime: 0, color: "#95d8ff", skin: "#dba88a", role: "customer" },
+  { x: 310, y: 450, size: 16, vx: -0.28, vy: -0.38, moodTime: 0, color: "#dcb2ff", skin: "#c47a52", role: "customer" },
+  { x: 820, y: 450, size: 16, vx: 0.35, vy: -0.3, moodTime: 0, color: "#ffb8c0", skin: "#f7ddc2", role: "customer" },
+  { x: 90, y: 220, size: 16, vx: 0.3, vy: 0.4, moodTime: 0, color: "#bde3a6", skin: "#8a5a38", role: "customer" },
+  { x: 90, y: 450, size: 16, vx: 0.38, vy: 0.22, moodTime: 0, color: "#ffdb93", skin: "#dba88a", role: "customer" },
+  { x: 1190, y: 220, size: 16, vx: -0.35, vy: 0.3, moodTime: 0, color: "#96f0df", skin: "#f7ddc2", role: "customer" },
+  { x: 1190, y: 450, size: 16, vx: -0.3, vy: 0.35, moodTime: 0, color: "#b8c7ff", skin: "#c47a52", role: "customer" },
+  { x: 950, y: 115, size: 16, vx: -0.38, vy: 0.25, moodTime: 0, color: "#ffd1df", skin: "#f7ddc2", role: "customer" },
+  { x: 300, y: 560, size: 16, vx: 0.32, vy: 0.3, moodTime: 0, color: "#ffe3a1", skin: "#dba88a", role: "customer" },
+  { x: 640, y: 215, size: 16, vx: -0.28, vy: 0.38, moodTime: 0, color: "#abd3f4", skin: "#8a5a38", role: "customer" },
+  { x: 640, y: 475, size: 16, vx: 0.3, vy: 0.32, moodTime: 0, color: "#f0b8d2", skin: "#f7ddc2", role: "customer" },
+  { x: 165, y: 340, size: 16, vx: 0.35, vy: 0.28, moodTime: 0, color: "#c5ef9b", skin: "#dba88a", role: "customer" },
+  { x: 1115, y: 340, size: 16, vx: -0.3, vy: -0.28, moodTime: 0, color: "#f2d1a8", skin: "#c47a52", role: "customer" },
+  { x: 295, y: 60, size: 16, vx: 0.38, vy: -0.32, moodTime: 0, color: "#a6e6ff", skin: "#f7ddc2", role: "customer" },
+  { x: 1190, y: 590, size: 16, vx: -0.3, vy: -0.35, moodTime: 0, color: "#d8c2ff", skin: "#8a5a38", role: "customer" },
+  { x: 400, y: 560, size: 16, vx: 0.28, vy: -0.3, moodTime: 0, color: "#f7c88f", skin: "#dba88a", role: "customer" },
+  { x: 870, y: 560, size: 16, vx: -0.32, vy: -0.28, moodTime: 0, color: "#bceea7", skin: "#f7ddc2", role: "customer" },
+  { x: 380, y: 215, size: 16, vx: -0.3, vy: 0.32, moodTime: 0, color: "#ff9eb0", skin: "#c47a52", role: "customer" },
+  { x: 870, y: 215, size: 16, vx: 0.3, vy: -0.3, moodTime: 0, color: "#e8d055", skin: "#dba88a", role: "customer" }
 ];
+
 
 const keyState = {
   ArrowUp: false,
@@ -1419,6 +1438,7 @@ function rectIntersectsCircle(rect, cx, cy, radius) {
 function collidesWithWorldRect(rect, options = {}) {
   const ignoreNpcIndex = options.ignoreNpcIndex ?? -1;
   const includePlayer = options.includePlayer ?? false;
+  const skipNpcs = options.skipNpcs ?? false;
 
   for (const table of tables) {
     if (intersectsRect(rect, table.hitbox)) {
@@ -1430,20 +1450,26 @@ function collidesWithWorldRect(rect, options = {}) {
     return true;
   }
 
+  if (intersectsRect(rect, performanceStage.hitbox)) {
+    return true;
+  }
+
   for (const deco of decorativeTables) {
     if (rectIntersectsCircle(rect, deco.x, deco.y, deco.radius + 2)) {
       return true;
     }
   }
 
-  for (let i = 0; i < npcs.length; i += 1) {
-    if (i === ignoreNpcIndex) {
-      continue;
-    }
-    const npc = npcs[i];
-    const npcRect = { x: npc.x, y: npc.y, width: npc.size, height: npc.size };
-    if (intersectsRect(rect, npcRect)) {
-      return true;
+  if (!skipNpcs) {
+    for (let i = 0; i < npcs.length; i += 1) {
+      if (i === ignoreNpcIndex) {
+        continue;
+      }
+      const npc = npcs[i];
+      const npcRect = { x: npc.x, y: npc.y, width: npc.size, height: npc.size };
+      if (intersectsRect(rect, npcRect)) {
+        return true;
+      }
     }
   }
 
@@ -3140,14 +3166,129 @@ function drawCenterBar() {
   ctx.fillText("BAR", cx, centerBar.y + centerBar.height - 12);
 }
 
+function drawPerformanceStage() {
+  const sx = performanceStage.x;
+  const sy = performanceStage.y;
+  const sw = performanceStage.width;
+  const sh = performanceStage.height;
+  const cx = sx + sw / 2;
+
+  // Shadow
+  fillRoundedRect(sx + 4, sy + 6, sw, sh, 8, "rgba(0,0,0,0.38)");
+  // Wooden floor boards
+  fillRoundedRect(sx, sy, sw, sh, 8, "#3a2010");
+  ctx.fillStyle = "rgba(255,200,140,0.06)";
+  for (let i = 0; i < 6; i += 2) {
+    ctx.fillRect(sx + 2, sy + i * (sh / 6), sw - 4, sh / 6);
+  }
+  // Gold edge trim
+  strokeRoundedRect(sx, sy, sw, sh, 8, "rgba(255,215,100,0.72)", 2);
+  fillRoundedRect(sx, sy, sw, 6, 4, "rgba(255,215,100,0.5)");
+
+  // LED dots along bottom edge
+  const ledColors = ["#ff4466", "#ff9900", "#ffff44", "#44ff88", "#44aaff", "#aa44ff", "#ff44cc", "#ff8833"];
+  for (let i = 0; i < 8; i += 1) {
+    const lx = sx + 6 + i * ((sw - 12) / 7);
+    fillCircle(lx, sy + sh - 6, 3, ledColors[i]);
+  }
+
+  // Microphone stand
+  ctx.save();
+  ctx.strokeStyle = "#b0b0b0";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(cx, sy + sh * 0.76);
+  ctx.lineTo(cx, sy + sh * 0.44);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx - 9, sy + sh * 0.76);
+  ctx.lineTo(cx + 9, sy + sh * 0.76);
+  ctx.stroke();
+  ctx.restore();
+  fillCircle(cx, sy + sh * 0.40, 6, "#777");
+  strokeCircle(cx, sy + sh * 0.40, 6, "#ccc", 1);
+
+  // Spotlight beam
+  ctx.save();
+  ctx.globalAlpha = 0.07;
+  const beamGrad = ctx.createLinearGradient(cx, sy - 50, cx, sy + 30);
+  beamGrad.addColorStop(0, "#ffffff");
+  beamGrad.addColorStop(1, "rgba(255,255,200,0)");
+  ctx.fillStyle = beamGrad;
+  ctx.beginPath();
+  ctx.moveTo(cx - 28, sy - 50);
+  ctx.lineTo(cx - 10, sy);
+  ctx.lineTo(cx + 10, sy);
+  ctx.lineTo(cx + 28, sy - 50);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+
+  ctx.fillStyle = "rgba(255,220,120,0.9)";
+  ctx.font = "bold 9px Segoe UI";
+  ctx.textAlign = "center";
+  ctx.fillText("STAGE", cx, sy + sh - 14);
+}
+
+function drawEntrance() {
+  const ex = entrance.x;
+  const ey = entrance.y;
+  const ew = entrance.width;
+  const eh = entrance.height;
+  const cx = ex + ew / 2;
+  const cy = ey + eh / 2;
+
+  // Door frame
+  fillRoundedRect(ex, ey, ew, eh, 6, "#1a1020");
+  strokeRoundedRect(ex, ey, ew, eh, 6, "rgba(255,215,100,0.65)", 3);
+
+  // Two door panels
+  const panelW = ew / 2 - 5;
+  fillRoundedRect(ex + 4, ey + 8, panelW, eh - 16, 4, "#2a1828");
+  fillRoundedRect(ex + ew / 2 + 1, ey + 8, panelW, eh - 16, 4, "#2a1828");
+  strokeRoundedRect(ex + 4, ey + 8, panelW, eh - 16, 4, "rgba(255,200,100,0.3)", 1);
+  strokeRoundedRect(ex + ew / 2 + 1, ey + 8, panelW, eh - 16, 4, "rgba(255,200,100,0.3)", 1);
+
+  // Door handles
+  fillCircle(ex + ew / 2 - 4, cy, 4, "#d4a840");
+  fillCircle(ex + ew / 2 + 4, cy, 4, "#d4a840");
+
+  // Neon EXIT sign above door
+  ctx.save();
+  ctx.shadowColor = "#ff3333";
+  ctx.shadowBlur = 12;
+  ctx.fillStyle = "#ff5555";
+  ctx.font = "bold 11px Segoe UI";
+  ctx.textAlign = "center";
+  ctx.fillText("EXIT", cx, ey - 6);
+  ctx.shadowBlur = 0;
+  ctx.restore();
+
+  // Arrow pointing right (→)
+  ctx.save();
+  ctx.strokeStyle = "rgba(255,140,140,0.72)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(cx - 10, cy + 26);
+  ctx.lineTo(cx + 10, cy + 26);
+  ctx.lineTo(cx + 5, cy + 20);
+  ctx.moveTo(cx + 10, cy + 26);
+  ctx.lineTo(cx + 5, cy + 32);
+  ctx.stroke();
+  ctx.restore();
+}
+
 function updateNpcs() {
   for (let i = 0; i < npcs.length; i += 1) {
     const npc = npcs[i];
     npc.moodTime -= 1;
     if (npc.moodTime <= 0) {
-      npc.vx = randomFloat(-0.9, 0.9);
-      npc.vy = randomFloat(-0.9, 0.9);
-      npc.moodTime = 30 + Math.floor(Math.random() * 100);
+      const maxSpeed = npc.role === "staff" ? STAFF_MAX_SPEED : CUSTOMER_MAX_SPEED;
+      npc.vx = randomFloat(-maxSpeed, maxSpeed);
+      npc.vy = randomFloat(-maxSpeed, maxSpeed);
+      npc.moodTime = npc.role === "customer"
+        ? 200 + Math.floor(Math.random() * 300)
+        : 60 + Math.floor(Math.random() * 80);
     }
 
     let nextX = npc.x + npc.vx;
@@ -3160,6 +3301,18 @@ function updateNpcs() {
     if (nextY < 10 || nextY > HEIGHT - npc.size - 10) {
       npc.vy *= -1;
       nextY = npc.y + npc.vy;
+    }
+
+    if (npc.anchor) {
+      const dist = Math.hypot(nextX + npc.size / 2 - npc.anchor.x, nextY + npc.size / 2 - npc.anchor.y);
+      if (dist > npc.roamRadius) {
+        const angle = Math.atan2(npc.anchor.y - (npc.y + npc.size / 2), npc.anchor.x - (npc.x + npc.size / 2));
+        const speed = Math.hypot(npc.vx, npc.vy) || STAFF_MAX_SPEED * 0.5;
+        npc.vx = Math.cos(angle) * speed;
+        npc.vy = Math.sin(angle) * speed;
+        nextX = npc.x + npc.vx;
+        nextY = npc.y + npc.vy;
+      }
     }
 
     const npcRect = { x: nextX, y: nextY, width: npc.size, height: npc.size };
@@ -3413,12 +3566,12 @@ function updatePlayerPosition() {
   }
 
   const nextX = clamp(player.x + dx, 0, WIDTH - player.size);
-  if (!collidesWithWorldRect({ x: nextX, y: player.y, width: player.size, height: player.size })) {
+  if (!collidesWithWorldRect({ x: nextX, y: player.y, width: player.size, height: player.size }, { skipNpcs: true })) {
     player.x = nextX;
   }
 
   const nextY = clamp(player.y + dy, 0, HEIGHT - player.size);
-  if (!collidesWithWorldRect({ x: player.x, y: nextY, width: player.size, height: player.size })) {
+  if (!collidesWithWorldRect({ x: player.x, y: nextY, width: player.size, height: player.size }, { skipNpcs: true })) {
     player.y = nextY;
   }
 }
@@ -3428,7 +3581,18 @@ function gameLoop() {
   updateNpcs();
   resolveNearbyTable();
 
+  const viewW = WIDTH / ZOOM;
+  const viewH = HEIGHT / ZOOM;
+  const camX = clamp(player.x + player.size / 2 - viewW / 2, 0, WIDTH - viewW);
+  const camY = clamp(player.y + player.size / 2 - viewH / 2, 0, HEIGHT - viewH);
+
+  ctx.save();
+  ctx.scale(ZOOM, ZOOM);
+  ctx.translate(-camX, -camY);
+
   drawBackground();
+  drawPerformanceStage();
+  drawEntrance();
   drawDecorativeTables();
   drawCenterBar();
 
@@ -3438,6 +3602,9 @@ function gameLoop() {
 
   drawNpcs();
   drawPlayer();
+
+  ctx.restore();
+
   drawPrompt();
 
   requestAnimationFrame(gameLoop);
