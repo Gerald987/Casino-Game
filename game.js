@@ -3558,15 +3558,15 @@ function updateResponsivePanelScale() {
 
   let panelScale = 1;
   if (isLandscape && isMobileish) {
-    const widthScale = viewportWidth / 1280;
-    const heightScale = viewportHeight / 720;
+    const widthScale = viewportWidth / WIDTH;
+    const heightScale = viewportHeight / HEIGHT;
     panelScale = clamp(Math.min(widthScale, heightScale), 0.55, 1);
   }
 
   const reservedHeight = isDesktopLayout ? 220 : 250;
   const fitWidthFromHeight = Math.max(600, (viewportHeight - reservedHeight) * (WIDTH / HEIGHT));
   const fitWidthFromViewport = viewportWidth * 0.96;
-  const appMaxWidth = clamp(Math.min(1280, fitWidthFromHeight, fitWidthFromViewport), 600, 1280);
+  const appMaxWidth = clamp(Math.min(WIDTH, fitWidthFromHeight, fitWidthFromViewport), 600, WIDTH);
 
   document.documentElement.style.setProperty("--panel-ui-scale", panelScale.toFixed(3));
   document.documentElement.style.setProperty("--app-max-width", `${appMaxWidth.toFixed(0)}px`);
