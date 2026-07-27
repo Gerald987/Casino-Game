@@ -28,7 +28,7 @@
     </header>
 
     <main class="game-shell">
-      <canvas id="gameCanvas" width="960" height="576"></canvas>
+      <canvas id="gameCanvas" width="1280" height="720"></canvas>
       <div class="help">Move: WASD / Arrow Keys or joystick | Interact: E or tap the map near a game | Close menu: Esc</div>
       <div class="mobile-joystick" id="mobileJoystick" aria-label="Movement joystick">
         <div class="joystick-base" id="joystickBase">
@@ -163,19 +163,77 @@
       <p class="payout-guide">Hold'em rounds: preflop, flop, turn, river. Every round allows call, raise, check, or fold.</p>
     </div>
 
-    <div id="barPanel" class="panel hidden" role="dialog" aria-modal="true">
-      <h2>Center Bar</h2>
-      <p>Grab free drinks from the bartender.</p>
-      <div class="bar-offer">
-        <div class="bar-offer-name" id="barDrinkName">Signature Drink</div>
+    <div id="coinFlipPanel" class="panel hidden" role="dialog" aria-modal="true">
+      <h2>Coin Flip Table</h2>
+      <p>Simple 50/50. Pick heads or tails and win double your bet.</p>
+      <div class="coin-flip-visual">
+        <span id="coinEl" class="coin">🪙</span>
+        <div id="coinFlipStatus" class="spin-status">Ready to flip</div>
+      </div>
+      <div class="row">
+        <label for="coinBet">Bet:</label>
+        <input id="coinBet" type="number" min="1" value="10" />
+      </div>
+      <div class="coin-choice-row">
+        <button id="coinHeadsBtn" class="toggle-btn active">Heads</button>
+        <button id="coinTailsBtn" class="toggle-btn">Tails</button>
       </div>
       <div class="actions">
-        <button id="refreshDrinkBtn" class="ghost">New Offer</button>
-        <button id="buyDrinkBtn">Get Free Drink</button>
+        <button id="flipCoinBtn">Flip Coin</button>
+        <button class="ghost" data-close-panel>Leave Table</button>
+      </div>
+      <p id="coinFlipResult" class="result"></p>
+      <p class="payout-guide">Heads or Tails wins 2x total. Pure 50/50 odds.</p>
+    </div>
+
+    <div id="baccaratPanel" class="panel hidden" role="dialog" aria-modal="true">
+      <h2>Baccarat Table</h2>
+      <p>Bet on Player, Banker, or Tie. Highest hand (mod 10) wins.</p>
+      <div class="card-board blackjack-board">
+        <div class="card-lane-title">Banker</div>
+        <div id="bankerBaccaratCards" class="card-lane"></div>
+        <div class="card-lane-title">Player</div>
+        <div id="playerBaccaratCards" class="card-lane"></div>
+      </div>
+      <div class="row">
+        <label for="baccaratBet">Bet:</label>
+        <input id="baccaratBet" type="number" min="1" value="10" />
+      </div>
+      <div class="row">
+        <label for="baccaratChoice">Bet on:</label>
+        <select id="baccaratChoice">
+          <option value="player">Player (1:1)</option>
+          <option value="banker">Banker (0.95:1)</option>
+          <option value="tie">Tie (8:1)</option>
+        </select>
+      </div>
+      <div class="actions">
+        <button id="dealBaccaratBtn">Deal Hand</button>
+        <button class="ghost" data-close-panel>Leave Table</button>
+      </div>
+      <p id="baccaratHands" class="result"></p>
+      <p id="baccaratResult" class="result"></p>
+      <p class="payout-guide">Player wins 2x total. Banker wins 1.95x total (5% commission). Tie pays 9x total. Natural 8 or 9 beats all.</p>
+    </div>
+
+    <div id="barPanel" class="panel hidden" role="dialog" aria-modal="true">
+      <h2>Center Bar</h2>
+      <p>Pick a drink from the shelf — each one repaints the casino.</p>
+      <div class="bar-shelf-container">
+        <div class="shelf-plank top-plank"></div>
+        <div class="shelf-drinks" id="barShelf"></div>
+        <div class="shelf-plank bottom-plank"></div>
+      </div>
+      <div class="bar-offer">
+        <div class="bar-offer-name" id="barDrinkName">Signature Drink</div>
+        <div class="bar-offer-meta" id="barThemeName"></div>
+      </div>
+      <div class="actions">
+        <button id="buyDrinkBtn">Surprise Drink</button>
         <button class="ghost" data-close-panel>Leave Bar</button>
       </div>
       <p id="barResult" class="result"></p>
-      <p class="payout-guide">Drinks are free and for flavor only.</p>
+      <p class="payout-guide">Drinks are free and change the casino colour theme.</p>
     </div>
   </section>
 
