@@ -56,6 +56,8 @@ const joystickThumb = document.getElementById("joystickThumb");
 const WIDTH = canvas.width;
 const HEIGHT = canvas.height;
 const ZOOM = 2;
+const STAFF_MAX_SPEED = 0.42;
+const CUSTOMER_MAX_SPEED = 0.5;
 const INTERACT_KEY = "e";
 const INTERACT_KEY_TEXT = INTERACT_KEY.toUpperCase();
 
@@ -1224,10 +1226,10 @@ const decorativeTables = [
 
 const npcs = [
   // Staff (8) — white uniforms, each anchored near a specific table/area
-  { x: 460, y: 345, size: 16, vx: 0.3, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#f7ddc2", role: "staff", anchor: { x: 452, y: 345 }, roamRadius: 55 },
-  { x: 810, y: 345, size: 16, vx: -0.3, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#dba88a", role: "staff", anchor: { x: 815, y: 345 }, roamRadius: 55 },
-  { x: 240, y: 290, size: 16, vx: 0.28, vy: -0.22, moodTime: 0, color: "#f0f0fa", skin: "#c47a52", role: "staff", anchor: { x: 240, y: 285 }, roamRadius: 65 },
-  { x: 1088, y: 290, size: 16, vx: -0.28, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#f7ddc2", role: "staff", anchor: { x: 1088, y: 285 }, roamRadius: 65 },
+  { x: 460, y: 345, size: 16, vx: 0.3, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#f7ddc2", role: "staff", anchor: { x: 460, y: 345 }, roamRadius: 55 },
+  { x: 810, y: 345, size: 16, vx: -0.3, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#dba88a", role: "staff", anchor: { x: 810, y: 345 }, roamRadius: 55 },
+  { x: 240, y: 290, size: 16, vx: 0.28, vy: -0.22, moodTime: 0, color: "#f0f0fa", skin: "#c47a52", role: "staff", anchor: { x: 240, y: 290 }, roamRadius: 65 },
+  { x: 1088, y: 290, size: 16, vx: -0.28, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#f7ddc2", role: "staff", anchor: { x: 1088, y: 290 }, roamRadius: 65 },
   { x: 640, y: 244, size: 16, vx: 0.25, vy: -0.25, moodTime: 0, color: "#f0f0fa", skin: "#8a5a38", role: "staff", anchor: { x: 640, y: 244 }, roamRadius: 60 },
   { x: 640, y: 474, size: 16, vx: 0.25, vy: 0.25, moodTime: 0, color: "#f0f0fa", skin: "#dba88a", role: "staff", anchor: { x: 640, y: 474 }, roamRadius: 60 },
   { x: 360, y: 380, size: 16, vx: -0.28, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#f7ddc2", role: "staff", anchor: { x: 360, y: 380 }, roamRadius: 58 },
@@ -3184,7 +3186,7 @@ function drawPerformanceStage() {
   fillRoundedRect(sx, sy, sw, 6, 4, "rgba(255,215,100,0.5)");
 
   // LED dots along bottom edge
-  const ledColors = ["#ff4466", "#ff9900", "#ffff44", "#44ff88", "#44aaff", "#aa44ff", "#ff44cc", "#ff4466"];
+  const ledColors = ["#ff4466", "#ff9900", "#ffff44", "#44ff88", "#44aaff", "#aa44ff", "#ff44cc", "#ff8833"];
   for (let i = 0; i < 8; i += 1) {
     const lx = sx + 6 + i * ((sw - 12) / 7);
     fillCircle(lx, sy + sh - 6, 3, ledColors[i]);
@@ -3281,7 +3283,7 @@ function updateNpcs() {
     const npc = npcs[i];
     npc.moodTime -= 1;
     if (npc.moodTime <= 0) {
-      const maxSpeed = npc.role === "staff" ? 0.42 : 0.5;
+      const maxSpeed = npc.role === "staff" ? STAFF_MAX_SPEED : CUSTOMER_MAX_SPEED;
       npc.vx = randomFloat(-maxSpeed, maxSpeed);
       npc.vy = randomFloat(-maxSpeed, maxSpeed);
       npc.moodTime = npc.role === "customer"
@@ -3304,8 +3306,10 @@ function updateNpcs() {
     if (npc.anchor) {
       const dist = Math.hypot(nextX + npc.size / 2 - npc.anchor.x, nextY + npc.size / 2 - npc.anchor.y);
       if (dist > npc.roamRadius) {
-        npc.vx *= -1;
-        npc.vy *= -1;
+        const angle = Math.atan2(npc.anchor.y - (npc.y + npc.size / 2), npc.anchor.x - (npc.x + npc.size / 2));
+        const speed = Math.hypot(npc.vx, npc.vy) || STAFF_MAX_SPEED * 0.5;
+        npc.vx = Math.cos(angle) * speed;
+        npc.vy = Math.sin(angle) * speed;
         nextX = npc.x + npc.vx;
         nextY = npc.y + npc.vy;
       }
