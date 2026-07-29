@@ -3880,13 +3880,18 @@ function updateNpcList(npcList, obstacles) {
 
     const npcRect = { x: nextX, y: nextY, width: npc.size, height: npc.size };
     let blocked = collidesWithWorldRect(npcRect, { ignoreNpcIndex: i, includePlayer: true, skipNpcs: obstacles != null });
-    // Check extra obstacles (lobby/backstage furniture)
+    // Check obstacles for lobby/backstage
     if (!blocked && obstacles) {
       for (const obs of obstacles) {
-        if (intersectsRect(npcRect, obs)) {
-          blocked = true;
-          break;
-        }
+        if (intersectsRect(npcRect, obs)) { blocked = true; break; }
+      }
+    }
+    // NPC-on-NPC collision within the same room's NPC list
+    if (!blocked) {
+      for (let j = 0; j < npcList.length; j += 1) {
+        if (j === i) continue;
+        const otherRect = { x: npcList[j].x, y: npcList[j].y, width: npcList[j].size, height: npcList[j].size };
+        if (intersectsRect(npcRect, otherRect)) { blocked = true; break; }
       }
     }
 
