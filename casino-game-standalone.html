@@ -1253,7 +1253,7 @@ button:hover {
 
     <div id="elevatorPanel" class="panel hidden" role="dialog" aria-modal="true">
       <h2>Hotel Lifts</h2>
-      <p>Elevator bank — select your floor.</p>
+      <p>Elevator bank — which floor?</p>
       <div class="bar-offer">
         <div class="bar-offer-name" id="elevatorFloor">▲ Floor 24 — Penthouse</div>
         <div class="bar-offer-meta">🏊 Floor 7 – Spa &amp; Pool &nbsp;·&nbsp; 🍽️ Floor 12 – Restaurant &nbsp;·&nbsp; 🌟 Floor 24 – Penthouse</div>
@@ -1268,6 +1268,49 @@ button:hover {
       </div>
       <p id="elevatorResult" class="result"></p>
       <p class="payout-guide">Hotel room access requires a room key from the check-in desk.</p>
+    </div>
+
+    <!-- Floor room panels: open when elevator reaches a floor -->
+    <div id="floor7Panel" class="panel hidden" role="dialog" aria-modal="true">
+      <h2>🏊 Spa &amp; Pool — Floor 7</h2>
+      <div class="bar-offer">
+        <div class="bar-offer-name">Grand Aqua Spa</div>
+        <div class="bar-offer-meta">Infinity pool · Sauna · Hot spring bath · Massage suites</div>
+      </div>
+      <p style="margin:0.5rem 0">Floor-to-ceiling windows overlook the neon skyline. The water glows with gentle cyan light.</p>
+      <div class="actions">
+        <button id="floor7Back" class="ghost">Back to Lifts</button>
+        <button class="ghost" data-close-panel>Leave</button>
+      </div>
+      <p class="result" id="floor7Result"></p>
+    </div>
+
+    <div id="floor12Panel" class="panel hidden" role="dialog" aria-modal="true">
+      <h2>🍽️ Restaurant — Floor 12</h2>
+      <div class="bar-offer">
+        <div class="bar-offer-name">Skyline Terrace</div>
+        <div class="bar-offer-meta">Fine dining · Rooftop terrace · 24/7 bar · Live jazz</div>
+      </div>
+      <p style="margin:0.5rem 0">A panoramic restaurant with a retractable glass roof. The chef's tasting menu changes weekly.</p>
+      <div class="actions">
+        <button id="floor12Back" class="ghost">Back to Lifts</button>
+        <button class="ghost" data-close-panel">Leave</button>
+      </div>
+      <p class="result" id="floor12Result"></p>
+    </div>
+
+    <div id="floor24Panel" class="panel hidden" role="dialog" aria-modal="true">
+      <h2>🌟 Penthouse — Floor 24</h2>
+      <div class="bar-offer">
+        <div class="bar-offer-name">The Presidential Suite</div>
+        <div class="bar-offer-meta">Private terrace · Butler service · Grand piano · 360° views</div>
+      </div>
+      <p style="margin:0.5rem 0">The crown of the Grand Neon Hotel. A chandelier of crystal and fibre optics illuminates the lounge.</p>
+      <div class="actions">
+        <button id="floor24Back" class="ghost">Back to Lifts</button>
+        <button class="ghost" data-close-panel">Leave</button>
+      </div>
+      <p class="result" id="floor24Result"></p>
     </div>
   </section>
 
@@ -1293,6 +1336,9 @@ const coinFlipPanel = document.getElementById("coinFlipPanel");
 const baccaratPanel = document.getElementById("baccaratPanel");
 const checkinPanel = document.getElementById("checkinPanel");
 const elevatorPanel = document.getElementById("elevatorPanel");
+const floor7Panel = document.getElementById("floor7Panel");
+const floor12Panel = document.getElementById("floor12Panel");
+const floor24Panel = document.getElementById("floor24Panel");
 
 const rouletteBetInput = document.getElementById("rouletteBet");
 const rouletteChoiceSelect = document.getElementById("rouletteChoice");
@@ -1338,7 +1384,7 @@ const INTERACT_KEY = "e";
 const INTERACT_KEY_TEXT = INTERACT_KEY.toUpperCase();
 
 const player = {
-  x: 200,
+  x: 640,
   y: 345,
   size: 20,
   speed: 3.2,
@@ -1356,68 +1402,68 @@ const tables = [
   {
     id: "roulette",
     name: "Roulette Table",
-    x: 165,
-    y: 50,
+    x: 170,
+    y: 30,
     width: 210,
     height: 130,
     color: "#8f2f2f",
     label: "Roulette",
-    hitbox: { x: 165, y: 50, width: 210, height: 130 }
+    hitbox: { x: 170, y: 30, width: 210, height: 130 }
   },
   {
     id: "coinflip",
     name: "Coin Flip Table",
-    x: 535,
-    y: 50,
+    x: 490,
+    y: 30,
     width: 210,
     height: 130,
     color: "#3f2a6a",
     label: "Coin Flip",
-    hitbox: { x: 535, y: 50, width: 210, height: 130 }
+    hitbox: { x: 490, y: 30, width: 210, height: 130 }
   },
   {
     id: "blackjack",
     name: "Blackjack Table",
-    x: 905,
-    y: 50,
+    x: 810,
+    y: 30,
     width: 210,
     height: 130,
     color: "#2f7a4f",
     label: "Blackjack",
-    hitbox: { x: 905, y: 50, width: 210, height: 130 }
+    hitbox: { x: 810, y: 30, width: 210, height: 130 }
   },
   {
     id: "poker",
     name: "Poker Table",
-    x: 165,
-    y: 540,
+    x: 170,
+    y: 560,
     width: 210,
     height: 130,
     color: "#7a4f2f",
     label: "Poker",
-    hitbox: { x: 165, y: 540, width: 210, height: 130 }
+    hitbox: { x: 170, y: 560, width: 210, height: 130 }
   },
   {
     id: "baccarat",
     name: "Baccarat Table",
-    x: 535,
-    y: 540,
+    x: 490,
+    y: 560,
     width: 210,
     height: 130,
     color: "#1a3a5a",
     label: "Baccarat",
-    hitbox: { x: 535, y: 540, width: 210, height: 130 }
+    hitbox: { x: 490, y: 560, width: 210, height: 130 }
   },
   {
     id: "slots",
     name: "Slot Machine",
-    x: 905,
-    y: 540,
-    width: 190,
+    x: 810,
+    y: 560,
+    width: 210,
     height: 130,
     color: "#2f6b9a",
     label: "Slots",
-    hitbox: { x: 905, y: 540, width: 190, height: 130 }
+    hitbox: { x: 810, y: 560, width: 210, height: 130 }
   }
 ];
 
@@ -1425,15 +1471,15 @@ const centerBar = {
   id: "bar",
   name: "Center Bar",
   label: "Center Bar",
-  x: 460,
-  y: 275,
-  width: 360,
-  height: 170,
+  x: 370,
+  y: 265,
+  width: 540,
+  height: 140,
   hitbox: {
-    x: 460,
-    y: 275,
-    width: 360,
-    height: 170
+    x: 370,
+    y: 265,
+    width: 540,
+    height: 140
   }
 };
 
@@ -2493,85 +2539,97 @@ const CASINO_THEMES = [
 ];
 
 const decorativeTables = [
-  { x: 385, y: 115, radius: 22, color: "#4f2f45" },
-  { x: 755, y: 115, radius: 20, color: "#3f3b59" },
-  { x: 385, y: 615, radius: 22, color: "#4e3b2c" },
-  { x: 755, y: 615, radius: 22, color: "#3a4b63" },
+  { x: 285, y: 115, radius: 22, color: "#4f2f45" },
+  { x: 695, y: 115, radius: 20, color: "#3f3b59" },
+  { x: 1125, y: 115, radius: 22, color: "#3a4b63" },
+  { x: 285, y: 615, radius: 22, color: "#4e3b2c" },
+  { x: 695, y: 615, radius: 22, color: "#3a4b63" },
+  { x: 1125, y: 615, radius: 22, color: "#4a3a5a" },
   { x: 148, y: 360, radius: 21, color: "#5a3a42" },
   { x: 1148, y: 360, radius: 22, color: "#445254" },
-  { x: 445, y: 248, radius: 20, color: "#3f4a5a" },
-  { x: 835, y: 248, radius: 20, color: "#5a3f3f" },
-  { x: 445, y: 472, radius: 20, color: "#3a5a3a" },
-  { x: 835, y: 472, radius: 20, color: "#4a3a5a" },
+  { x: 310, y: 248, radius: 20, color: "#3f4a5a" },
+  { x: 1050, y: 248, radius: 20, color: "#5a3f3f" },
+  { x: 310, y: 472, radius: 20, color: "#3a5a3a" },
+  { x: 1050, y: 472, radius: 20, color: "#4a3a5a" },
   { x: 640, y: 172, radius: 19, color: "#4a2a4a" },
-  { x: 640, y: 548, radius: 19, color: "#2a4a3a" }
+  { x: 640, y: 548, radius: 19, color: "#2a4a3a" },
+  { x: 640, y: 345, radius: 18, color: "#3f3b59" },
 ];
 
 const npcs = [
   // Staff (8) — white uniforms, anchored near tables/bar
   { x: 455, y: 330, size: 16, vx: 0.3, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#f7ddc2", role: "staff", anchor: { x: 455, y: 330 }, roamRadius: 55 },
   { x: 825, y: 330, size: 16, vx: -0.3, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#dba88a", role: "staff", anchor: { x: 825, y: 330 }, roamRadius: 55 },
-  { x: 280, y: 240, size: 16, vx: 0.28, vy: -0.22, moodTime: 0, color: "#f0f0fa", skin: "#c47a52", role: "staff", anchor: { x: 280, y: 240 }, roamRadius: 65 },
-  { x: 1015, y: 240, size: 16, vx: -0.28, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#f7ddc2", role: "staff", anchor: { x: 1015, y: 240 }, roamRadius: 65 },
-  { x: 640, y: 244, size: 16, vx: 0.25, vy: -0.25, moodTime: 0, color: "#f0f0fa", skin: "#8a5a38", role: "staff", anchor: { x: 640, y: 244 }, roamRadius: 60 },
-  { x: 640, y: 475, size: 16, vx: 0.25, vy: 0.25, moodTime: 0, color: "#f0f0fa", skin: "#dba88a", role: "staff", anchor: { x: 640, y: 475 }, roamRadius: 60 },
+  { x: 280, y: 200, size: 16, vx: 0.28, vy: -0.22, moodTime: 0, color: "#f0f0fa", skin: "#c47a52", role: "staff", anchor: { x: 280, y: 200 }, roamRadius: 65 },
+  { x: 1015, y: 200, size: 16, vx: -0.28, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#f7ddc2", role: "staff", anchor: { x: 1015, y: 200 }, roamRadius: 65 },
+  { x: 640, y: 200, size: 16, vx: 0.25, vy: -0.25, moodTime: 0, color: "#f0f0fa", skin: "#8a5a38", role: "staff", anchor: { x: 640, y: 200 }, roamRadius: 60 },
+  { x: 640, y: 490, size: 16, vx: 0.25, vy: 0.25, moodTime: 0, color: "#f0f0fa", skin: "#dba88a", role: "staff", anchor: { x: 640, y: 490 }, roamRadius: 60 },
   { x: 280, y: 480, size: 16, vx: -0.28, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#f7ddc2", role: "staff", anchor: { x: 280, y: 480 }, roamRadius: 58 },
   { x: 1015, y: 480, size: 16, vx: 0.28, vy: -0.22, moodTime: 0, color: "#f0f0fa", skin: "#c47a52", role: "staff", anchor: { x: 1015, y: 480 }, roamRadius: 58 },
   // Customers (20) — colourful clothing, roaming the full map
   { x: 385, y: 120, size: 16, vx: 0.38, vy: 0.28, moodTime: 0, color: "#f7cb6f", skin: "#f7ddc2", role: "customer" },
   { x: 750, y: 120, size: 16, vx: -0.32, vy: 0.3, moodTime: 0, color: "#95d8ff", skin: "#dba88a", role: "customer" },
-  { x: 385, y: 470, size: 16, vx: -0.28, vy: -0.38, moodTime: 0, color: "#dcb2ff", skin: "#c47a52", role: "customer" },
+  { x: 1080, y: 120, size: 16, vx: -0.28, vy: -0.38, moodTime: 0, color: "#dcb2ff", skin: "#c47a52", role: "customer" },
+  { x: 385, y: 468, size: 16, vx: -0.28, vy: -0.38, moodTime: 0, color: "#dcb2ff", skin: "#c47a52", role: "customer" },
   { x: 750, y: 468, size: 16, vx: 0.35, vy: -0.3, moodTime: 0, color: "#ffb8c0", skin: "#f7ddc2", role: "customer" },
-  { x: 148, y: 170, size: 16, vx: 0.3, vy: 0.4, moodTime: 0, color: "#bde3a6", skin: "#8a5a38", role: "customer" },
-  { x: 148, y: 550, size: 16, vx: 0.38, vy: 0.22, moodTime: 0, color: "#ffdb93", skin: "#dba88a", role: "customer" },
-  { x: 1172, y: 190, size: 16, vx: -0.35, vy: 0.3, moodTime: 0, color: "#96f0df", skin: "#f7ddc2", role: "customer" },
-  { x: 1172, y: 460, size: 16, vx: -0.3, vy: 0.35, moodTime: 0, color: "#b8c7ff", skin: "#c47a52", role: "customer" },
-  { x: 1140, y: 130, size: 16, vx: -0.38, vy: 0.25, moodTime: 0, color: "#ffd1df", skin: "#f7ddc2", role: "customer" },
-  { x: 148, y: 600, size: 16, vx: 0.32, vy: 0.3, moodTime: 0, color: "#ffe3a1", skin: "#dba88a", role: "customer" },
-  { x: 640, y: 220, size: 16, vx: -0.28, vy: 0.38, moodTime: 0, color: "#abd3f4", skin: "#8a5a38", role: "customer" },
-  { x: 655, y: 490, size: 16, vx: 0.3, vy: 0.32, moodTime: 0, color: "#f0b8d2", skin: "#f7ddc2", role: "customer" },
-  { x: 178, y: 360, size: 16, vx: 0.35, vy: 0.28, moodTime: 0, color: "#c5ef9b", skin: "#dba88a", role: "customer" },
-  { x: 1112, y: 355, size: 16, vx: -0.3, vy: -0.28, moodTime: 0, color: "#f2d1a8", skin: "#c47a52", role: "customer" },
-  { x: 320, y: 205, size: 16, vx: 0.38, vy: -0.32, moodTime: 0, color: "#a6e6ff", skin: "#f7ddc2", role: "customer" },
-  { x: 1172, y: 598, size: 16, vx: -0.3, vy: -0.35, moodTime: 0, color: "#d8c2ff", skin: "#8a5a38", role: "customer" },
-  { x: 430, y: 590, size: 16, vx: 0.28, vy: -0.3, moodTime: 0, color: "#f7c88f", skin: "#dba88a", role: "customer" },
-  { x: 870, y: 572, size: 16, vx: -0.32, vy: -0.28, moodTime: 0, color: "#bceea7", skin: "#f7ddc2", role: "customer" },
-  { x: 390, y: 215, size: 16, vx: -0.3, vy: 0.32, moodTime: 0, color: "#ff9eb0", skin: "#c47a52", role: "customer" },
-  { x: 870, y: 215, size: 16, vx: 0.3, vy: -0.3, moodTime: 0, color: "#e8d055", skin: "#dba88a", role: "customer" }
+  { x: 1080, y: 468, size: 16, vx: 0.38, vy: 0.22, moodTime: 0, color: "#ffdb93", skin: "#dba88a", role: "customer" },
+  { x: 148, y: 120, size: 16, vx: 0.3, vy: 0.4, moodTime: 0, color: "#bde3a6", skin: "#8a5a38", role: "customer" },
+  { x: 148, y: 600, size: 16, vx: 0.38, vy: 0.22, moodTime: 0, color: "#ffdb93", skin: "#dba88a", role: "customer" },
+  { x: 1172, y: 120, size: 16, vx: -0.35, vy: 0.3, moodTime: 0, color: "#96f0df", skin: "#f7ddc2", role: "customer" },
+  { x: 1172, y: 600, size: 16, vx: -0.3, vy: 0.35, moodTime: 0, color: "#b8c7ff", skin: "#c47a52", role: "customer" },
+  { x: 1140, y: 600, size: 16, vx: -0.38, vy: 0.25, moodTime: 0, color: "#ffd1df", skin: "#f7ddc2", role: "customer" },
+  { x: 50, y: 600, size: 16, vx: 0.32, vy: 0.3, moodTime: 0, color: "#ffe3a1", skin: "#dba88a", role: "customer" },
+  { x: 640, y: 440, size: 16, vx: -0.28, vy: 0.38, moodTime: 0, color: "#abd3f4", skin: "#8a5a38", role: "customer" },
+  { x: 655, y: 220, size: 16, vx: 0.3, vy: 0.32, moodTime: 0, color: "#f0b8d2", skin: "#f7ddc2", role: "customer" },
+  { x: 250, y: 360, size: 16, vx: 0.35, vy: 0.28, moodTime: 0, color: "#c5ef9b", skin: "#dba88a", role: "customer" },
+  { x: 1060, y: 355, size: 16, vx: -0.3, vy: -0.28, moodTime: 0, color: "#f2d1a8", skin: "#c47a52", role: "customer" },
+  { x: 390, y: 480, size: 16, vx: 0.38, vy: -0.32, moodTime: 0, color: "#a6e6ff", skin: "#f7ddc2", role: "customer" },
+  { x: 900, y: 480, size: 16, vx: -0.3, vy: -0.35, moodTime: 0, color: "#d8c2ff", skin: "#8a5a38", role: "customer" },
+  { x: 430, y: 200, size: 16, vx: 0.28, vy: -0.3, moodTime: 0, color: "#f7c88f", skin: "#dba88a", role: "customer" },
+  { x: 870, y: 200, size: 16, vx: -0.32, vy: -0.28, moodTime: 0, color: "#bceea7", skin: "#f7ddc2", role: "customer" },
 ];
 
 // ── Room system ───────────────────────────────────────────────────────────────
 let currentRoom = "casino"; // "casino" | "lobby" | "backstage"
 
-// Transition zones: player centre must fall inside zone.x/y/width/height
+// Door interactables: press E near these to change rooms
+const casinoDoors = [
+  { id: "doorTolobby",    name: "Hotel Lobby",   label: "Go to Lobby",    zone: { x: 1218, y: 280, width: 62, height: 130 }, targetRoom: "lobby",     targetX: 50,  targetY: 345 },
+  { id: "doorTobackstage", name: "Backstage",     label: "Go Backstage",  zone: { x: 0,    y: 90,  width: 22, height: 130 }, targetRoom: "backstage", targetX: 1240, targetY: 345 }
+];
+const lobbyDoors = [
+  { id: "doorTocasino",    name: "Casino Floor",  label: "Go to Casino",  zone: { x: 0, y: 295, width: 28, height: 130 }, targetRoom: "casino",    targetX: 1190, targetY: 345 }
+];
+const backstageDoors = [
+  { id: "doorTocasino",    name: "Casino Floor",  label: "Go to Casino",  zone: { x: 1256, y: 285, width: 24, height: 130 }, targetRoom: "casino",    targetX: 38, targetY: 95 }
+];
+
+// Transition zones: used by door interactables only (not automatic)
 const ROOM_TRANSITIONS = {
-  casino: [
-    // Right entrance door → hotel lobby
-    { zone: { x: 1218, y: 280, width: 62, height: 130 }, targetRoom: "lobby",     targetX: 50,  targetY: 345 },
-    // Top-left wall door (above stage) → backstage
-    { zone: { x: 0,    y: 90,  width: 22, height: 130 }, targetRoom: "backstage", targetX: 1250, targetY: 345 }
-  ],
-  lobby: [
-    // Left wall casino door → casino floor
-    { zone: { x: 0, y: 295, width: 28, height: 130 }, targetRoom: "casino", targetX: 1190, targetY: 345 }
-  ],
-  backstage: [
-    // Right wall stage door → casino floor
-    { zone: { x: 1256, y: 285, width: 24, height: 130 }, targetRoom: "casino", targetX: 38, targetY: 95 }
-  ]
+  casino: [].concat(casinoDoors),
+  lobby: [].concat(lobbyDoors),
+  backstage: [].concat(backstageDoors)
 };
 
 // ── Lobby data ────────────────────────────────────────────────────────────────
 const lobbyObstacles = [
-  { x: 50,  y: 78, width: 148, height: 152 }, // Lift shaft 1
-  { x: 218, y: 78, width: 148, height: 152 }, // Lift shaft 2
-  { x: 380, y: 80, width: 640, height: 80  }, // Check-in desk
+  { x: 50,  y: 78,  width: 148, height: 152 }, // Lift shaft 1
+  { x: 218, y: 78,  width: 148, height: 152 }, // Lift shaft 2
+  { x: 380, y: 80,  width: 640, height: 80  }, // Check-in desk
   { x: 530, y: 240, width: 220, height: 178 }, // Fountain basin
-  { x: 80,  y: 325, width: 210, height: 195 }, // Left sofa group
-  { x: 860, y: 325, width: 210, height: 195 }, // Right sofa group
-  { x: 465, y: 382, width: 90,  height: 68  }, // Coffee table L
-  { x: 725, y: 382, width: 90,  height: 68  }, // Coffee table R
-  { x: 1050, y: 80, width: 150, height: 150 }, // Concierge desk
+  // Left sofa — split into armrests so player can approach seats
+  { x: 80,  y: 325, width: 16,  height: 50  }, // Left armrest
+  { x: 80,  y: 490, width: 16,  height: 50  }, // Left sofa base
+  { x: 284, y: 325, width: 16,  height: 50  }, // Right armrest
+  { x: 284, y: 490, width: 16,  height: 50  }, // Right sofa base
+  // Right sofa — same pattern
+  { x: 860, y: 325, width: 16,  height: 50  }, // Left armrest
+  { x: 860, y: 490, width: 16,  height: 50  }, // Left sofa base
+  { x: 1064, y: 325, width: 16,  height: 50  }, // Right armrest
+  { x: 1064, y: 490, width: 16,  height: 50  }, // Right sofa base
+  { x: 465, y: 382, width: 90,  height: 38  }, // Coffee table L (thinner)
+  { x: 725, y: 382, width: 90,  height: 38  }, // Coffee table R (thinner)
+  { x: 1050, y: 80,  width: 150, height: 150 }, // Concierge desk
 ];
 
 const lobbyInteractables = [
@@ -2843,6 +2901,13 @@ function collidesWithWorldRect(rect, options = {}) {
   return false;
 }
 
+function getCurrentRoomDoors() {
+  if (currentRoom === "casino") return casinoDoors;
+  if (currentRoom === "lobby") return lobbyDoors;
+  if (currentRoom === "backstage") return backstageDoors;
+  return [];
+}
+
 function resolveNearbyTable() {
   const playerCenterX = player.x + player.size / 2;
   const playerCenterY = player.y + player.size / 2;
@@ -2850,26 +2915,38 @@ function resolveNearbyTable() {
 
   nearbyTable = null;
 
-  if (currentRoom === "casino") {
-    for (const table of tables) {
-      const dist = distanceToRect(playerCenterX, playerCenterY, table.hitbox);
-      if (dist <= interactDistance) {
-        nearbyTable = table;
-        break;
-      }
+  // Check doors first (doors are passable, so check them regardless of obstacles)
+  const doors = getCurrentRoomDoors();
+  for (const door of doors) {
+    const dist = distanceToRect(playerCenterX, playerCenterY, door.zone);
+    if (dist <= interactDistance) {
+      nearbyTable = { id: door.id, name: door.name, label: door.label, isDoor: true, door };
+      break;
     }
-    if (!nearbyTable) {
-      const barDist = distanceToRect(playerCenterX, playerCenterY, centerBar.hitbox);
-      if (barDist <= interactDistance) {
-        nearbyTable = centerBar;
+  }
+
+  if (!nearbyTable) {
+    if (currentRoom === "casino") {
+      for (const table of tables) {
+        const dist = distanceToRect(playerCenterX, playerCenterY, table.hitbox);
+        if (dist <= interactDistance) {
+          nearbyTable = table;
+          break;
+        }
       }
-    }
-  } else if (currentRoom === "lobby") {
-    for (const lbItem of lobbyInteractables) {
-      const dist = distanceToRect(playerCenterX, playerCenterY, lbItem.hitbox);
-      if (dist <= interactDistance) {
-        nearbyTable = lbItem;
-        break;
+      if (!nearbyTable) {
+        const barDist = distanceToRect(playerCenterX, playerCenterY, centerBar.hitbox);
+        if (barDist <= interactDistance) {
+          nearbyTable = centerBar;
+        }
+      }
+    } else if (currentRoom === "lobby") {
+      for (const lbItem of lobbyInteractables) {
+        const dist = distanceToRect(playerCenterX, playerCenterY, lbItem.hitbox);
+        if (dist <= interactDistance) {
+          nearbyTable = lbItem;
+          break;
+        }
       }
     }
   }
@@ -2896,6 +2973,15 @@ function openPanel(tableId) {
   }
   if (elevatorPanel) {
     elevatorPanel.classList.add("hidden");
+  }
+  if (floor7Panel) {
+    floor7Panel.classList.add("hidden");
+  }
+  if (floor12Panel) {
+    floor12Panel.classList.add("hidden");
+  }
+  if (floor24Panel) {
+    floor24Panel.classList.add("hidden");
   }
 
   if (tableId === "roulette") {
@@ -5376,9 +5462,9 @@ function updatePlayerPosition() {
   if (currentRoom === "casino") {
     const checkX = { x: nextX, y: player.y, width: player.size, height: PLAYER_HITBOX_H };
     const checkY = { x: player.x, y: nextY, width: player.size, height: PLAYER_HITBOX_H };
-    blocked = collidesWithWorldRect(checkX, { skipNpcs: true });
+    blocked = collidesWithWorldRect(checkX, { skipNpcs: false });
     if (!blocked) {
-      blocked = collidesWithWorldRect(checkY, { skipNpcs: true });
+      blocked = collidesWithWorldRect(checkY, { skipNpcs: false });
     }
   } else {
     const obstacles = currentRoom === "lobby" ? lobbyObstacles : backstageObstacles;
@@ -5399,24 +5485,7 @@ function updatePlayerPosition() {
     player.y = nextY;
   }
 
-  // ── Room transitions ──
-  const playerCenterX = player.x + player.size / 2;
-  const playerCenterY = player.y + player.size / 2;
-  const transitions = ROOM_TRANSITIONS[currentRoom];
-  if (transitions) {
-    for (const trans of transitions) {
-      const zone = trans.zone;
-      if (
-        playerCenterX >= zone.x && playerCenterX <= zone.x + zone.width &&
-        playerCenterY >= zone.y && playerCenterY <= zone.y + zone.height
-      ) {
-        currentRoom = trans.targetRoom;
-        player.x = trans.targetX;
-        player.y = trans.targetY;
-        break;
-      }
-    }
-  }
+  // ── Room transitions are handled via E key on doors ──
 }
 
 function gameLoop() {
@@ -5478,7 +5547,17 @@ function handleKeyDown(event) {
   }
 
   if (key === INTERACT_KEY && nearbyTable && !activePanel) {
-    openPanel(nearbyTable.id);
+    if (nearbyTable.isDoor) {
+      // Room transition via door
+      const door = nearbyTable.door;
+      currentRoom = door.targetRoom;
+      player.x = door.targetX;
+      player.y = door.targetY;
+      nearbyTable = null;
+      updateNearbyText();
+    } else {
+      openPanel(nearbyTable.id);
+    }
   }
 
   if (key === "Escape" && activePanel) {
@@ -5665,21 +5744,39 @@ if (checkinBtn) {
 
 const elevFloorEl = document.getElementById("elevatorFloor");
 const elevResultEl = document.getElementById("elevatorResult");
-function setElevatorFloor(floor, name) {
-  if (elevFloorEl) {
-    elevFloorEl.textContent = `▲ Travelling to Floor ${floor} — ${name}`;
-  }
-  if (elevResultEl) {
-    elevResultEl.textContent = `⏱️ Elevator arrives. Welcome to Floor ${floor} — ${name}.`;
-    elevResultEl.style.color = "#b8e7ff";
-  }
+function openElevatorFloor(floorId) {
+  // Hide elevator panel, show the floor panel
+  if (elevatorPanel) elevatorPanel.classList.add("hidden");
+  if (floorId === 7 && floor7Panel) floor7Panel.classList.remove("hidden");
+  if (floorId === 12 && floor12Panel) floor12Panel.classList.remove("hidden");
+  if (floorId === 24 && floor24Panel) floor24Panel.classList.remove("hidden");
 }
 const floor7Btn = document.getElementById("elevFloor7");
 const floor12Btn = document.getElementById("elevFloor12");
 const floor24Btn = document.getElementById("elevFloor24");
-if (floor7Btn) floor7Btn.addEventListener("click", () => setElevatorFloor(7, "Spa & Pool"));
-if (floor12Btn) floor12Btn.addEventListener("click", () => setElevatorFloor(12, "Restaurant"));
-if (floor24Btn) floor24Btn.addEventListener("click", () => setElevatorFloor(24, "Penthouse"));
+if (floor7Btn) floor7Btn.addEventListener("click", () => openElevatorFloor(7));
+if (floor12Btn) floor12Btn.addEventListener("click", () => openElevatorFloor(12));
+if (floor24Btn) floor24Btn.addEventListener("click", () => openElevatorFloor(24));
+
+// Back to Lifts buttons
+const floor7Back = document.getElementById("floor7Back");
+const floor12Back = document.getElementById("floor12Back");
+const floor24Back = document.getElementById("floor24Back");
+if (floor7Back) {
+  floor7Back.addEventListener("click", () => {
+    openPanel("elevator");
+  });
+}
+if (floor12Back) {
+  floor12Back.addEventListener("click", () => {
+    openPanel("elevator");
+  });
+}
+if (floor24Back) {
+  floor24Back.addEventListener("click", () => {
+    openPanel("elevator");
+  });
+}
 
 generateDrinkOffer();
 
