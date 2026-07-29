@@ -1575,20 +1575,31 @@ function resolveNearbyTable() {
   const interactDistance = 28;
 
   nearbyTable = null;
-  for (const table of tables) {
-    const dist = distanceToRect(playerCenterX, playerCenterY, table.hitbox);
-    if (dist <= interactDistance) {
-      nearbyTable = table;
-      break;
+
+  if (currentRoom === "casino") {
+    for (const table of tables) {
+      const dist = distanceToRect(playerCenterX, playerCenterY, table.hitbox);
+      if (dist <= interactDistance) {
+        nearbyTable = table;
+        break;
+      }
+    }
+    if (!nearbyTable) {
+      const barDist = distanceToRect(playerCenterX, playerCenterY, centerBar.hitbox);
+      if (barDist <= interactDistance) {
+        nearbyTable = centerBar;
+      }
+    }
+  } else if (currentRoom === "lobby") {
+    for (const lbItem of lobbyInteractables) {
+      const dist = distanceToRect(playerCenterX, playerCenterY, lbItem.hitbox);
+      if (dist <= interactDistance) {
+        nearbyTable = lbItem;
+        break;
+      }
     }
   }
 
-  if (!nearbyTable) {
-    const barDist = distanceToRect(playerCenterX, playerCenterY, centerBar.hitbox);
-    if (barDist <= interactDistance) {
-      nearbyTable = centerBar;
-    }
-  }
   updateNearbyText();
 }
 
@@ -1605,6 +1616,12 @@ function openPanel(tableId) {
   }
   if (baccaratPanel) {
     baccaratPanel.classList.add("hidden");
+  }
+  if (checkinPanel) {
+    checkinPanel.classList.add("hidden");
+  }
+  if (elevatorPanel) {
+    elevatorPanel.classList.add("hidden");
   }
 
   if (tableId === "roulette") {
@@ -1653,6 +1670,13 @@ function openPanel(tableId) {
       barResultEl.textContent = "The bartender smiles. Pick any drink on the shelf.";
       barResultEl.style.color = "#f7d683";
     }
+  }
+  // ── Lobby interactables ──
+  if (tableId === "checkin" && checkinPanel) {
+    checkinPanel.classList.remove("hidden");
+  }
+  if (tableId === "elevator" && elevatorPanel) {
+    elevatorPanel.classList.remove("hidden");
   }
 }
 
@@ -1837,9 +1861,11 @@ async function startBaccarat() {
 
   if (!playerNatural && !bankerNatural) {
     // Player draws if total ≤ 5
+    let playerThirdCardValue = null;
     if (baccaratHandTotal(playerCards) <= 5) {
       const newCard = drawCard(deck);
       playerCards.push(newCard);
+      playerThirdCardValue = baccaratCardValue(newCard);
       if (playerCardsEl) {
         playerCardsEl.appendChild(
           createPlayingCardElement(`${newCard.rank}${newCard.suit}`, { animate: true, delayMs: 0 })
@@ -1847,8 +1873,37 @@ async function startBaccarat() {
       }
       await sleep(250);
     }
-    // Banker draws if total ≤ 5 (simplified rule)
-    if (baccaratHandTotal(bankerCards) <= 5) {
+
+    // Banker draw rules depend on banker total and player's third card (if drawn)
+    const bankerTotal = baccaratHandTotal(bankerCards);
+    let bankerDraws = false;
+    if (playerThirdCardValue === null) {
+      // Player stood — banker draws on ≤ 5
+      bankerDraws = bankerTotal <= 5;
+    } else {
+      // Standard third-card rules
+      switch (bankerTotal) {
+        case 0: case 1: case 2:
+          bankerDraws = true;
+          break;
+        case 3:
+          bankerDraws = playerThirdCardValue !== 8;
+          break;
+        case 4:
+          bankerDraws = playerThirdCardValue >= 2 && playerThirdCardValue <= 7;
+          break;
+        case 5:
+          bankerDraws = playerThirdCardValue >= 4 && playerThirdCardValue <= 7;
+          break;
+        case 6:
+          bankerDraws = playerThirdCardValue === 6 || playerThirdCardValue === 7;
+          break;
+        default:
+          bankerDraws = false;
+      }
+    }
+
+    if (bankerDraws) {
       const newCard = drawCard(deck);
       bankerCards.push(newCard);
       if (bankerCardsEl) {
@@ -1922,7 +1977,9 @@ function rouletteColorFromNumber(number) {
   if (number === 0) {
     return "green";
   }
-  return number % 2 === 0 ? "black" : "red";
+  // European wheel: red numbers are 1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36
+  const redNumbers = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
+  return redNumbers.includes(number) ? "red" : "black";
 }
 
 function rouletteColumnFromNumber(number) {
@@ -2590,7 +2647,9 @@ async function startPokerRound() {
   const opponents = npcNames.map((name) => ({
     name,
     cards: [drawCard(deck), drawCard(deck)],
-    folded: false
+    folded: false,
+    chips: 1000,
+    totalContrib: 0
   }));
   const communityCards = [drawCard(deck), drawCard(deck), drawCard(deck), drawCard(deck), drawCard(deck)];
 
@@ -2605,6 +2664,7 @@ async function startPokerRound() {
     streetIndex: 0,
     currentStreetBet: 0,
     playerStreetContribution: 0,
+    playerTotalContrib: validation.bet,
     actionLocked: false,
     playerHand: null
   };
@@ -2758,6 +2818,36 @@ function getActiveOpponents() {
   return pokerRound.opponents.filter((opponent) => !opponent.folded);
 }
 
+function getNpcHandStrength(opponent) {
+  // If no community cards revealed yet, evaluate hole cards only
+  const revealedCount = pokerRound.revealCount || 0;
+  if (revealedCount === 0) {
+    // Preflop: evaluate hole cards
+    const [c1, c2] = opponent.cards;
+    const r1 = getRankValue(c1.rank), r2 = getRankValue(c2.rank);
+    const high = Math.max(r1, r2), low = Math.min(r1, r2);
+    const paired = r1 === r2;
+    const suited = c1.suit === c2.suit;
+    const gap = high - low - 1;
+    // Score 0-10 where 10 is strongest
+    if (paired && high >= 11) return high >= 13 ? 9 : 7;  // AA/KK = 9, QQ/JJ = 7
+    if (paired) return 5;  // low pair
+    if (high === 14 && low >= 11) return suited ? 8 : 7;  // AK/AQ
+    if (high === 14) return suited ? 5 : 4;
+    if (high >= 12 && low >= 10) return suited ? 6 : 5;
+    if (high >= 12 && gap <= 2 && suited) return 4;
+    if (high >= 10 && low >= 8) return 3;
+    return 2;
+  }
+  // Later streets: evaluate actual best hand
+  const allCards = [...opponent.cards, ...pokerRound.communityCards.slice(0, revealedCount)];
+  if (allCards.length < 5) return 3;
+  const best = evaluateBestPokerHand(allCards);
+  const rank = best ? best.rank : 0;
+  // Map 0-8 to 0-10
+  return Math.min(10, rank + 2);
+}
+
 function beginPokerStreet(isFirstStreet = false) {
   if (!pokerRound) {
     return;
@@ -2779,17 +2869,47 @@ function beginPokerStreet(isFirstStreet = false) {
     return;
   }
 
+  // NPCs decide street bet based on hand strength
   let streetBet = 0;
-  const betChance = isFirstStreet ? 0.62 : pokerRound.streetIndex === 3 ? 0.48 : 0.56;
-  if (Math.random() < betChance) {
-    const multiplier = Math.random() < 0.33 ? 2 : 1;
-    streetBet = pokerRound.ante * multiplier;
+  const betChance = isFirstStreet ? 0.55 : pokerRound.streetIndex === 3 ? 0.42 : 0.50;
+
+  for (const opponent of activeOpponents) {
+    const strength = getNpcHandStrength(opponent);
+    // Stronger hands bet more and more often; weaker hands fold sometimes
+    const foldChance = isFirstStreet ? 0.05 : Math.max(0, (1 - strength / 10) * 0.4);
+    if (Math.random() < foldChance) {
+      opponent.folded = true;
+      // Their contributions stay in the pot
+      continue;
+    }
+    const shouldBet = Math.random() < (betChance + strength * 0.03);
+    if (shouldBet && opponent.chips >= pokerRound.ante) {
+      const multiplier = Math.random() < strength / 12 ? 2 : 1;
+      const betAmount = Math.min(pokerRound.ante * multiplier, opponent.chips);
+      opponent.chips -= betAmount;
+      opponent.totalContrib += betAmount;
+      pokerRound.pot += betAmount;
+      if (betAmount > streetBet) {
+        streetBet = betAmount;
+      }
+    }
+  }
+
+  // Re-check after possible folds
+  if (getActiveOpponents().length === 0) {
+    const payoutFromPot = pokerRound.pot;
+    wisTokens += payoutFromPot;
+    pokerResult.textContent = `All NPCs folded. You win ${payoutFromPot} WIS Tokens.`;
+    pokerResult.style.color = "#9af5a8";
+    pokerRound = null;
+    setPokerButtonsInRound(false);
+    renderPokerHands(false);
+    renderPokerVisual(false, false);
+    updateBalanceText();
+    return;
   }
 
   pokerRound.currentStreetBet = streetBet;
-  for (const opponent of activeOpponents) {
-    pokerRound.pot += streetBet;
-  }
 
   setPokerButtonsInRound(true);
 }
@@ -2906,10 +3026,11 @@ function foldPoker() {
     return;
   }
 
-  const lostAnte = pokerRound.ante;
+  const lostContrib = pokerRound.playerTotalContrib || pokerRound.ante;
+  // Player's contributions stay in the pot for remaining NPCs
   pokerRound = null;
   setPokerButtonsInRound(false);
-  pokerResult.textContent = `You folded and lost ${lostAnte} WIS Tokens.`;
+  pokerResult.textContent = `You folded and lost ${lostContrib} WIS Tokens.`;
   pokerResult.style.color = "#ff8787";
   pokerHands.textContent = "";
   renderPokerVisual(false, false);
@@ -2942,6 +3063,7 @@ async function callPoker() {
 
   wisTokens -= toCall;
   pokerRound.playerStreetContribution += toCall;
+  pokerRound.playerTotalContrib += toCall;
   pokerRound.pot += toCall;
   updateBalanceText();
   await advancePokerRoundOrShowdown();
@@ -2997,17 +3119,26 @@ async function raisePoker() {
 
   wisTokens -= additionalFromPlayer;
   pokerRound.playerStreetContribution = newStreetBet;
+  pokerRound.playerTotalContrib += additionalFromPlayer;
   pokerRound.currentStreetBet = newStreetBet;
   pokerRound.pot += additionalFromPlayer;
 
   const activeOpponents = getActiveOpponents();
   for (const opponent of activeOpponents) {
-    const foldChance = newStreetBet >= pokerRound.ante * 2 ? 0.36 : 0.24;
-    if (Math.random() < foldChance) {
+    const strength = getNpcHandStrength(opponent);
+    const foldChance = newStreetBet >= pokerRound.ante * 2 ? 0.38 : 0.22;
+    if (Math.random() < (foldChance - strength * 0.015)) {
       opponent.folded = true;
       continue;
     }
-    pokerRound.pot += newStreetBet;
+    // Match the raise: pay the difference between their current street contribution and newStreetBet
+    const toMatch = newStreetBet - (opponent.totalContrib % (pokerRound.ante || 1));
+    const matchAmount = Math.min(Math.max(0, toMatch), opponent.chips);
+    if (matchAmount > 0) {
+      opponent.chips -= matchAmount;
+      opponent.totalContrib += matchAmount;
+      pokerRound.pot += matchAmount;
+    }
   }
 
   updateBalanceText();
@@ -3364,9 +3495,274 @@ function drawEntrance() {
   ctx.restore();
 }
 
-function updateNpcs() {
-  for (let i = 0; i < npcs.length; i += 1) {
-    const npc = npcs[i];
+// ── Lobby rendering ──────────────────────────────────────────────────────────
+function drawLobbyBackground() {
+  // Warm hotel palette
+  const bgGrad = ctx.createLinearGradient(0, 0, WIDTH, HEIGHT);
+  bgGrad.addColorStop(0, "#1a1210");
+  bgGrad.addColorStop(0.3, "#241c18");
+  bgGrad.addColorStop(0.7, "#1e1814");
+  bgGrad.addColorStop(1, "#0f0d0b");
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+  // Tile floor checker
+  ctx.save();
+  ctx.globalAlpha = 0.06;
+  const tileSize = 42;
+  for (let row = 0; row < Math.ceil(HEIGHT / tileSize); row++) {
+    for (let col = 0; col < Math.ceil(WIDTH / tileSize); col++) {
+      if ((row + col) % 2 === 0) {
+        ctx.fillStyle = "#fff8ee";
+        ctx.fillRect(col * tileSize, row * tileSize, tileSize, tileSize);
+      }
+    }
+  }
+  ctx.restore();
+
+  // Rug under seating area
+  fillRoundedRect(280, 340, 720, 250, 18, "rgba(120, 30, 20, 0.22)");
+  strokeRoundedRect(280, 340, 720, 250, 18, "rgba(180, 140, 100, 0.2)", 2);
+}
+
+function drawLobby() {
+  drawLobbyBackground();
+
+  // ── Left wall casino door ──
+  const doorX = 0, doorY = 295, doorW = 28, doorH = 130;
+  fillRoundedRect(doorX, doorY, doorW, doorH, 4, "#1a1020");
+  strokeRoundedRect(doorX, doorY, doorW, doorH, 4, "rgba(255,215,100,0.5)", 2);
+  ctx.save();
+  ctx.shadowColor = "#ff3333";
+  ctx.shadowBlur = 8;
+  ctx.fillStyle = "#ff5555";
+  ctx.font = "bold 9px Segoe UI";
+  ctx.textAlign = "center";
+  ctx.fillText("CASINO", doorX + doorW / 2, doorY - 4);
+  ctx.shadowBlur = 0;
+  ctx.restore();
+
+  // ── Lift shafts ──
+  for (let li = 0; li < 2; li++) {
+    const lx = li === 0 ? 50 : 218;
+    const ly = 78, lw = 148, lh = 152;
+    fillRoundedRect(lx, ly, lw, lh, 10, "#1a1a2e");
+    strokeRoundedRect(lx, ly, lw, lh, 10, "rgba(180,190,220,0.55)", 2);
+    // Lift doors
+    fillRoundedRect(lx + 8, ly + 12, 58, lh - 24, 6, "#2a2a4a");
+    fillRoundedRect(lx + 82, ly + 12, 58, lh - 24, 6, "#2a2a4a");
+    // Arrow indicator
+    fillCircle(lx + lw / 2, ly - 4, 7, "#4a4");
+    ctx.save();
+    ctx.fillStyle = "#fff";
+    ctx.font = "bold 9px Segoe UI";
+    ctx.textAlign = "center";
+    ctx.fillText("▲▼", lx + lw / 2, ly + 16);
+    ctx.restore();
+  }
+
+  // ── Check-in desk ──
+  const dkX = 380, dkY = 80, dkW = 640, dkH = 80;
+  fillRoundedRect(dkX, dkY, dkW, dkH, 14, "#4a3020");
+  strokeRoundedRect(dkX, dkY, dkW, dkH, 14, "rgba(220,180,120,0.6)", 2);
+  fillRoundedRect(dkX + 10, dkY + 8, dkW - 20, 14, 7, "rgba(255,220,150,0.25)");
+  ctx.fillStyle = "#d4b88c";
+  ctx.font = "italic 14px Segoe UI";
+  ctx.textAlign = "center";
+  ctx.fillText("GRAND NEON HOTEL · CHECK-IN", dkX + dkW / 2, dkY + 42);
+  // Desk lamp
+  fillCircle(dkX + 60, dkY + 10, 8, "rgba(255,230,140,0.6)");
+  fillCircle(dkX + dkW - 60, dkY + 10, 8, "rgba(255,230,140,0.6)");
+
+  // ── Fountain basin ──
+  const fX = 530, fY = 240, fW = 220, fH = 178;
+  fillRoundedRect(fX, fY, fW, fH, 34, "#1a3038");
+  strokeRoundedRect(fX, fY, fW, fH, 34, "rgba(140,200,220,0.55)", 3);
+  fillRoundedRect(fX + 12, fY + 12, fW - 24, fH - 24, 28, "#0c1a22");
+  // Water spray
+  const fCx = fX + fW / 2, fCy = fY + fH / 2;
+  ctx.save();
+  ctx.globalAlpha = 0.18;
+  for (let s = 0; s < 8; s++) {
+    const angle = s * Math.PI / 4 + 0.2;
+    ctx.fillStyle = "#8ed0ff";
+    ctx.beginPath();
+    ctx.ellipse(fCx + Math.cos(angle) * 30, fCy + Math.sin(angle) * 24 - 10, 8, 5, angle, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+  // Central pillar
+  fillCircle(fCx, fCy, 8, "#c4e0f0");
+
+  // ── Left sofa group ──
+  const sf1X = 80, sf1Y = 325, sf1W = 210, sf1H = 195;
+  fillRoundedRect(sf1X, sf1Y, sf1W, sf1H, 16, "#3a2028");
+  strokeRoundedRect(sf1X, sf1Y, sf1W, sf1H, 16, "rgba(200,150,140,0.3)", 1);
+  fillRoundedRect(sf1X + 12, sf1Y + 35, 20, sf1H - 70, 8, "#5a3a3a");
+  fillRoundedRect(sf1X + sf1W - 32, sf1Y + 35, 20, sf1H - 70, 8, "#5a3a3a");
+  fillRoundedRect(sf1X + 35, sf1Y + sf1H - 32, sf1W - 70, 20, 8, "#5a3a3a");
+  // Cushions
+  fillRoundedRect(sf1X + 20, sf1Y + 10, 52, 30, 10, "#7a3a3a");
+  fillRoundedRect(sf1X + sf1W - 72, sf1Y + 10, 52, 30, 10, "#7a3a3a");
+  fillRoundedRect(sf1X + sf1W - 72, sf1Y + sf1H - 40, 52, 30, 10, "#7a3a3a");
+
+  // ── Right sofa group ──
+  const sf2X = 860, sf2Y = 325, sf2W = 210, sf2H = 195;
+  fillRoundedRect(sf2X, sf2Y, sf2W, sf2H, 16, "#2a2038");
+  strokeRoundedRect(sf2X, sf2Y, sf2W, sf2H, 16, "rgba(160,150,200,0.3)", 1);
+  fillRoundedRect(sf2X + 12, sf2Y + 35, 20, sf2H - 70, 8, "#3a3a5a");
+  fillRoundedRect(sf2X + sf2W - 32, sf2Y + 35, 20, sf2H - 70, 8, "#3a3a5a");
+  fillRoundedRect(sf2X + 35, sf2Y + sf2H - 32, sf2W - 70, 20, 8, "#3a3a5a");
+  fillRoundedRect(sf2X + 20, sf2Y + 10, 52, 30, 10, "#5a5a8a");
+  fillRoundedRect(sf2X + sf2W - 72, sf2Y + 10, 52, 30, 10, "#5a5a8a");
+  fillRoundedRect(sf2X + sf2W - 72, sf2Y + sf2H - 40, 52, 30, 10, "#5a5a8a");
+
+  // ── Coffee tables ──
+  for (const ct of [{ x: 465, y: 382, w: 90, h: 68 }, { x: 725, y: 382, w: 90, h: 68 }]) {
+    fillRoundedRect(ct.x, ct.y, ct.w, ct.h, 8, "#3a2818");
+    strokeRoundedRect(ct.x, ct.y, ct.w, ct.h, 8, "rgba(200,160,100,0.4)", 1);
+    fillCircle(ct.x + ct.w / 2, ct.y + ct.h / 2, 5, "#fff");
+  }
+
+  // ── Concierge desk ──
+  const cdX = 1050, cdY = 80, cdW = 150, cdH = 150;
+  fillRoundedRect(cdX, cdY, cdW, cdH, 12, "#2a2018");
+  strokeRoundedRect(cdX, cdY, cdW, cdH, 12, "rgba(200,160,99,0.5)", 2);
+  ctx.fillStyle = "#c0a070";
+  ctx.font = "bold 11px Segoe UI";
+  ctx.textAlign = "center";
+  ctx.fillText("CONCIERGE", cdX + cdW / 2, cdY + cdH / 2 + 4);
+
+  // ── Draw lobby NPCs ──
+  for (const npc of lobbyNpcs) {
+    const isStaff = npc.role === "staff";
+    const bodyColor = isStaff ? "#eeeef8" : npc.color;
+    const legColor = isStaff ? "#1e2a42" : "#18182a";
+    drawHumanoid(npc.x, npc.y, npc.size, bodyColor, npc.skin || "#f7ddc2", legColor, isStaff);
+  }
+}
+
+// ── Backstage rendering ──────────────────────────────────────────────────────
+function drawBackstageBackground() {
+  // Gritty dark backstage
+  const bgGrad = ctx.createLinearGradient(0, 0, WIDTH, HEIGHT);
+  bgGrad.addColorStop(0, "#121014");
+  bgGrad.addColorStop(0.5, "#0f0d12");
+  bgGrad.addColorStop(1, "#0a080c");
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+  // Concrete floor lines
+  ctx.save();
+  ctx.strokeStyle = "rgba(180,170,160,0.04)";
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 24; i++) {
+    const y = 60 + i * 30;
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(WIDTH, y);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawBackstage() {
+  drawBackstageBackground();
+
+  // ── Right wall stage door back to casino ──
+  const sDoorX = 1256, sDoorY = 285, sDoorW = 24, sDoorH = 150;
+  fillRoundedRect(sDoorX, sDoorY, sDoorW, sDoorH, 4, "#1a1020");
+  strokeRoundedRect(sDoorX, sDoorY, sDoorW, sDoorH, 4, "rgba(255,215,100,0.5)", 2);
+  ctx.save();
+  ctx.shadowColor = "#ff3333";
+  ctx.shadowBlur = 8;
+  ctx.fillStyle = "#ff5555";
+  ctx.font = "bold 8px Segoe UI";
+  ctx.textAlign = "center";
+  ctx.fillText("CASINO", sDoorX + sDoorW / 2, sDoorY - 4);
+  ctx.shadowBlur = 0;
+  ctx.restore();
+
+  // ── Dressing tables (2) ──
+  for (const dt of [{ x: 50, y: 80, w: 290, h: 100 }, { x: 420, y: 80, w: 290, h: 100 }]) {
+    fillRoundedRect(dt.x, dt.y, dt.w, dt.h, 10, "#1a181a");
+    strokeRoundedRect(dt.x, dt.y, dt.w, dt.h, 10, "rgba(180,180,200,0.3)", 1);
+    // Mirror
+    fillRoundedRect(dt.x + dt.w / 2 - 40, dt.y + 6, 80, 55, 8, "rgba(200,220,255,0.12)");
+    strokeRoundedRect(dt.x + dt.w / 2 - 40, dt.y + 6, 80, 55, 8, "rgba(180,200,240,0.3)", 1);
+    // Mirror light bulbs
+    for (let b = 0; b < 5; b++) {
+      fillCircle(dt.x + dt.w / 2 - 30 + b * 15, dt.y + 12, 4, "#ffdd88");
+    }
+    // Table surface
+    fillRoundedRect(dt.x + 10, dt.y + 70, dt.w - 20, 16, 5, "#332222");
+  }
+
+  // ── Equipment rack ──
+  const erX = 780, erY = 80, erW = 320, erH = 100;
+  fillRoundedRect(erX, erY, erW, erH, 10, "#14141a");
+  strokeRoundedRect(erX, erY, erW, erH, 10, "rgba(100,120,140,0.3)", 1);
+  for (let r = 0; r < 3; r++) {
+    fillRoundedRect(erX + 10, erY + 10 + r * 28, erW - 20, 22, 5, "#1a1a22");
+    // Knobs
+    for (let k = 0; k < 12; k++) {
+      fillCircle(erX + 30 + k * 24, erY + 21 + r * 28, 3, "#556");
+    }
+  }
+
+  // ── Break area sofa ──
+  const baX = 50, baY = 335, baW = 260, baH = 160;
+  fillRoundedRect(baX, baY, baW, baH, 14, "#1a1510");
+  strokeRoundedRect(baX, baY, baW, baH, 14, "rgba(150,130,110,0.25)", 1);
+  fillRoundedRect(baX + 15, baY + 40, 22, baH - 80, 8, "#333");
+  fillRoundedRect(baX + baW - 37, baY + 40, 22, baH - 80, 8, "#333");
+  fillRoundedRect(baX + 40, baY + baH - 32, baW - 80, 20, 8, "#333");
+  fillRoundedRect(baX + 25, baY + 12, 60, 35, 10, "#4a4a3a");
+  fillRoundedRect(baX + baW - 85, baY + 12, 60, 35, 10, "#4a4a3a");
+  fillRoundedRect(baX + baW - 85, baY + baH - 45, 60, 35, 10, "#4a4a3a");
+
+  // ── Mixing desk ──
+  const mdX = 650, mdY = 335, mdW = 220, mdH = 130;
+  fillRoundedRect(mdX, mdY, mdW, mdH, 10, "#10101a");
+  strokeRoundedRect(mdX, mdY, mdW, mdH, 10, "rgba(100,120,140,0.3)", 1);
+  // Faders
+  for (let f = 0; f < 8; f++) {
+    const fy = mdY + 15 + Math.random() * 40;
+    fillRoundedRect(mdX + 18 + f * 26, fy, 5, 40, 2, "#448");
+    fillCircle(mdX + 20 + f * 26, fy + 2, 4, "#99a");
+  }
+
+  // ── Storage boxes ──
+  const sbX = 960, sbY = 255, sbW = 240, sbH = 170;
+  for (let b = 0; b < 3; b++) {
+    fillRoundedRect(sbX + 8 + b * 78, sbY + 20, 70, sbH - 30, 8, "#1a1a1a");
+    strokeRoundedRect(sbX + 8 + b * 78, sbY + 20, 70, sbH - 30, 8, "rgba(150,150,150,0.2)", 1);
+    ctx.fillStyle = "#ffd700";
+    ctx.font = "bold 9px Segoe UI";
+    ctx.textAlign = "center";
+    ctx.fillText(`CASE ${b + 1}`, sbX + 43 + b * 78, sbY + sbH / 2);
+  }
+
+  // ── Amp stack ──
+  const asX = 1090, asY = 80, asW = 150, asH = 160;
+  for (let a = 0; a < 3; a++) {
+    fillRoundedRect(asX + 10, asY + 8 + a * 50, asW - 20, 44, 6, "#0a0a0f");
+    strokeRoundedRect(asX + 10, asY + 8 + a * 50, asW - 20, 44, 6, "rgba(200,200,200,0.2)", 1);
+    fillCircle(asX + asW / 2, asY + 30 + a * 50, 8, a === 0 ? "#0f0" : "#444");
+  }
+
+  // ── Draw backstage NPCs ──
+  for (const npc of backstageNpcs) {
+    const isStaff = npc.role === "staff";
+    const bodyColor = isStaff ? "#333344" : npc.color;
+    const legColor = isStaff ? "#1e1e2e" : "#18182a";
+    drawHumanoid(npc.x, npc.y, npc.size, bodyColor, npc.skin || "#f7ddc2", legColor, isStaff);
+  }
+}
+
+function updateNpcList(npcList, obstacles) {
+  for (let i = 0; i < npcList.length; i += 1) {
+    const npc = npcList[i];
     npc.moodTime -= 1;
     if (npc.moodTime <= 0) {
       const maxSpeed = npc.role === "staff" ? STAFF_MAX_SPEED : CUSTOMER_MAX_SPEED;
@@ -3402,7 +3798,16 @@ function updateNpcs() {
     }
 
     const npcRect = { x: nextX, y: nextY, width: npc.size, height: npc.size };
-    const blocked = collidesWithWorldRect(npcRect, { ignoreNpcIndex: i, includePlayer: true });
+    let blocked = collidesWithWorldRect(npcRect, { ignoreNpcIndex: i, includePlayer: true, skipNpcs: obstacles != null });
+    // Check extra obstacles (lobby/backstage furniture)
+    if (!blocked && obstacles) {
+      for (const obs of obstacles) {
+        if (intersectsRect(npcRect, obs)) {
+          blocked = true;
+          break;
+        }
+      }
+    }
 
     if (blocked) {
       npc.vx *= -1;
@@ -3652,19 +4057,66 @@ function updatePlayerPosition() {
   }
 
   const nextX = clamp(player.x + dx, 0, WIDTH - player.size);
-  if (!collidesWithWorldRect({ x: nextX, y: player.y, width: player.size, height: player.size }, { skipNpcs: true })) {
-    player.x = nextX;
+  const nextY = clamp(player.y + dy, 0, HEIGHT - player.size);
+
+  // Room-specific collision check
+  let blocked = false;
+  if (currentRoom === "casino") {
+    blocked = collidesWithWorldRect({ x: nextX, y: player.y, width: player.size, height: player.size }, { skipNpcs: true });
+    if (!blocked) {
+      blocked = collidesWithWorldRect({ x: player.x, y: nextY, width: player.size, height: player.size }, { skipNpcs: true });
+    }
+  } else {
+    const obstacles = currentRoom === "lobby" ? lobbyObstacles : backstageObstacles;
+    const checkX = { x: nextX, y: player.y, width: player.size, height: PLAYER_HITBOX_H };
+    const checkY = { x: player.x, y: nextY, width: player.size, height: PLAYER_HITBOX_H };
+    for (const obs of obstacles) {
+      if (intersectsRect(checkX, obs)) { blocked = true; break; }
+    }
+    if (!blocked) {
+      for (const obs of obstacles) {
+        if (intersectsRect(checkY, obs)) { blocked = true; break; }
+      }
+    }
   }
 
-  const nextY = clamp(player.y + dy, 0, HEIGHT - player.size);
-  if (!collidesWithWorldRect({ x: player.x, y: nextY, width: player.size, height: player.size }, { skipNpcs: true })) {
+  if (!blocked) {
+    player.x = nextX;
     player.y = nextY;
+  }
+
+  // ── Room transitions ──
+  const playerCenterX = player.x + player.size / 2;
+  const playerCenterY = player.y + player.size / 2;
+  const transitions = ROOM_TRANSITIONS[currentRoom];
+  if (transitions) {
+    for (const trans of transitions) {
+      const zone = trans.zone;
+      if (
+        playerCenterX >= zone.x && playerCenterX <= zone.x + zone.width &&
+        playerCenterY >= zone.y && playerCenterY <= zone.y + zone.height
+      ) {
+        currentRoom = trans.targetRoom;
+        player.x = trans.targetX;
+        player.y = trans.targetY;
+        break;
+      }
+    }
   }
 }
 
 function gameLoop() {
   updatePlayerPosition();
-  updateNpcs();
+
+  // Update NPCs for the current room
+  if (currentRoom === "casino") {
+    updateNpcList(npcs, null);
+  } else if (currentRoom === "lobby") {
+    updateNpcList(lobbyNpcs, lobbyObstacles);
+  } else if (currentRoom === "backstage") {
+    updateNpcList(backstageNpcs, backstageObstacles);
+  }
+
   resolveNearbyTable();
 
   const viewW = WIDTH / ZOOM;
@@ -3676,18 +4128,26 @@ function gameLoop() {
   ctx.scale(ZOOM, ZOOM);
   ctx.translate(-camX, -camY);
 
-  drawBackground();
-  drawPerformanceStage();
-  drawEntrance();
-  drawDecorativeTables();
-  drawCenterBar();
+  if (currentRoom === "casino") {
+    drawBackground();
+    drawPerformanceStage();
+    drawEntrance();
+    drawDecorativeTables();
+    drawCenterBar();
 
-  for (const table of tables) {
-    drawTable(table, nearbyTable?.id === table.id);
+    for (const table of tables) {
+      drawTable(table, nearbyTable?.id === table.id);
+    }
+
+    drawNpcs();
+    drawPlayer();
+  } else if (currentRoom === "lobby") {
+    drawLobby();
+    drawPlayer();
+  } else if (currentRoom === "backstage") {
+    drawBackstage();
+    drawPlayer();
   }
-
-  drawNpcs();
-  drawPlayer();
 
   ctx.restore();
 

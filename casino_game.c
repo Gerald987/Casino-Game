@@ -38,6 +38,7 @@ static const char *BAR_DRINKS[] = {
   "Lucky Lantern", "Neon Clover", "Golden Fizz", "Seven Star Sour",
   "Dealer's Twist", "Moonlit Tonic", "Emerald Rush", "House Edge Cooler"
 };
+static const char *NPC_NAMES[] = {"Maya", "Rico", "Skye", "Juno", "Vince", "Nina", "Axel", "Iris"};
 _Static_assert(BAR_DRINK_COUNT == (int)(sizeof(BAR_DRINKS) / sizeof(BAR_DRINKS[0])),
   "BAR_DRINK_COUNT must match BAR_DRINKS length");
 
@@ -108,6 +109,146 @@ static int score_blackjack_hand(const int *cards, int count) {
   return total;
 }
 
+/* ── Coin Flip ─────────────────────────────────────────────────────── */
+static void play_coin_flip(int *balance) {
+  if (*balance <= 0) {
+    printf("You are out of tokens.\n");
+    return;
+  }
+  int bet = read_bet(*balance);
+  int choice = read_int("Pick: 1) Heads  2) Tails\nSelect: ", 1, 2);
+  *balance -= bet;
+
+  int result = uniform_random(2); /* 0 = heads, 1 = tails */
+  const char *result_str = result == 0 ? "Heads" : "Tails";
+  int won = (result == 0 && choice == 1) || (result == 1 && choice == 2);
+
+  if (won) {
+    int payout = bet * 2;
+    *balance += payout;
+    printf("Coin shows %s. You win %d tokens.\n", result_str, bet);
+  } else {
+    printf("Coin shows %s. You lost %d tokens.\n", result_str, bet);
+  }
+}
+
+/* ── Baccarat ───────────────────────────────────────────────────────── */
+static int baccarat_card_value(int rank) {
+  if (rank == 1) return 1;         /* Ace */
+  if (rank >= 10 && rank <= 13) return 0; /* 10, J, Q, K */
+  return rank;                     /* 2-9 */
+}
+
+static int baccarat_total(const int *cards, int count) {
+  int sum = 0;
+  for (int i = 0; i < count; i++) {
+    sum += baccarat_card_value(cards[i]);
+  }
+  return sum % 10;
+}
+
+static void play_baccarat(int *balance) {
+  if (*balance <= 0) {
+    printf("You are out of tokens.\n");
+    return;
+  }
+  int bet = read_bet(*balance);
+  int choice = read_int(
+    "Bet on: 1) Player (1:1)  2) Banker (0.95:1)  3) Tie (8:1)\nSelect: ",
+    1, 3
+  );
+  *balance -= bet;
+
+  /* Deal 2 cards each (rank 1-13, Ace=1, 2-10, J=11, Q=12, K=13) */
+  int player_cards[4] = {0}, banker_cards[4] = {0};
+  int player_count = 2, banker_count = 2;
+  player_cards[0] = uniform_random(13) + 1;
+  player_cards[1] = uniform_random(13) + 1;
+  banker_cards[0] = uniform_random(13) + 1;
+  banker_cards[1] = uniform_random(13) + 1;
+
+  int player_natural = baccarat_total(player_cards, 2) >= 8;
+  int banker_natural = baccarat_total(banker_cards, 2) >= 8;
+
+  if (!player_natural && !banker_natural) {
+    /* Player draws if total <= 5 */
+    int player_third_value = -1;
+    if (baccarat_total(player_cards, player_count) <= 5) {
+      player_cards[player_count++] = uniform_random(13) + 1;
+      player_third_value = baccarat_card_value(player_cards[player_count - 1]);
+    }
+
+    /* Banker draw: proper third-card rules */
+    int banker_total = baccarat_total(banker_cards, banker_count);
+    int banker_draws = 0;
+    if (player_third_value < 0) {
+      /* Player stood — banker draws on <= 5 */
+      banker_draws = banker_total <= 5;
+    } else {
+      switch (banker_total) {
+        case 0: case 1: case 2:
+          banker_draws = 1;
+          break;
+        case 3:
+          banker_draws = player_third_value != 8;
+          break;
+        case 4:
+          banker_draws = player_third_value >= 2 && player_third_value <= 7;
+          break;
+        case 5:
+          banker_draws = player_third_value >= 4 && player_third_value <= 7;
+          break;
+        case 6:
+          banker_draws = player_third_value == 6 || player_third_value == 7;
+          break;
+        default:
+          banker_draws = 0;
+      }
+    }
+    if (banker_draws) {
+      banker_cards[banker_count++] = uniform_random(13) + 1;
+    }
+  }
+
+  int final_player = baccarat_total(player_cards, player_count);
+  int final_banker = baccarat_total(banker_cards, banker_count);
+
+  printf("Player: %d  |  Banker: %d\n", final_player, final_banker);
+
+  int outcome = 0; /* 0 = tie, 1 = player, 2 = banker */
+  if (final_player > final_banker) outcome = 1;
+  else if (final_banker > final_player) outcome = 2;
+
+  if (outcome == 0 && choice == 3) {
+    int payout = bet * 9;
+    *balance += payout;
+    printf("Tie! You win %d tokens.\n", payout - bet);
+  } else if (outcome == 0) {
+    *balance += bet;
+    printf("Tie. Bet returned.\n");
+  } else if ((outcome == 1 && choice == 1) || (outcome == 2 && choice == 2)) {
+    if (choice == 2) {
+      /* Banker: win 0.95:1 */
+      int winnings = (bet * 95) / 100;
+      *balance += bet + winnings;
+      printf("Banker wins. You win %d tokens.\n", winnings);
+    } else {
+      /* Player: win 1:1 */
+      *balance += bet * 2;
+      printf("Player wins. You win %d tokens.\n", bet);
+    }
+  } else {
+    const char *winner = outcome == 1 ? "Player" : "Banker";
+    printf("%s wins. You lost %d tokens.\n", winner, bet);
+  }
+}
+
+/* ── Roulette (expanded) ────────────────────────────────────────────── */
+static int roulette_column_from_number(int number) {
+  if (number < 1 || number > 36) return 0;
+  return ((number - 1) % 3) + 1;
+}
+
 static void play_roulette(int *balance) {
   if (*balance <= 0) {
     printf("You are out of tokens.\n");
@@ -115,13 +256,19 @@ static void play_roulette(int *balance) {
   }
   int bet = read_bet(*balance);
   int choice = read_int(
-    "Choice: 1) Red 2) Black 3) Odd 4) Even 5) Exact Number\nSelect: ",
+    "Choice:\n"
+    "  1) Red (1:1)      2) Black (1:1)    3) Odd (1:1)\n"
+    "  4) Even (1:1)     5) Low 1-18 (1:1) 6) High 19-36 (1:1)\n"
+    "  7) 1st Dozen 1-12 (2:1)   8) 2nd Dozen 13-24 (2:1)   9) 3rd Dozen 25-36 (2:1)\n"
+    " 10) Column 1 (2:1)        11) Column 2 (2:1)          12) Column 3 (2:1)\n"
+    " 13) Exact Number (35:1)\n"
+    "Select: ",
     1,
-    5
+    13
   );
 
   int number_choice = -1;
-  if (choice == 5) {
+  if (choice == 13) {
     number_choice = read_int("Pick a number (0-36): ", 0, 36);
   }
 
@@ -129,29 +276,68 @@ static void play_roulette(int *balance) {
   int spin = uniform_random(ROULETTE_SLOTS);
   int is_zero = (spin == 0);
   int is_red = is_red_roulette_number(spin);
+  int col = roulette_column_from_number(spin);
   int won = 0;
-  int payout_multiplier = 0;
+  int total_multiplier = 0;
 
-  if (choice == 1 && is_red) {
-    won = 1;
-    payout_multiplier = 2;
-  } else if (choice == 2 && !is_red && !is_zero) {
-    won = 1;
-    payout_multiplier = 2;
-  } else if (choice == 3 && !is_zero && (spin % 2 == 1)) {
-    won = 1;
-    payout_multiplier = 2;
-  } else if (choice == 4 && !is_zero && (spin % 2 == 0)) {
-    won = 1;
-    payout_multiplier = 2;
-  } else if (choice == 5 && spin == number_choice) {
-    won = 1;
-    payout_multiplier = ROULETTE_EXACT_PAYOUT_MULTIPLIER;
+  switch (choice) {
+    case 1: /* Red */
+      won = is_red;
+      total_multiplier = 2;
+      break;
+    case 2: /* Black */
+      won = !is_red && !is_zero;
+      total_multiplier = 2;
+      break;
+    case 3: /* Odd */
+      won = !is_zero && (spin % 2 == 1);
+      total_multiplier = 2;
+      break;
+    case 4: /* Even */
+      won = !is_zero && (spin % 2 == 0);
+      total_multiplier = 2;
+      break;
+    case 5: /* Low 1-18 */
+      won = spin >= 1 && spin <= 18;
+      total_multiplier = 2;
+      break;
+    case 6: /* High 19-36 */
+      won = spin >= 19 && spin <= 36;
+      total_multiplier = 2;
+      break;
+    case 7: /* 1st Dozen */
+      won = spin >= 1 && spin <= 12;
+      total_multiplier = 3;
+      break;
+    case 8: /* 2nd Dozen */
+      won = spin >= 13 && spin <= 24;
+      total_multiplier = 3;
+      break;
+    case 9: /* 3rd Dozen */
+      won = spin >= 25 && spin <= 36;
+      total_multiplier = 3;
+      break;
+    case 10: /* Column 1 */
+      won = col == 1;
+      total_multiplier = 3;
+      break;
+    case 11: /* Column 2 */
+      won = col == 2;
+      total_multiplier = 3;
+      break;
+    case 12: /* Column 3 */
+      won = col == 3;
+      total_multiplier = 3;
+      break;
+    case 13: /* Exact Number */
+      won = spin == number_choice;
+      total_multiplier = ROULETTE_EXACT_PAYOUT_MULTIPLIER;
+      break;
   }
 
   if (won) {
-    int payout = bet * payout_multiplier;
-    int net_win = (payout_multiplier - 1) * bet;
+    int payout = bet * total_multiplier;
+    int net_win = (total_multiplier - 1) * bet;
     *balance += payout;
     printf("Roulette landed on %d. You win %d tokens.\n", spin, net_win);
   } else {
@@ -159,6 +345,7 @@ static void play_roulette(int *balance) {
   }
 }
 
+/* ── Slots ──────────────────────────────────────────────────────────── */
 static char slot_symbol_for_value(int value) {
   switch (value) {
     case 0: return 'C';
@@ -232,6 +419,7 @@ static void play_slots(int *balance) {
   }
 }
 
+/* ── Blackjack ──────────────────────────────────────────────────────── */
 static void play_blackjack(int *balance) {
   if (*balance <= 0) {
     printf("You are out of tokens.\n");
@@ -248,6 +436,26 @@ static void play_blackjack(int *balance) {
   player_values[1] = draw_blackjack_card_value();
   dealer_values[0] = draw_blackjack_card_value();
   dealer_values[1] = draw_blackjack_card_value();
+
+  /* Check natural blackjack */
+  int player_total_init = score_blackjack_hand(player_values, 2);
+  int dealer_total_init = score_blackjack_hand(dealer_values, 2);
+  int player_natural = (player_count == 2 && player_total_init == 21);
+  int dealer_natural = (dealer_count == 2 && dealer_total_init == 21);
+
+  if (player_natural || dealer_natural) {
+    if (player_natural && dealer_natural) {
+      *balance += bet;
+      printf("Both have blackjack. Push.\n");
+    } else if (player_natural) {
+      int payout = (bet * 5) / 2; /* 2.5x */
+      *balance += payout;
+      printf("Blackjack! You win %d tokens.\n", payout - bet);
+    } else {
+      printf("Dealer has blackjack. You lost %d tokens.\n", bet);
+    }
+    return;
+  }
 
   while (1) {
     int player_total = score_blackjack_hand(player_values, player_count);
@@ -292,6 +500,7 @@ static void play_blackjack(int *balance) {
   }
 }
 
+/* ── Poker (expanded: 3 named NPCs) ─────────────────────────────────── */
 static void init_deck(Card *deck) {
   int idx = 0;
   for (int suit = 0; suit < 4; suit++) {
@@ -398,6 +607,21 @@ static const char *hand_name(int hand_rank) {
   }
 }
 
+static void shuffle_npc_names(char names[3][16]) {
+  /* Pick 3 random names from the NPC_NAMES pool */
+  int indices[3];
+  int pool[8] = {0, 1, 2, 3, 4, 5, 6, 7};
+  int remaining = 8;
+  for (int i = 0; i < 3; i++) {
+    int pick = uniform_random(remaining);
+    indices[i] = pool[pick];
+    pool[pick] = pool[--remaining];
+  }
+  for (int i = 0; i < 3; i++) {
+    snprintf(names[i], 16, "%s", NPC_NAMES[indices[i]]);
+  }
+}
+
 static void play_poker(int *balance) {
   if (*balance <= 0) {
     printf("You are out of tokens.\n");
@@ -411,9 +635,9 @@ static void play_poker(int *balance) {
   shuffle_deck(deck, 52);
 
   Card player[5];
-  Card npc1[5];
-  Card npc2[5];
-  Card npc3[5];
+  Card npc1[5], npc2[5], npc3[5];
+  char npc_names[3][16];
+  shuffle_npc_names(npc_names);
 
   for (int i = 0; i < 5; i++) {
     player[i] = deck[i];
@@ -427,14 +651,16 @@ static void play_poker(int *balance) {
   int npc2_rank = evaluate_five_card_hand(npc2);
   int npc3_rank = evaluate_five_card_hand(npc3);
 
-  int best_npc = npc1_rank;
-  if (npc2_rank > best_npc) best_npc = npc2_rank;
-  if (npc3_rank > best_npc) best_npc = npc3_rank;
-
   printf("Your hand: ");
   print_hand(player, 5);
   printf(" (%s)\n", hand_name(player_rank));
-  printf("NPC best hand rank: %s\n", hand_name(best_npc));
+  printf("%s: %s\n", npc_names[0], hand_name(npc1_rank));
+  printf("%s: %s\n", npc_names[1], hand_name(npc2_rank));
+  printf("%s: %s\n", npc_names[2], hand_name(npc3_rank));
+
+  int best_npc = npc1_rank;
+  if (npc2_rank > best_npc) best_npc = npc2_rank;
+  if (npc3_rank > best_npc) best_npc = npc3_rank;
 
   if (player_rank > best_npc) {
     int payout = bet * 2;
@@ -449,11 +675,13 @@ static void play_poker(int *balance) {
   }
 }
 
+/* ── Bar ────────────────────────────────────────────────────────────── */
 static void visit_bar(void) {
   int idx = uniform_random(BAR_DRINK_COUNT);
   printf("Bartender serves: %s (free)\n", BAR_DRINKS[idx]);
 }
 
+/* ── Main ───────────────────────────────────────────────────────────── */
 int main(void) {
   srand((unsigned int)time(NULL));
   int balance = 1000;
@@ -466,12 +694,14 @@ int main(void) {
     printf("1) Roulette\n");
     printf("2) Slots\n");
     printf("3) Blackjack\n");
-    printf("4) Poker\n");
-    printf("5) Center Bar (Free Drink)\n");
-    printf("6) Exit\n");
-    int choice = read_int("Select: ", 1, 6);
+    printf("4) Poker (vs 3 NPCs)\n");
+    printf("5) Coin Flip\n");
+    printf("6) Baccarat\n");
+    printf("7) Center Bar (Free Drink)\n");
+    printf("8) Exit\n");
+    int choice = read_int("Select: ", 1, 8);
 
-    if (choice == 6) {
+    if (choice == 8) {
       printf("Thanks for playing.\n");
       break;
     }
@@ -489,6 +719,12 @@ int main(void) {
         play_poker(&balance);
         break;
       case 5:
+        play_coin_flip(&balance);
+        break;
+      case 6:
+        play_baccarat(&balance);
+        break;
+      case 7:
         visit_bar();
         break;
       default:
