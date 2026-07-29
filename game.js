@@ -67,8 +67,8 @@ const INTERACT_KEY = "e";
 const INTERACT_KEY_TEXT = INTERACT_KEY.toUpperCase();
 
 const player = {
-  x: 640,
-  y: 480,
+  x: 300,
+  y: 200,
   size: 20,
   speed: 3.2,
   color: "#f4f7ff"
