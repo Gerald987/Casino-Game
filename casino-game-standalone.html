@@ -668,6 +668,177 @@ button:hover {
   display: none;
 }
 
+/* ── Coin flip ───────────────────────────────────────────── */
+.coin-flip-visual {
+  text-align: center;
+  padding: 0.4rem 0 0.2rem;
+}
+
+.coin {
+  font-size: 3.2rem;
+  display: inline-block;
+  line-height: 1;
+  margin-bottom: 0.2rem;
+}
+
+@keyframes coinFlipSpin {
+  0%   { transform: rotateY(0deg) scale(1); }
+  40%  { transform: rotateY(900deg) scale(1.25); }
+  100% { transform: rotateY(1440deg) scale(1); }
+}
+
+.coin-choice-row {
+  display: flex;
+  gap: 0.6rem;
+  margin: 0.45rem 0;
+}
+
+.toggle-btn {
+  flex: 1;
+  padding: 0.52rem 0.6rem;
+  border-radius: 12px;
+  border: 2px solid rgba(200, 180, 255, 0.28);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--muted);
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: background 160ms ease, color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.toggle-btn.active {
+  background: linear-gradient(180deg, #c8a8ff, #9a60ff 62%, #7030e0);
+  color: #160c2e;
+  border-color: transparent;
+  box-shadow: 0 4px 14px rgba(140, 70, 255, 0.35);
+}
+
+/* ── Bar shelf ───────────────────────────────────────────── */
+.bar-shelf-container {
+  position: relative;
+  margin: 0.5rem 0 0.35rem;
+  background: linear-gradient(170deg, #1c0c14, #120a10);
+  border: 1px solid rgba(241, 202, 126, 0.3);
+  border-radius: 12px;
+  padding: 0.3rem 0.35rem 0.5rem;
+  overflow: visible;
+}
+
+.shelf-plank {
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #7b4a22, #4a2810);
+  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.45);
+}
+
+.top-plank {
+  margin-bottom: 0.3rem;
+}
+
+.bottom-plank {
+  margin-top: 0.3rem;
+}
+
+.shelf-drinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 0.15rem 0.2rem;
+}
+
+.shelf-bottle {
+  position: relative;
+  width: 24px;
+  cursor: pointer;
+  transition: transform 140ms ease, filter 140ms ease;
+  z-index: 1;
+}
+
+.shelf-bottle:hover {
+  transform: translateY(-5px);
+  filter: brightness(1.3);
+  z-index: 20;
+}
+
+.shelf-bottle.selected {
+  filter: brightness(1.4) drop-shadow(0 0 4px rgba(255, 230, 130, 0.7));
+}
+
+.bottle-body {
+  width: 18px;
+  height: 32px;
+  border-radius: 5px 5px 3px 3px;
+  background: var(--bottle-color, #7ac4ff);
+  margin: 0 auto;
+  position: relative;
+}
+
+.bottle-body::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 4px;
+  height: 12px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.bottle-neck {
+  width: 9px;
+  height: 10px;
+  background: var(--bottle-color, #7ac4ff);
+  opacity: 0.82;
+  border-radius: 3px 3px 0 0;
+  margin: 0 auto;
+}
+
+.bottle-cap {
+  width: 11px;
+  height: 5px;
+  background: #f0e0b0;
+  border-radius: 3px 3px 1px 1px;
+  margin: 0 auto;
+}
+
+.bottle-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 110px;
+  padding: 0.32rem 0.42rem;
+  background: rgba(4, 9, 18, 0.97);
+  border: 1px solid rgba(220, 195, 130, 0.45);
+  border-radius: 8px;
+  font-size: 0.68rem;
+  color: #f0e8d4;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 120ms;
+  z-index: 50;
+  white-space: nowrap;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+}
+
+.shelf-bottle:hover .bottle-tooltip {
+  opacity: 1;
+}
+
+.theme-color-dots {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.theme-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+}
+
 @media (max-width: 820px) {
   .hud {
     flex-direction: column;
@@ -833,7 +1004,7 @@ button:hover {
   }
 }
 
-  </style>
+</style>
 </head>
 <body>
   <div class="ambient-glow"></div>
@@ -850,14 +1021,14 @@ button:hover {
           <span id="balance">0 WIS Tokens</span>
         </div>
         <div class="stat-box">
-          <span class="label">Nearby Table</span>
+          <span class="label">Nearby</span>
           <span id="nearbyTable">None</span>
         </div>
       </div>
     </header>
 
     <main class="game-shell">
-      <canvas id="gameCanvas" width="960" height="576"></canvas>
+      <canvas id="gameCanvas" width="1280" height="720"></canvas>
       <div class="help">Move: WASD / Arrow Keys or joystick | Interact: E or tap the map near a game | Close menu: Esc</div>
       <div class="mobile-joystick" id="mobileJoystick" aria-label="Movement joystick">
         <div class="joystick-base" id="joystickBase">
@@ -992,19 +1163,111 @@ button:hover {
       <p class="payout-guide">Hold'em rounds: preflop, flop, turn, river. Every round allows call, raise, check, or fold.</p>
     </div>
 
-    <div id="barPanel" class="panel hidden" role="dialog" aria-modal="true">
-      <h2>Center Bar</h2>
-      <p>Grab free drinks from the bartender.</p>
-      <div class="bar-offer">
-        <div class="bar-offer-name" id="barDrinkName">Signature Drink</div>
+    <div id="coinFlipPanel" class="panel hidden" role="dialog" aria-modal="true">
+      <h2>Coin Flip Table</h2>
+      <p>Simple 50/50. Pick heads or tails and win double your bet.</p>
+      <div class="coin-flip-visual">
+        <span id="coinEl" class="coin">🪙</span>
+        <div id="coinFlipStatus" class="spin-status">Ready to flip</div>
+      </div>
+      <div class="row">
+        <label for="coinBet">Bet:</label>
+        <input id="coinBet" type="number" min="1" value="10" />
+      </div>
+      <div class="coin-choice-row">
+        <button id="coinHeadsBtn" class="toggle-btn active">Heads</button>
+        <button id="coinTailsBtn" class="toggle-btn">Tails</button>
       </div>
       <div class="actions">
-        <button id="refreshDrinkBtn" class="ghost">New Offer</button>
-        <button id="buyDrinkBtn">Get Free Drink</button>
+        <button id="flipCoinBtn">Flip Coin</button>
+        <button class="ghost" data-close-panel>Leave Table</button>
+      </div>
+      <p id="coinFlipResult" class="result"></p>
+      <p class="payout-guide">Heads or Tails wins 2x total. Pure 50/50 odds.</p>
+    </div>
+
+    <div id="baccaratPanel" class="panel hidden" role="dialog" aria-modal="true">
+      <h2>Baccarat Table</h2>
+      <p>Bet on Player, Banker, or Tie. Highest hand (mod 10) wins.</p>
+      <div class="card-board blackjack-board">
+        <div class="card-lane-title">Banker</div>
+        <div id="bankerBaccaratCards" class="card-lane"></div>
+        <div class="card-lane-title">Player</div>
+        <div id="playerBaccaratCards" class="card-lane"></div>
+      </div>
+      <div class="row">
+        <label for="baccaratBet">Bet:</label>
+        <input id="baccaratBet" type="number" min="1" value="10" />
+      </div>
+      <div class="row">
+        <label for="baccaratChoice">Bet on:</label>
+        <select id="baccaratChoice">
+          <option value="player">Player (1:1)</option>
+          <option value="banker">Banker (0.95:1)</option>
+          <option value="tie">Tie (8:1)</option>
+        </select>
+      </div>
+      <div class="actions">
+        <button id="dealBaccaratBtn">Deal Hand</button>
+        <button class="ghost" data-close-panel>Leave Table</button>
+      </div>
+      <p id="baccaratHands" class="result"></p>
+      <p id="baccaratResult" class="result"></p>
+      <p class="payout-guide">Player wins 2x total. Banker wins 1.95x total (5% commission). Tie pays 9x total. Natural 8 or 9 beats all.</p>
+    </div>
+
+    <div id="barPanel" class="panel hidden" role="dialog" aria-modal="true">
+      <h2>Center Bar</h2>
+      <p>Pick a drink from the shelf — each one repaints the casino.</p>
+      <div class="bar-shelf-container">
+        <div class="shelf-plank top-plank"></div>
+        <div class="shelf-drinks" id="barShelf"></div>
+        <div class="shelf-plank bottom-plank"></div>
+      </div>
+      <div class="bar-offer">
+        <div class="bar-offer-name" id="barDrinkName">Signature Drink</div>
+        <div class="bar-offer-meta" id="barThemeName"></div>
+      </div>
+      <div class="actions">
+        <button id="buyDrinkBtn">Surprise Drink</button>
         <button class="ghost" data-close-panel>Leave Bar</button>
       </div>
       <p id="barResult" class="result"></p>
-      <p class="payout-guide">Drinks are free and for flavor only.</p>
+      <p class="payout-guide">Drinks are free and change the casino colour theme.</p>
+    </div>
+
+    <div id="checkinPanel" class="panel hidden" role="dialog" aria-modal="true">
+      <h2>Hotel Check-in</h2>
+      <p>Welcome to the Grand Neon Hotel &amp; Casino!</p>
+      <div class="bar-offer">
+        <div class="bar-offer-name" id="checkinSuite">Penthouse Suite · Floor 24</div>
+        <div class="bar-offer-meta">🔑 Key card encoded &nbsp;·&nbsp; Early check-in available</div>
+      </div>
+      <div class="actions">
+        <button id="checkinBtn">Check In</button>
+        <button class="ghost" data-close-panel>Leave Desk</button>
+      </div>
+      <p id="checkinResult" class="result"></p>
+      <p class="payout-guide">Complimentary breakfast 7–10 am · Valet parking available · Spa on floor 7.</p>
+    </div>
+
+    <div id="elevatorPanel" class="panel hidden" role="dialog" aria-modal="true">
+      <h2>Hotel Lifts</h2>
+      <p>Elevator bank — select your floor.</p>
+      <div class="bar-offer">
+        <div class="bar-offer-name" id="elevatorFloor">▲ Floor 24 — Penthouse</div>
+        <div class="bar-offer-meta">🏊 Floor 7 – Spa &amp; Pool &nbsp;·&nbsp; 🍽️ Floor 12 – Restaurant &nbsp;·&nbsp; 🌟 Floor 24 – Penthouse</div>
+      </div>
+      <div class="actions" style="flex-wrap:wrap">
+        <button id="elevFloor7" class="ghost" style="flex:1;min-width:90px">Floor 7</button>
+        <button id="elevFloor12" class="ghost" style="flex:1;min-width:90px">Floor 12</button>
+        <button id="elevFloor24" class="ghost" style="flex:1;min-width:90px">Floor 24</button>
+      </div>
+      <div class="actions">
+        <button class="ghost" data-close-panel>Exit Lift</button>
+      </div>
+      <p id="elevatorResult" class="result"></p>
+      <p class="payout-guide">Hotel room access requires a room key from the check-in desk.</p>
     </div>
   </section>
 
@@ -1021,10 +1284,15 @@ const slotsPanel = document.getElementById("slotsPanel");
 const blackjackPanel = document.getElementById("blackjackPanel");
 const pokerPanel = document.getElementById("pokerPanel");
 const barPanel = document.getElementById("barPanel");
-const refreshDrinkBtn = document.getElementById("refreshDrinkBtn");
 const buyDrinkBtn = document.getElementById("buyDrinkBtn");
 const barDrinkNameEl = document.getElementById("barDrinkName");
+const barThemeNameEl = document.getElementById("barThemeName");
 const barResultEl = document.getElementById("barResult");
+const barShelfEl = document.getElementById("barShelf");
+const coinFlipPanel = document.getElementById("coinFlipPanel");
+const baccaratPanel = document.getElementById("baccaratPanel");
+const checkinPanel = document.getElementById("checkinPanel");
+const elevatorPanel = document.getElementById("elevatorPanel");
 
 const rouletteBetInput = document.getElementById("rouletteBet");
 const rouletteChoiceSelect = document.getElementById("rouletteChoice");
@@ -1063,81 +1331,93 @@ const joystickThumb = document.getElementById("joystickThumb");
 
 const WIDTH = canvas.width;
 const HEIGHT = canvas.height;
+const ZOOM = 2;
+const STAFF_MAX_SPEED = 0.42;
+const CUSTOMER_MAX_SPEED = 0.5;
 const INTERACT_KEY = "e";
 const INTERACT_KEY_TEXT = INTERACT_KEY.toUpperCase();
 
 const player = {
-  x: 120,
-  y: 280,
+  x: 200,
+  y: 345,
   size: 20,
-  speed: 2.6,
+  speed: 3.2,
   color: "#f4f7ff"
 };
+
+// Returns the visual height of a humanoid drawn by drawHumanoid(x, y, size, …).
+// The figure spans from y+size/16 (head top) to y+35.5*(size/16) (leg bottom).
+function humanoidHitboxH(size) {
+  return Math.round(34.5 * (size / 16));
+}
+const PLAYER_HITBOX_H = humanoidHitboxH(player.size); // ≈ 43 for size 20
 
 const tables = [
   {
     id: "roulette",
     name: "Roulette Table",
-    x: 205,
-    y: 92,
-    width: 188,
-    height: 120,
+    x: 165,
+    y: 50,
+    width: 210,
+    height: 130,
     color: "#8f2f2f",
     label: "Roulette",
-    hitbox: {
-      x: 205,
-      y: 92,
-      width: 188,
-      height: 120
-    }
+    hitbox: { x: 165, y: 50, width: 210, height: 130 }
   },
   {
-    id: "slots",
-    name: "Slot Machine",
-    x: 620,
-    y: 326,
-    width: 166,
-    height: 126,
-    color: "#2f6b9a",
-    label: "Slots",
-    hitbox: {
-      x: 620,
-      y: 326,
-      width: 166,
-      height: 126
-    }
+    id: "coinflip",
+    name: "Coin Flip Table",
+    x: 535,
+    y: 50,
+    width: 210,
+    height: 130,
+    color: "#3f2a6a",
+    label: "Coin Flip",
+    hitbox: { x: 535, y: 50, width: 210, height: 130 }
   },
   {
     id: "blackjack",
     name: "Blackjack Table",
-    x: 600,
-    y: 94,
-    width: 188,
-    height: 120,
+    x: 905,
+    y: 50,
+    width: 210,
+    height: 130,
     color: "#2f7a4f",
     label: "Blackjack",
-    hitbox: {
-      x: 600,
-      y: 94,
-      width: 188,
-      height: 120
-    }
+    hitbox: { x: 905, y: 50, width: 210, height: 130 }
   },
   {
     id: "poker",
     name: "Poker Table",
-    x: 180,
-    y: 326,
-    width: 188,
-    height: 120,
+    x: 165,
+    y: 540,
+    width: 210,
+    height: 130,
     color: "#7a4f2f",
     label: "Poker",
-    hitbox: {
-      x: 180,
-      y: 326,
-      width: 188,
-      height: 120
-    }
+    hitbox: { x: 165, y: 540, width: 210, height: 130 }
+  },
+  {
+    id: "baccarat",
+    name: "Baccarat Table",
+    x: 535,
+    y: 540,
+    width: 210,
+    height: 130,
+    color: "#1a3a5a",
+    label: "Baccarat",
+    hitbox: { x: 535, y: 540, width: 210, height: 130 }
+  },
+  {
+    id: "slots",
+    name: "Slot Machine",
+    x: 905,
+    y: 540,
+    width: 190,
+    height: 130,
+    color: "#2f6b9a",
+    label: "Slots",
+    hitbox: { x: 905, y: 540, width: 190, height: 130 }
   }
 ];
 
@@ -1145,16 +1425,31 @@ const centerBar = {
   id: "bar",
   name: "Center Bar",
   label: "Center Bar",
-  x: 398,
-  y: 220,
-  width: 164,
-  height: 132,
+  x: 460,
+  y: 275,
+  width: 360,
+  height: 170,
   hitbox: {
-    x: 398,
-    y: 220,
-    width: 164,
-    height: 132
+    x: 460,
+    y: 275,
+    width: 360,
+    height: 170
   }
+};
+
+const performanceStage = {
+  x: 0,
+  y: 220,
+  width: 110,
+  height: 280,
+  hitbox: { x: 0, y: 220, width: 110, height: 280 }
+};
+
+const entrance = {
+  x: 1210,
+  y: 290,
+  width: 70,
+  height: 140
 };
 
 const backgroundLightSources = [
@@ -1183,6 +1478,9 @@ let isRouletteSpinning = false;
 let isSlotsSpinning = false;
 let blackjackRound = null;
 let pokerRound = null;
+let baccaratDealing = false;
+let isCoinFlipping = false;
+let coinChoice = "heads";
 let rouletteWheelRotation = 0;
 let rouletteBallAngle = 0;
 let joystickPointerId = null;
@@ -2195,33 +2493,129 @@ const CASINO_THEMES = [
 ];
 
 const decorativeTables = [
-  { x: 125, y: 120, radius: 24, color: "#4f2f45" },
-  { x: 510, y: 120, radius: 20, color: "#3f3b59" },
-  { x: 845, y: 180, radius: 23, color: "#4e3b2c" },
-  { x: 170, y: 450, radius: 22, color: "#3a4b63" },
-  { x: 470, y: 430, radius: 24, color: "#5a3a42" },
-  { x: 830, y: 460, radius: 20, color: "#445254" }
+  { x: 385, y: 115, radius: 22, color: "#4f2f45" },
+  { x: 755, y: 115, radius: 20, color: "#3f3b59" },
+  { x: 385, y: 615, radius: 22, color: "#4e3b2c" },
+  { x: 755, y: 615, radius: 22, color: "#3a4b63" },
+  { x: 148, y: 360, radius: 21, color: "#5a3a42" },
+  { x: 1148, y: 360, radius: 22, color: "#445254" },
+  { x: 445, y: 248, radius: 20, color: "#3f4a5a" },
+  { x: 835, y: 248, radius: 20, color: "#5a3f3f" },
+  { x: 445, y: 472, radius: 20, color: "#3a5a3a" },
+  { x: 835, y: 472, radius: 20, color: "#4a3a5a" },
+  { x: 640, y: 172, radius: 19, color: "#4a2a4a" },
+  { x: 640, y: 548, radius: 19, color: "#2a4a3a" }
 ];
 
 const npcs = [
-  { x: 86, y: 76, size: 14, vx: 0.7, vy: 0.5, moodTime: 0, color: "#f7cb6f" },
-  { x: 900, y: 90, size: 14, vx: -0.6, vy: 0.4, moodTime: 0, color: "#95d8ff" },
-  { x: 890, y: 520, size: 14, vx: -0.5, vy: -0.6, moodTime: 0, color: "#dcb2ff" },
-  { x: 72, y: 520, size: 14, vx: 0.55, vy: -0.45, moodTime: 0, color: "#ffb8c0" },
-  { x: 460, y: 290, size: 14, vx: 0.45, vy: 0.65, moodTime: 0, color: "#bde3a6" },
-  { x: 155, y: 78, size: 14, vx: 0.62, vy: 0.34, moodTime: 0, color: "#ffdb93" },
-  { x: 300, y: 70, size: 14, vx: -0.58, vy: 0.42, moodTime: 0, color: "#96f0df" },
-  { x: 500, y: 70, size: 14, vx: 0.4, vy: 0.58, moodTime: 0, color: "#b8c7ff" },
-  { x: 650, y: 95, size: 14, vx: -0.65, vy: 0.3, moodTime: 0, color: "#ffd1df" },
-  { x: 815, y: 95, size: 14, vx: 0.52, vy: 0.46, moodTime: 0, color: "#ffe3a1" },
-  { x: 540, y: 250, size: 14, vx: -0.42, vy: 0.68, moodTime: 0, color: "#abd3f4" },
-  { x: 835, y: 255, size: 14, vx: -0.5, vy: 0.5, moodTime: 0, color: "#f0b8d2" },
-  { x: 845, y: 330, size: 14, vx: -0.56, vy: 0.38, moodTime: 0, color: "#c5ef9b" },
-  { x: 90, y: 300, size: 14, vx: 0.6, vy: -0.36, moodTime: 0, color: "#f2d1a8" },
-  { x: 145, y: 360, size: 14, vx: 0.48, vy: -0.52, moodTime: 0, color: "#a6e6ff" },
-  { x: 515, y: 500, size: 14, vx: -0.6, vy: -0.44, moodTime: 0, color: "#d8c2ff" },
-  { x: 680, y: 500, size: 14, vx: 0.54, vy: -0.41, moodTime: 0, color: "#f7c88f" },
-  { x: 770, y: 520, size: 14, vx: -0.58, vy: -0.38, moodTime: 0, color: "#bceea7" }
+  // Staff (8) — white uniforms, anchored near tables/bar
+  { x: 455, y: 330, size: 16, vx: 0.3, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#f7ddc2", role: "staff", anchor: { x: 455, y: 330 }, roamRadius: 55 },
+  { x: 825, y: 330, size: 16, vx: -0.3, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#dba88a", role: "staff", anchor: { x: 825, y: 330 }, roamRadius: 55 },
+  { x: 280, y: 240, size: 16, vx: 0.28, vy: -0.22, moodTime: 0, color: "#f0f0fa", skin: "#c47a52", role: "staff", anchor: { x: 280, y: 240 }, roamRadius: 65 },
+  { x: 1015, y: 240, size: 16, vx: -0.28, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#f7ddc2", role: "staff", anchor: { x: 1015, y: 240 }, roamRadius: 65 },
+  { x: 640, y: 244, size: 16, vx: 0.25, vy: -0.25, moodTime: 0, color: "#f0f0fa", skin: "#8a5a38", role: "staff", anchor: { x: 640, y: 244 }, roamRadius: 60 },
+  { x: 640, y: 475, size: 16, vx: 0.25, vy: 0.25, moodTime: 0, color: "#f0f0fa", skin: "#dba88a", role: "staff", anchor: { x: 640, y: 475 }, roamRadius: 60 },
+  { x: 280, y: 480, size: 16, vx: -0.28, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#f7ddc2", role: "staff", anchor: { x: 280, y: 480 }, roamRadius: 58 },
+  { x: 1015, y: 480, size: 16, vx: 0.28, vy: -0.22, moodTime: 0, color: "#f0f0fa", skin: "#c47a52", role: "staff", anchor: { x: 1015, y: 480 }, roamRadius: 58 },
+  // Customers (20) — colourful clothing, roaming the full map
+  { x: 385, y: 120, size: 16, vx: 0.38, vy: 0.28, moodTime: 0, color: "#f7cb6f", skin: "#f7ddc2", role: "customer" },
+  { x: 750, y: 120, size: 16, vx: -0.32, vy: 0.3, moodTime: 0, color: "#95d8ff", skin: "#dba88a", role: "customer" },
+  { x: 385, y: 470, size: 16, vx: -0.28, vy: -0.38, moodTime: 0, color: "#dcb2ff", skin: "#c47a52", role: "customer" },
+  { x: 750, y: 468, size: 16, vx: 0.35, vy: -0.3, moodTime: 0, color: "#ffb8c0", skin: "#f7ddc2", role: "customer" },
+  { x: 148, y: 170, size: 16, vx: 0.3, vy: 0.4, moodTime: 0, color: "#bde3a6", skin: "#8a5a38", role: "customer" },
+  { x: 148, y: 550, size: 16, vx: 0.38, vy: 0.22, moodTime: 0, color: "#ffdb93", skin: "#dba88a", role: "customer" },
+  { x: 1172, y: 190, size: 16, vx: -0.35, vy: 0.3, moodTime: 0, color: "#96f0df", skin: "#f7ddc2", role: "customer" },
+  { x: 1172, y: 460, size: 16, vx: -0.3, vy: 0.35, moodTime: 0, color: "#b8c7ff", skin: "#c47a52", role: "customer" },
+  { x: 1140, y: 130, size: 16, vx: -0.38, vy: 0.25, moodTime: 0, color: "#ffd1df", skin: "#f7ddc2", role: "customer" },
+  { x: 148, y: 600, size: 16, vx: 0.32, vy: 0.3, moodTime: 0, color: "#ffe3a1", skin: "#dba88a", role: "customer" },
+  { x: 640, y: 220, size: 16, vx: -0.28, vy: 0.38, moodTime: 0, color: "#abd3f4", skin: "#8a5a38", role: "customer" },
+  { x: 655, y: 490, size: 16, vx: 0.3, vy: 0.32, moodTime: 0, color: "#f0b8d2", skin: "#f7ddc2", role: "customer" },
+  { x: 178, y: 360, size: 16, vx: 0.35, vy: 0.28, moodTime: 0, color: "#c5ef9b", skin: "#dba88a", role: "customer" },
+  { x: 1112, y: 355, size: 16, vx: -0.3, vy: -0.28, moodTime: 0, color: "#f2d1a8", skin: "#c47a52", role: "customer" },
+  { x: 320, y: 205, size: 16, vx: 0.38, vy: -0.32, moodTime: 0, color: "#a6e6ff", skin: "#f7ddc2", role: "customer" },
+  { x: 1172, y: 598, size: 16, vx: -0.3, vy: -0.35, moodTime: 0, color: "#d8c2ff", skin: "#8a5a38", role: "customer" },
+  { x: 430, y: 590, size: 16, vx: 0.28, vy: -0.3, moodTime: 0, color: "#f7c88f", skin: "#dba88a", role: "customer" },
+  { x: 870, y: 572, size: 16, vx: -0.32, vy: -0.28, moodTime: 0, color: "#bceea7", skin: "#f7ddc2", role: "customer" },
+  { x: 390, y: 215, size: 16, vx: -0.3, vy: 0.32, moodTime: 0, color: "#ff9eb0", skin: "#c47a52", role: "customer" },
+  { x: 870, y: 215, size: 16, vx: 0.3, vy: -0.3, moodTime: 0, color: "#e8d055", skin: "#dba88a", role: "customer" }
+];
+
+// ── Room system ───────────────────────────────────────────────────────────────
+let currentRoom = "casino"; // "casino" | "lobby" | "backstage"
+
+// Transition zones: player centre must fall inside zone.x/y/width/height
+const ROOM_TRANSITIONS = {
+  casino: [
+    // Right entrance door → hotel lobby
+    { zone: { x: 1218, y: 280, width: 62, height: 130 }, targetRoom: "lobby",     targetX: 50,  targetY: 345 },
+    // Top-left wall door (above stage) → backstage
+    { zone: { x: 0,    y: 90,  width: 22, height: 130 }, targetRoom: "backstage", targetX: 1250, targetY: 345 }
+  ],
+  lobby: [
+    // Left wall casino door → casino floor
+    { zone: { x: 0, y: 295, width: 28, height: 130 }, targetRoom: "casino", targetX: 1190, targetY: 345 }
+  ],
+  backstage: [
+    // Right wall stage door → casino floor
+    { zone: { x: 1256, y: 285, width: 24, height: 130 }, targetRoom: "casino", targetX: 38, targetY: 95 }
+  ]
+};
+
+// ── Lobby data ────────────────────────────────────────────────────────────────
+const lobbyObstacles = [
+  { x: 50,  y: 78, width: 148, height: 152 }, // Lift shaft 1
+  { x: 218, y: 78, width: 148, height: 152 }, // Lift shaft 2
+  { x: 380, y: 80, width: 640, height: 80  }, // Check-in desk
+  { x: 530, y: 240, width: 220, height: 178 }, // Fountain basin
+  { x: 80,  y: 325, width: 210, height: 195 }, // Left sofa group
+  { x: 860, y: 325, width: 210, height: 195 }, // Right sofa group
+  { x: 465, y: 382, width: 90,  height: 68  }, // Coffee table L
+  { x: 725, y: 382, width: 90,  height: 68  }, // Coffee table R
+  { x: 1050, y: 80, width: 150, height: 150 }, // Concierge desk
+];
+
+const lobbyInteractables = [
+  { id: "elevator", name: "Hotel Lifts",     label: "Take Lift",  hitbox: { x: 50,  y: 78, width: 316, height: 152 } },
+  { id: "checkin",  name: "Check-in Desk",   label: "Check In",   hitbox: { x: 380, y: 80, width: 640, height: 80  } }
+];
+
+const lobbyNpcs = [
+  // Receptionists anchored behind desk
+  { x: 490, y: 162, size: 16, vx: 0.12, vy: 0.08, moodTime: 0, color: "#eeeef8", skin: "#f7ddc2", role: "staff", anchor: { x: 490, y: 162 }, roamRadius: 52 },
+  { x: 640, y: 162, size: 16, vx: -0.12, vy: 0.08, moodTime: 0, color: "#eeeef8", skin: "#dba88a", role: "staff", anchor: { x: 640, y: 162 }, roamRadius: 52 },
+  { x: 800, y: 162, size: 16, vx: 0.14, vy: 0.1,  moodTime: 0, color: "#eeeef8", skin: "#c47a52", role: "staff", anchor: { x: 800, y: 162 }, roamRadius: 52 },
+  // Concierge near desk
+  { x: 1090, y: 185, size: 16, vx: 0.18, vy: 0.14, moodTime: 0, color: "#d4a84a", skin: "#f7ddc2", role: "staff", anchor: { x: 1090, y: 185 }, roamRadius: 42 },
+  // Guests walking around
+  { x: 240, y: 420, size: 16, vx: 0.3,  vy: 0.22, moodTime: 0, color: "#ff9dac", skin: "#f7ddc2", role: "customer" },
+  { x: 660, y: 525, size: 16, vx: -0.28, vy: 0.2, moodTime: 0, color: "#95d8ff", skin: "#dba88a", role: "customer" },
+  { x: 880, y: 445, size: 16, vx: 0.22, vy: -0.28, moodTime: 0, color: "#dcb2ff", skin: "#c47a52", role: "customer" },
+  { x: 450, y: 595, size: 16, vx: 0.28, vy: -0.2, moodTime: 0, color: "#f7cb6f", skin: "#dba88a", role: "customer" },
+  { x: 785, y: 315, size: 16, vx: 0.2,  vy: 0.28, moodTime: 0, color: "#bde3a6", skin: "#8a5a38", role: "customer" },
+  { x: 1025, y: 580, size: 16, vx: -0.25, vy: -0.2, moodTime: 0, color: "#ffb8c0", skin: "#f7ddc2", role: "customer" }
+];
+
+// ── Backstage data ────────────────────────────────────────────────────────────
+const backstageObstacles = [
+  { x: 50,  y: 80,  width: 290, height: 100 }, // Dressing tables left
+  { x: 420, y: 80,  width: 290, height: 100 }, // Dressing tables right
+  { x: 780, y: 80,  width: 320, height: 100 }, // Equipment rack
+  { x: 50,  y: 335, width: 260, height: 160 }, // Break area sofa
+  { x: 650, y: 335, width: 220, height: 130 }, // Mixing desk
+  { x: 960, y: 255, width: 240, height: 170 }, // Storage boxes
+  { x: 1090, y: 80, width: 150, height: 160 }, // Amp stack
+];
+
+const backstageNpcs = [
+  // Stage techs near equipment
+  { x: 885, y: 145, size: 16, vx: 0.18, vy: 0.12, moodTime: 0, color: "#333344", skin: "#f7ddc2", role: "staff", anchor: { x: 885, y: 145 }, roamRadius: 65 },
+  { x: 980, y: 150, size: 16, vx: -0.2, vy: 0.14, moodTime: 0, color: "#2a2a3a", skin: "#dba88a", role: "staff", anchor: { x: 980, y: 150 }, roamRadius: 65 },
+  // Performers at dressing tables
+  { x: 145, y: 155, size: 16, vx: 0.14, vy: 0.1,  moodTime: 0, color: "#ff9dac", skin: "#c47a52", role: "customer", anchor: { x: 145, y: 155 }, roamRadius: 46 },
+  { x: 440, y: 158, size: 16, vx: -0.14, vy: 0.1, moodTime: 0, color: "#a0d8ff", skin: "#8a5a38", role: "customer", anchor: { x: 440, y: 158 }, roamRadius: 46 },
+  // Crew in break area
+  { x: 185, y: 435, size: 16, vx: 0.22, vy: 0.18, moodTime: 0, color: "#889099", skin: "#f7ddc2", role: "staff", anchor: { x: 185, y: 435 }, roamRadius: 72 },
+  { x: 270, y: 460, size: 16, vx: -0.18, vy: 0.22, moodTime: 0, color: "#667788", skin: "#dba88a", role: "staff", anchor: { x: 270, y: 460 }, roamRadius: 72 }
 ];
 
 const keyState = {
@@ -2274,6 +2668,80 @@ function renderDrinkOffer() {
   }
 
   barDrinkNameEl.textContent = currentDrinkOffer.name;
+  if (barThemeNameEl) {
+    barThemeNameEl.textContent = currentDrinkOffer.theme.name;
+  }
+}
+
+function extractThemeRgb(cssValue) {
+  const match = cssValue.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+  if (!match) {
+    return "#888";
+  }
+  return `rgb(${match[1]},${match[2]},${match[3]})`;
+}
+
+function renderBarShelf() {
+  if (!barShelfEl) {
+    return;
+  }
+  barShelfEl.innerHTML = "";
+
+  CASINO_THEMES.forEach((theme, index) => {
+    const bottleColor = extractThemeRgb(theme.vars["--bg-radial-a"]);
+    const glowColor = extractThemeRgb(theme.vars["--ambient-glow-a"]);
+    const hudColor = extractThemeRgb(theme.vars["--hud-border"]);
+
+    const bottle = document.createElement("div");
+    bottle.className = "shelf-bottle";
+    bottle.style.setProperty("--bottle-color", bottleColor);
+    bottle.dataset.themeIndex = index;
+    bottle.title = theme.name;
+
+    bottle.innerHTML = `
+      <div class="bottle-cap"></div>
+      <div class="bottle-neck"></div>
+      <div class="bottle-body"></div>
+      <div class="bottle-tooltip">
+        <div style="font-weight:700;margin-bottom:3px">${theme.name}</div>
+        <div class="theme-color-dots">
+          <div class="theme-dot" style="background:${bottleColor}"></div>
+          <div class="theme-dot" style="background:${glowColor}"></div>
+          <div class="theme-dot" style="background:${hudColor}"></div>
+        </div>
+      </div>`;
+
+    bottle.addEventListener("click", () => {
+      const drinkName = BAR_DRINK_NAMES[Math.floor(Math.random() * BAR_DRINK_NAMES.length)];
+      currentDrinkOffer = { name: drinkName, theme };
+      applyCasinoTheme(theme);
+      if (barDrinkNameEl) {
+        barDrinkNameEl.textContent = drinkName;
+      }
+      if (barThemeNameEl) {
+        barThemeNameEl.textContent = theme.name;
+      }
+      if (barResultEl) {
+        barResultEl.textContent = `You enjoyed a ${drinkName}. ${theme.name} now fills the casino!`;
+        barResultEl.style.color = "#9af5a8";
+      }
+      barShelfEl.querySelectorAll(".shelf-bottle").forEach((b) => b.classList.remove("selected"));
+      bottle.classList.add("selected");
+    });
+
+    barShelfEl.appendChild(bottle);
+  });
+
+  // Highlight current theme if set
+  if (currentDrinkOffer) {
+    const idx = CASINO_THEMES.indexOf(currentDrinkOffer.theme);
+    if (idx >= 0) {
+      const bottles = barShelfEl.querySelectorAll(".shelf-bottle");
+      if (bottles[idx]) {
+        bottles[idx].classList.add("selected");
+      }
+    }
+  }
 }
 
 function refreshDrinkOffer() {
@@ -2292,6 +2760,12 @@ function buyDrink() {
 
   applyCasinoTheme(currentDrinkOffer.theme);
 
+  if (barDrinkNameEl) {
+    barDrinkNameEl.textContent = currentDrinkOffer.name;
+  }
+  if (barThemeNameEl) {
+    barThemeNameEl.textContent = currentDrinkOffer.theme.name;
+  }
   if (barResultEl) {
     barResultEl.textContent = `You enjoyed a free ${currentDrinkOffer.name}. ${currentDrinkOffer.theme.name} now lights up the casino.`;
     barResultEl.style.color = "#9af5a8";
@@ -2324,6 +2798,7 @@ function rectIntersectsCircle(rect, cx, cy, radius) {
 function collidesWithWorldRect(rect, options = {}) {
   const ignoreNpcIndex = options.ignoreNpcIndex ?? -1;
   const includePlayer = options.includePlayer ?? false;
+  const skipNpcs = options.skipNpcs ?? false;
 
   for (const table of tables) {
     if (intersectsRect(rect, table.hitbox)) {
@@ -2335,20 +2810,26 @@ function collidesWithWorldRect(rect, options = {}) {
     return true;
   }
 
+  if (intersectsRect(rect, performanceStage.hitbox)) {
+    return true;
+  }
+
   for (const deco of decorativeTables) {
     if (rectIntersectsCircle(rect, deco.x, deco.y, deco.radius + 2)) {
       return true;
     }
   }
 
-  for (let i = 0; i < npcs.length; i += 1) {
-    if (i === ignoreNpcIndex) {
-      continue;
-    }
-    const npc = npcs[i];
-    const npcRect = { x: npc.x, y: npc.y, width: npc.size, height: npc.size };
-    if (intersectsRect(rect, npcRect)) {
-      return true;
+  if (!skipNpcs) {
+    for (let i = 0; i < npcs.length; i += 1) {
+      if (i === ignoreNpcIndex) {
+        continue;
+      }
+      const npc = npcs[i];
+      const npcRect = { x: npc.x, y: npc.y, width: npc.size, height: npc.size };
+      if (intersectsRect(rect, npcRect)) {
+        return true;
+      }
     }
   }
 
@@ -2368,20 +2849,31 @@ function resolveNearbyTable() {
   const interactDistance = 28;
 
   nearbyTable = null;
-  for (const table of tables) {
-    const dist = distanceToRect(playerCenterX, playerCenterY, table.hitbox);
-    if (dist <= interactDistance) {
-      nearbyTable = table;
-      break;
+
+  if (currentRoom === "casino") {
+    for (const table of tables) {
+      const dist = distanceToRect(playerCenterX, playerCenterY, table.hitbox);
+      if (dist <= interactDistance) {
+        nearbyTable = table;
+        break;
+      }
+    }
+    if (!nearbyTable) {
+      const barDist = distanceToRect(playerCenterX, playerCenterY, centerBar.hitbox);
+      if (barDist <= interactDistance) {
+        nearbyTable = centerBar;
+      }
+    }
+  } else if (currentRoom === "lobby") {
+    for (const lbItem of lobbyInteractables) {
+      const dist = distanceToRect(playerCenterX, playerCenterY, lbItem.hitbox);
+      if (dist <= interactDistance) {
+        nearbyTable = lbItem;
+        break;
+      }
     }
   }
 
-  if (!nearbyTable) {
-    const barDist = distanceToRect(playerCenterX, playerCenterY, centerBar.hitbox);
-    if (barDist <= interactDistance) {
-      nearbyTable = centerBar;
-    }
-  }
   updateNearbyText();
 }
 
@@ -2393,6 +2885,18 @@ function openPanel(tableId) {
   blackjackPanel.classList.add("hidden");
   pokerPanel.classList.add("hidden");
   barPanel.classList.add("hidden");
+  if (coinFlipPanel) {
+    coinFlipPanel.classList.add("hidden");
+  }
+  if (baccaratPanel) {
+    baccaratPanel.classList.add("hidden");
+  }
+  if (checkinPanel) {
+    checkinPanel.classList.add("hidden");
+  }
+  if (elevatorPanel) {
+    elevatorPanel.classList.add("hidden");
+  }
 
   if (tableId === "roulette") {
     roulettePanel.classList.remove("hidden");
@@ -2406,13 +2910,47 @@ function openPanel(tableId) {
   if (tableId === "poker") {
     pokerPanel.classList.remove("hidden");
   }
+  if (tableId === "coinflip" && coinFlipPanel) {
+    coinFlipPanel.classList.remove("hidden");
+    const statusEl = document.getElementById("coinFlipStatus");
+    if (statusEl) {
+      statusEl.textContent = "Ready to flip";
+    }
+  }
+  if (tableId === "baccarat" && baccaratPanel) {
+    baccaratPanel.classList.remove("hidden");
+    const handsEl = document.getElementById("baccaratHands");
+    const resultEl = document.getElementById("baccaratResult");
+    const bankerEl = document.getElementById("bankerBaccaratCards");
+    const playerEl = document.getElementById("playerBaccaratCards");
+    if (handsEl) {
+      handsEl.textContent = "";
+    }
+    if (resultEl) {
+      resultEl.textContent = "";
+    }
+    if (bankerEl) {
+      bankerEl.innerHTML = "";
+    }
+    if (playerEl) {
+      playerEl.innerHTML = "";
+    }
+  }
   if (tableId === "bar") {
     barPanel.classList.remove("hidden");
+    renderBarShelf();
     renderDrinkOffer();
     if (barResultEl) {
-      barResultEl.textContent = "The bartender smiles. First drink is on the house.";
+      barResultEl.textContent = "The bartender smiles. Pick any drink on the shelf.";
       barResultEl.style.color = "#f7d683";
     }
+  }
+  // ── Lobby interactables ──
+  if (tableId === "checkin" && checkinPanel) {
+    checkinPanel.classList.remove("hidden");
+  }
+  if (tableId === "elevator" && elevatorPanel) {
+    elevatorPanel.classList.remove("hidden");
   }
 }
 
@@ -2440,11 +2978,282 @@ function randomFloat(min, max) {
   return min + Math.random() * (max - min);
 }
 
+// ── Coin Flip ──────────────────────────────────────────────────────────────
+
+async function animateCoinFlip() {
+  const coinEl = document.getElementById("coinEl");
+  const coinFlipStatus = document.getElementById("coinFlipStatus");
+  if (coinFlipStatus) {
+    coinFlipStatus.textContent = "Flipping…";
+  }
+  if (coinEl) {
+    coinEl.style.animation = "coinFlipSpin 0.85s ease-out both";
+    await sleep(860);
+    coinEl.style.animation = "";
+  } else {
+    await sleep(600);
+  }
+}
+
+async function flipCoin() {
+  if (isCoinFlipping) {
+    return;
+  }
+  const betInput = document.getElementById("coinBet");
+  const resultEl = document.getElementById("coinFlipResult");
+  const flipStatus = document.getElementById("coinFlipStatus");
+
+  const validation = validateBet(betInput ? betInput.value : "0");
+  if (!validation.valid) {
+    if (resultEl) {
+      resultEl.textContent = validation.message;
+      resultEl.style.color = "#ff8787";
+    }
+    return;
+  }
+
+  isCoinFlipping = true;
+  const flipBtn = document.getElementById("flipCoinBtn");
+  if (flipBtn) {
+    flipBtn.disabled = true;
+  }
+
+  await animateCoinFlip();
+
+  const result = Math.random() < 0.5 ? "heads" : "tails";
+  const won = result === coinChoice;
+
+  wisTokens -= validation.bet;
+  if (won) {
+    wisTokens += validation.bet * 2;
+    if (resultEl) {
+      resultEl.textContent = `It's ${result}! You won ${validation.bet} WIS Tokens.`;
+      resultEl.style.color = "#9af5a8";
+    }
+  } else {
+    if (resultEl) {
+      resultEl.textContent = `It's ${result}! You lost ${validation.bet} WIS Tokens.`;
+      resultEl.style.color = "#ff8787";
+    }
+  }
+
+  if (flipStatus) {
+    flipStatus.textContent = `Result: ${result.toUpperCase()}`;
+  }
+  updateBalanceText();
+
+  if (flipBtn) {
+    flipBtn.disabled = false;
+  }
+  isCoinFlipping = false;
+}
+
+// ── Baccarat ───────────────────────────────────────────────────────────────
+
+function baccaratCardValue(card) {
+  if (card.rank === "A") {
+    return 1;
+  }
+  if (["10", "J", "Q", "K"].includes(card.rank)) {
+    return 0;
+  }
+  return Number(card.rank);
+}
+
+function baccaratHandTotal(cards) {
+  return cards.reduce((sum, c) => sum + baccaratCardValue(c), 0) % 10;
+}
+
+async function startBaccarat() {
+  if (baccaratDealing) {
+    return;
+  }
+  const betInput = document.getElementById("baccaratBet");
+  const choiceEl = document.getElementById("baccaratChoice");
+  const resultEl = document.getElementById("baccaratResult");
+  const handsEl = document.getElementById("baccaratHands");
+  const bankerCardsEl = document.getElementById("bankerBaccaratCards");
+  const playerCardsEl = document.getElementById("playerBaccaratCards");
+  const dealBtn = document.getElementById("dealBaccaratBtn");
+
+  const validation = validateBet(betInput ? betInput.value : "0");
+  if (!validation.valid) {
+    if (resultEl) {
+      resultEl.textContent = validation.message;
+      resultEl.style.color = "#ff8787";
+    }
+    if (handsEl) {
+      handsEl.textContent = "";
+    }
+    return;
+  }
+
+  baccaratDealing = true;
+  if (dealBtn) {
+    dealBtn.disabled = true;
+  }
+  if (bankerCardsEl) {
+    bankerCardsEl.innerHTML = "";
+  }
+  if (playerCardsEl) {
+    playerCardsEl.innerHTML = "";
+  }
+  if (handsEl) {
+    handsEl.textContent = "";
+  }
+  if (resultEl) {
+    resultEl.textContent = "";
+  }
+
+  const choice = choiceEl ? choiceEl.value : "player";
+  const deck = createDeck();
+  const playerCards = [drawCard(deck), drawCard(deck)];
+  const bankerCards = [drawCard(deck), drawCard(deck)];
+
+  wisTokens -= validation.bet;
+  updateBalanceText();
+
+  // Animate card deal
+  if (playerCardsEl) {
+    playerCards.forEach((card, i) => {
+      playerCardsEl.appendChild(
+        createPlayingCardElement(`${card.rank}${card.suit}`, { animate: true, delayMs: 60 + i * 70 })
+      );
+    });
+  }
+  if (bankerCardsEl) {
+    bankerCards.forEach((card, i) => {
+      bankerCardsEl.appendChild(
+        createPlayingCardElement(`${card.rank}${card.suit}`, { animate: true, delayMs: i * 70 })
+      );
+    });
+  }
+  await sleep(350);
+
+  const playerNatural = baccaratHandTotal(playerCards) >= 8;
+  const bankerNatural = baccaratHandTotal(bankerCards) >= 8;
+
+  if (!playerNatural && !bankerNatural) {
+    // Player draws if total ≤ 5
+    let playerThirdCardValue = null;
+    if (baccaratHandTotal(playerCards) <= 5) {
+      const newCard = drawCard(deck);
+      playerCards.push(newCard);
+      playerThirdCardValue = baccaratCardValue(newCard);
+      if (playerCardsEl) {
+        playerCardsEl.appendChild(
+          createPlayingCardElement(`${newCard.rank}${newCard.suit}`, { animate: true, delayMs: 0 })
+        );
+      }
+      await sleep(250);
+    }
+
+    // Banker draw rules depend on banker total and player's third card (if drawn)
+    const bankerTotal = baccaratHandTotal(bankerCards);
+    let bankerDraws = false;
+    if (playerThirdCardValue === null) {
+      // Player stood — banker draws on ≤ 5
+      bankerDraws = bankerTotal <= 5;
+    } else {
+      // Standard third-card rules
+      switch (bankerTotal) {
+        case 0: case 1: case 2:
+          bankerDraws = true;
+          break;
+        case 3:
+          bankerDraws = playerThirdCardValue !== 8;
+          break;
+        case 4:
+          bankerDraws = playerThirdCardValue >= 2 && playerThirdCardValue <= 7;
+          break;
+        case 5:
+          bankerDraws = playerThirdCardValue >= 4 && playerThirdCardValue <= 7;
+          break;
+        case 6:
+          bankerDraws = playerThirdCardValue === 6 || playerThirdCardValue === 7;
+          break;
+        default:
+          bankerDraws = false;
+      }
+    }
+
+    if (bankerDraws) {
+      const newCard = drawCard(deck);
+      bankerCards.push(newCard);
+      if (bankerCardsEl) {
+        bankerCardsEl.appendChild(
+          createPlayingCardElement(`${newCard.rank}${newCard.suit}`, { animate: true, delayMs: 0 })
+        );
+      }
+      await sleep(250);
+    }
+  }
+
+  const finalPlayer = baccaratHandTotal(playerCards);
+  const finalBanker = baccaratHandTotal(bankerCards);
+
+  if (handsEl) {
+    handsEl.textContent = `Player: ${finalPlayer}  |  Banker: ${finalBanker}`;
+  }
+
+  let outcome = "tie";
+  if (finalPlayer > finalBanker) {
+    outcome = "player";
+  } else if (finalBanker > finalPlayer) {
+    outcome = "banker";
+  }
+
+  if (outcome === "tie" && choice === "tie") {
+    const payout = validation.bet * 9;
+    wisTokens += payout;
+    if (resultEl) {
+      resultEl.textContent = `Tie at ${finalPlayer}! You win ${payout - validation.bet} WIS Tokens.`;
+      resultEl.style.color = "#9af5a8";
+    }
+  } else if (outcome === "tie") {
+    wisTokens += validation.bet;
+    if (resultEl) {
+      resultEl.textContent = `Tie at ${finalPlayer}. Bet returned.`;
+      resultEl.style.color = "#f7d683";
+    }
+  } else if (outcome === choice) {
+    let payout = 0;
+    if (choice === "banker") {
+      payout = Math.floor(validation.bet * 0.95);
+      wisTokens += validation.bet + payout;
+      if (resultEl) {
+        resultEl.textContent = `Banker wins ${finalBanker} vs ${finalPlayer}! You win ${payout} WIS Tokens.`;
+        resultEl.style.color = "#9af5a8";
+      }
+    } else {
+      wisTokens += validation.bet * 2;
+      if (resultEl) {
+        resultEl.textContent = `Player wins ${finalPlayer} vs ${finalBanker}! You win ${validation.bet} WIS Tokens.`;
+        resultEl.style.color = "#9af5a8";
+      }
+    }
+  } else {
+    const winnerLabel = outcome === "player" ? "Player" : "Banker";
+    if (resultEl) {
+      resultEl.textContent = `${winnerLabel} wins. You lost ${validation.bet} WIS Tokens.`;
+      resultEl.style.color = "#ff8787";
+    }
+  }
+
+  updateBalanceText();
+  baccaratDealing = false;
+  if (dealBtn) {
+    dealBtn.disabled = false;
+  }
+}
+
 function rouletteColorFromNumber(number) {
   if (number === 0) {
     return "green";
   }
-  return number % 2 === 0 ? "black" : "red";
+  // European wheel: red numbers are 1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36
+  const redNumbers = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
+  return redNumbers.includes(number) ? "red" : "black";
 }
 
 function rouletteColumnFromNumber(number) {
@@ -3112,7 +3921,9 @@ async function startPokerRound() {
   const opponents = npcNames.map((name) => ({
     name,
     cards: [drawCard(deck), drawCard(deck)],
-    folded: false
+    folded: false,
+    chips: 1000,
+    totalContrib: 0
   }));
   const communityCards = [drawCard(deck), drawCard(deck), drawCard(deck), drawCard(deck), drawCard(deck)];
 
@@ -3127,6 +3938,7 @@ async function startPokerRound() {
     streetIndex: 0,
     currentStreetBet: 0,
     playerStreetContribution: 0,
+    playerTotalContrib: validation.bet,
     actionLocked: false,
     playerHand: null
   };
@@ -3280,6 +4092,36 @@ function getActiveOpponents() {
   return pokerRound.opponents.filter((opponent) => !opponent.folded);
 }
 
+function getNpcHandStrength(opponent) {
+  // If no community cards revealed yet, evaluate hole cards only
+  const revealedCount = pokerRound.revealCount || 0;
+  if (revealedCount === 0) {
+    // Preflop: evaluate hole cards
+    const [c1, c2] = opponent.cards;
+    const r1 = getRankValue(c1.rank), r2 = getRankValue(c2.rank);
+    const high = Math.max(r1, r2), low = Math.min(r1, r2);
+    const paired = r1 === r2;
+    const suited = c1.suit === c2.suit;
+    const gap = high - low - 1;
+    // Score 0-10 where 10 is strongest
+    if (paired && high >= 11) return high >= 13 ? 9 : 7;  // AA/KK = 9, QQ/JJ = 7
+    if (paired) return 5;  // low pair
+    if (high === 14 && low >= 11) return suited ? 8 : 7;  // AK/AQ
+    if (high === 14) return suited ? 5 : 4;
+    if (high >= 12 && low >= 10) return suited ? 6 : 5;
+    if (high >= 12 && gap <= 2 && suited) return 4;
+    if (high >= 10 && low >= 8) return 3;
+    return 2;
+  }
+  // Later streets: evaluate actual best hand
+  const allCards = [...opponent.cards, ...pokerRound.communityCards.slice(0, revealedCount)];
+  if (allCards.length < 5) return 3;
+  const best = evaluateBestPokerHand(allCards);
+  const rank = best ? best.rank : 0;
+  // Map 0-8 to 0-10
+  return Math.min(10, rank + 2);
+}
+
 function beginPokerStreet(isFirstStreet = false) {
   if (!pokerRound) {
     return;
@@ -3301,17 +4143,47 @@ function beginPokerStreet(isFirstStreet = false) {
     return;
   }
 
+  // NPCs decide street bet based on hand strength
   let streetBet = 0;
-  const betChance = isFirstStreet ? 0.62 : pokerRound.streetIndex === 3 ? 0.48 : 0.56;
-  if (Math.random() < betChance) {
-    const multiplier = Math.random() < 0.33 ? 2 : 1;
-    streetBet = pokerRound.ante * multiplier;
+  const betChance = isFirstStreet ? 0.55 : pokerRound.streetIndex === 3 ? 0.42 : 0.50;
+
+  for (const opponent of activeOpponents) {
+    const strength = getNpcHandStrength(opponent);
+    // Stronger hands bet more and more often; weaker hands fold sometimes
+    const foldChance = isFirstStreet ? 0.05 : Math.max(0, (1 - strength / 10) * 0.4);
+    if (Math.random() < foldChance) {
+      opponent.folded = true;
+      // Their contributions stay in the pot
+      continue;
+    }
+    const shouldBet = Math.random() < (betChance + strength * 0.03);
+    if (shouldBet && opponent.chips >= pokerRound.ante) {
+      const multiplier = Math.random() < strength / 12 ? 2 : 1;
+      const betAmount = Math.min(pokerRound.ante * multiplier, opponent.chips);
+      opponent.chips -= betAmount;
+      opponent.totalContrib += betAmount;
+      pokerRound.pot += betAmount;
+      if (betAmount > streetBet) {
+        streetBet = betAmount;
+      }
+    }
+  }
+
+  // Re-check after possible folds
+  if (getActiveOpponents().length === 0) {
+    const payoutFromPot = pokerRound.pot;
+    wisTokens += payoutFromPot;
+    pokerResult.textContent = `All NPCs folded. You win ${payoutFromPot} WIS Tokens.`;
+    pokerResult.style.color = "#9af5a8";
+    pokerRound = null;
+    setPokerButtonsInRound(false);
+    renderPokerHands(false);
+    renderPokerVisual(false, false);
+    updateBalanceText();
+    return;
   }
 
   pokerRound.currentStreetBet = streetBet;
-  for (const opponent of activeOpponents) {
-    pokerRound.pot += streetBet;
-  }
 
   setPokerButtonsInRound(true);
 }
@@ -3428,10 +4300,34 @@ function foldPoker() {
     return;
   }
 
-  const lostAnte = pokerRound.ante;
+  const lostContrib = pokerRound.playerTotalContrib || pokerRound.ante;
+  // Find the best remaining opponent — they effectively win the pot
+  const activeOpponents = pokerRound.opponents.filter((o) => !o.folded);
+  let winnerName = "the house";
+  let winnerContrib = 0;
+  for (const opp of activeOpponents) {
+    if (opp.totalContrib > winnerContrib) {
+      winnerContrib = opp.totalContrib;
+      winnerName = opp.name;
+    }
+  }
+  // Evaluate hands to find the strongest
+  if (activeOpponents.length > 0 && pokerRound.revealCount > 0) {
+    let bestRank = -1;
+    for (const opp of activeOpponents) {
+      const allCards = [...opp.cards, ...pokerRound.communityCards.slice(0, pokerRound.revealCount)];
+      if (allCards.length >= 5) {
+        const hand = evaluateBestPokerHand(allCards);
+        if (hand && hand.rank > bestRank) {
+          bestRank = hand.rank;
+          winnerName = `${opp.name} (${hand.label})`;
+        }
+      }
+    }
+  }
   pokerRound = null;
   setPokerButtonsInRound(false);
-  pokerResult.textContent = `You folded and lost ${lostAnte} WIS Tokens.`;
+  pokerResult.textContent = `You folded and lost ${lostContrib} WIS Tokens. ${winnerName} takes the pot.`;
   pokerResult.style.color = "#ff8787";
   pokerHands.textContent = "";
   renderPokerVisual(false, false);
@@ -3464,6 +4360,7 @@ async function callPoker() {
 
   wisTokens -= toCall;
   pokerRound.playerStreetContribution += toCall;
+  pokerRound.playerTotalContrib += toCall;
   pokerRound.pot += toCall;
   updateBalanceText();
   await advancePokerRoundOrShowdown();
@@ -3519,17 +4416,26 @@ async function raisePoker() {
 
   wisTokens -= additionalFromPlayer;
   pokerRound.playerStreetContribution = newStreetBet;
+  pokerRound.playerTotalContrib += additionalFromPlayer;
   pokerRound.currentStreetBet = newStreetBet;
   pokerRound.pot += additionalFromPlayer;
 
   const activeOpponents = getActiveOpponents();
   for (const opponent of activeOpponents) {
-    const foldChance = newStreetBet >= pokerRound.ante * 2 ? 0.36 : 0.24;
-    if (Math.random() < foldChance) {
+    const strength = getNpcHandStrength(opponent);
+    const foldChance = newStreetBet >= pokerRound.ante * 2 ? 0.38 : 0.22;
+    if (Math.random() < (foldChance - strength * 0.015)) {
       opponent.folded = true;
       continue;
     }
-    pokerRound.pot += newStreetBet;
+    // Match the raise: pay the difference between their current street contribution and newStreetBet
+    const toMatch = newStreetBet - (opponent.totalContrib % (pokerRound.ante || 1));
+    const matchAmount = Math.min(Math.max(0, toMatch), opponent.chips);
+    if (matchAmount > 0) {
+      opponent.chips -= matchAmount;
+      opponent.totalContrib += matchAmount;
+      pokerRound.pot += matchAmount;
+    }
   }
 
   updateBalanceText();
@@ -3612,16 +4518,51 @@ function drawChip(x, y, radius, baseColor, ringColor) {
   strokeCircle(x, y, radius - 6, ringColor, 1.5);
 }
 
-function drawAvatar(x, y, size, primaryColor, secondaryColor) {
+function drawHumanoid(x, y, size, bodyColor, skinColor, legColor, isStaff) {
   const cx = x + size / 2;
-  const cy = y + size / 2;
-  fillCircle(cx, y + size + 2, size * 0.52, "rgba(0, 0, 0, 0.24)");
-  fillCircle(cx, y + size * 0.42, size * 0.22, "#f7ddc2");
-  fillCircle(cx, y + size * 0.38, size * 0.22, "#f7ddc2");
-  fillRoundedRect(x + size * 0.16, y + size * 0.52, size * 0.68, size * 0.42, size * 0.2, primaryColor);
-  fillRoundedRect(x + size * 0.26, y + size * 0.52, size * 0.48, size * 0.18, size * 0.09, secondaryColor);
-  fillCircle(cx - size * 0.07, y + size * 0.38, size * 0.028, "#0d1623");
-  fillCircle(cx + size * 0.07, y + size * 0.38, size * 0.028, "#0d1623");
+  const s = size / 16;
+
+  const headR = 5.5 * s;
+  const headCY = y + headR + s;
+
+  const torsoW = 10 * s;
+  const torsoH = 12 * s;
+  const torsoY = headCY + headR + 2 * s;
+
+  const armW = 3.5 * s;
+  const armH = 10 * s;
+  const armY = torsoY + s;
+
+  const legW = 4 * s;
+  const legH = 11 * s;
+  const legY = torsoY + torsoH - 1.5 * s;
+  const legGap = 1.5 * s;
+
+  // Shadow
+  fillCircle(cx, legY + legH + 3, size * 0.62, "rgba(0,0,0,0.2)");
+
+  // Legs
+  fillRoundedRect(cx - legW - legGap, legY, legW, legH, legW * 0.45, legColor);
+  fillRoundedRect(cx + legGap, legY, legW, legH, legW * 0.45, legColor);
+
+  // Arms (skin-coloured, outside the torso)
+  fillRoundedRect(cx - torsoW / 2 - armW + s * 0.8, armY, armW, armH, armW * 0.5, skinColor);
+  fillRoundedRect(cx + torsoW / 2 - s * 0.8, armY, armW, armH, armW * 0.5, skinColor);
+
+  // Torso
+  fillRoundedRect(cx - torsoW / 2, torsoY, torsoW, torsoH, 3 * s, bodyColor);
+
+  // Staff badge
+  if (isStaff) {
+    fillRoundedRect(cx + torsoW * 0.05, torsoY + 2.5 * s, 3.5 * s, 2.5 * s, 0.8 * s, "rgba(255,220,110,0.85)");
+  }
+
+  // Head
+  fillCircle(cx, headCY, headR, skinColor);
+
+  // Eyes
+  fillCircle(cx - headR * 0.36, headCY + headR * 0.1, headR * 0.22, "#1a1220");
+  fillCircle(cx + headR * 0.36, headCY + headR * 0.1, headR * 0.22, "#1a1220");
 }
 
 function drawBackground() {
@@ -3694,32 +4635,43 @@ function drawCenterBar() {
 
   fillRoundedRect(centerBar.x, centerBar.y, centerBar.width, centerBar.height, 28, "#26161f");
   strokeRoundedRect(centerBar.x, centerBar.y, centerBar.width, centerBar.height, 28, "rgba(255, 221, 153, 0.55)", 2);
-  fillRoundedRect(centerBar.x + 10, centerBar.y + 12, centerBar.width - 20, centerBar.height - 24, 22, "#543122");
-  fillRoundedRect(centerBar.x + 18, centerBar.y + 18, centerBar.width - 36, 18, 9, "#9d6a3e");
-  fillRoundedRect(centerBar.x + 18, centerBar.y + 18, centerBar.width - 36, 5, 5, "rgba(255, 242, 195, 0.38)");
-  fillRoundedRect(centerBar.x + 24, centerBar.y + 42, centerBar.width - 48, centerBar.height - 62, 14, "#2d1920");
+  fillRoundedRect(centerBar.x + 10, centerBar.y + 14, centerBar.width - 20, centerBar.height - 28, 22, "#543122");
 
-  for (let i = 0; i < 5; i += 1) {
-    const bottleX = centerBar.x + 31 + i * 25;
-    const bottleColor = ["#7ac4ff", "#f6ce76", "#b89dff", "#8fe5c8", "#ff9dac"][i];
-    fillRoundedRect(bottleX, centerBar.y + 53, 12, 24, 5, bottleColor);
-    fillRoundedRect(bottleX + 3, centerBar.y + 48, 6, 8, 3, "#f5ead0");
+  // Counter shelf
+  fillRoundedRect(centerBar.x + 18, centerBar.y + 20, centerBar.width - 36, 18, 9, "#9d6a3e");
+  fillRoundedRect(centerBar.x + 18, centerBar.y + 20, centerBar.width - 36, 5, 5, "rgba(255, 242, 195, 0.38)");
+
+  // Back wall / bottle shelf
+  fillRoundedRect(centerBar.x + 24, centerBar.y + 46, centerBar.width - 48, centerBar.height - 66, 14, "#2d1920");
+
+  // Back shelf plank
+  fillRoundedRect(centerBar.x + 28, centerBar.y + 70, centerBar.width - 56, 7, 3, "#7b4a22");
+  fillRoundedRect(centerBar.x + 28, centerBar.y + 70, centerBar.width - 56, 2, 3, "rgba(255, 235, 190, 0.25)");
+
+  // Bottles on shelf
+  const bottleColors = ["#7ac4ff", "#f6ce76", "#b89dff", "#8fe5c8", "#ff9dac", "#ffd080", "#90d8a0", "#ff9070"];
+  const bottleCount = 8;
+  const shelfLeft = centerBar.x + 34;
+  const shelfWidth = centerBar.width - 68;
+  for (let i = 0; i < bottleCount; i += 1) {
+    const bx = shelfLeft + i * (shelfWidth / (bottleCount - 1)) - 6;
+    const by = centerBar.y + 48;
+    fillRoundedRect(bx, by, 12, 20, 4, bottleColors[i % bottleColors.length]);
+    fillRoundedRect(bx + 3, by + 2, 3, 7, 1.5, "rgba(255,255,255,0.28)");
+    fillRoundedRect(bx + 2, by - 4, 8, 6, 2, "#f5ead0");
   }
 
+  // Bar stools (10: 5 top, 5 bottom)
   const stoolOffsets = [
-    [-58, -50],
-    [0, -56],
-    [58, -50],
-    [-58, 50],
-    [0, 56],
-    [58, 50]
+    [-110, -87], [-55, -87], [0, -87], [55, -87], [110, -87],
+    [-110, 87], [-55, 87], [0, 87], [55, 87], [110, 87]
   ];
 
   for (const [ox, oy] of stoolOffsets) {
     fillCircle(cx + ox, cy + oy + 12, 11, "rgba(0, 0, 0, 0.24)");
     fillCircle(cx + ox, cy + oy, 12, "#51365a");
     strokeCircle(cx + ox, cy + oy, 12, "rgba(208, 196, 255, 0.5)", 1.5);
-    fillRoundedRect(cx + ox - 2, cy + oy + 10, 4, 15, 2, "#cab3ff");
+    fillRoundedRect(cx + ox - 2, cy + oy + 10, 4, 14, 2, "#cab3ff");
   }
 
   ctx.fillStyle = "#f6e4be";
@@ -3728,14 +4680,409 @@ function drawCenterBar() {
   ctx.fillText("BAR", cx, centerBar.y + centerBar.height - 12);
 }
 
-function updateNpcs() {
-  for (let i = 0; i < npcs.length; i += 1) {
-    const npc = npcs[i];
+function drawPerformanceStage() {
+  const sx = performanceStage.x;
+  const sy = performanceStage.y;
+  const sw = performanceStage.width;
+  const sh = performanceStage.height;
+  const cx = sx + sw / 2;
+
+  // ── Backstage door above stage ──
+  const bdX = 0, bdY = 90, bdW = 22, bdH = 130;
+  fillRoundedRect(bdX, bdY + 2, bdW, bdH - 2, 4, "#1a1020");
+  strokeRoundedRect(bdX, bdY + 2, bdW, bdH - 2, 4, "rgba(255,215,100,0.5)", 2);
+  ctx.save();
+  ctx.shadowColor = "#aa66ff";
+  ctx.shadowBlur = 8;
+  ctx.fillStyle = "#cc88ff";
+  ctx.font = "bold 7px Segoe UI";
+  ctx.textAlign = "center";
+  ctx.fillText("STAGE", bdX + bdW / 2, bdY - 4);
+  ctx.fillText("DOOR", bdX + bdW / 2, bdY + 8);
+  ctx.shadowBlur = 0;
+  ctx.restore();
+
+  // Shadow
+  fillRoundedRect(sx + 4, sy + 6, sw, sh, 8, "rgba(0,0,0,0.38)");
+  // Wooden floor boards
+  fillRoundedRect(sx, sy, sw, sh, 8, "#3a2010");
+  ctx.fillStyle = "rgba(255,200,140,0.06)";
+  for (let i = 0; i < 6; i += 2) {
+    ctx.fillRect(sx + 2, sy + i * (sh / 6), sw - 4, sh / 6);
+  }
+  // Gold edge trim
+  strokeRoundedRect(sx, sy, sw, sh, 8, "rgba(255,215,100,0.72)", 2);
+  fillRoundedRect(sx, sy, sw, 6, 4, "rgba(255,215,100,0.5)");
+
+  // LED dots along bottom edge
+  const ledColors = ["#ff4466", "#ff9900", "#ffff44", "#44ff88", "#44aaff", "#aa44ff", "#ff44cc", "#ff8833"];
+  for (let i = 0; i < 8; i += 1) {
+    const lx = sx + 6 + i * ((sw - 12) / 7);
+    fillCircle(lx, sy + sh - 6, 3, ledColors[i]);
+  }
+
+  // Microphone stand
+  ctx.save();
+  ctx.strokeStyle = "#b0b0b0";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(cx, sy + sh * 0.76);
+  ctx.lineTo(cx, sy + sh * 0.44);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx - 9, sy + sh * 0.76);
+  ctx.lineTo(cx + 9, sy + sh * 0.76);
+  ctx.stroke();
+  ctx.restore();
+  fillCircle(cx, sy + sh * 0.40, 6, "#777");
+  strokeCircle(cx, sy + sh * 0.40, 6, "#ccc", 1);
+
+  // Spotlight beam
+  ctx.save();
+  ctx.globalAlpha = 0.07;
+  const beamGrad = ctx.createLinearGradient(cx, sy - 50, cx, sy + 30);
+  beamGrad.addColorStop(0, "#ffffff");
+  beamGrad.addColorStop(1, "rgba(255,255,200,0)");
+  ctx.fillStyle = beamGrad;
+  ctx.beginPath();
+  ctx.moveTo(cx - 28, sy - 50);
+  ctx.lineTo(cx - 10, sy);
+  ctx.lineTo(cx + 10, sy);
+  ctx.lineTo(cx + 28, sy - 50);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+
+  ctx.fillStyle = "rgba(255,220,120,0.9)";
+  ctx.font = "bold 9px Segoe UI";
+  ctx.textAlign = "center";
+  ctx.fillText("STAGE", cx, sy + sh - 14);
+}
+
+function drawEntrance() {
+  const ex = entrance.x;
+  const ey = entrance.y;
+  const ew = entrance.width;
+  const eh = entrance.height;
+  const cx = ex + ew / 2;
+  const cy = ey + eh / 2;
+
+  // Door frame
+  fillRoundedRect(ex, ey, ew, eh, 6, "#1a1020");
+  strokeRoundedRect(ex, ey, ew, eh, 6, "rgba(255,215,100,0.65)", 3);
+
+  // Two door panels
+  const panelW = ew / 2 - 5;
+  fillRoundedRect(ex + 4, ey + 8, panelW, eh - 16, 4, "#2a1828");
+  fillRoundedRect(ex + ew / 2 + 1, ey + 8, panelW, eh - 16, 4, "#2a1828");
+  strokeRoundedRect(ex + 4, ey + 8, panelW, eh - 16, 4, "rgba(255,200,100,0.3)", 1);
+  strokeRoundedRect(ex + ew / 2 + 1, ey + 8, panelW, eh - 16, 4, "rgba(255,200,100,0.3)", 1);
+
+  // Door handles
+  fillCircle(ex + ew / 2 - 4, cy, 4, "#d4a840");
+  fillCircle(ex + ew / 2 + 4, cy, 4, "#d4a840");
+
+  // Neon EXIT sign above door
+  ctx.save();
+  ctx.shadowColor = "#ff3333";
+  ctx.shadowBlur = 12;
+  ctx.fillStyle = "#ff5555";
+  ctx.font = "bold 11px Segoe UI";
+  ctx.textAlign = "center";
+  ctx.fillText("EXIT", cx, ey - 6);
+  ctx.shadowBlur = 0;
+  ctx.restore();
+
+  // Arrow pointing right (→)
+  ctx.save();
+  ctx.strokeStyle = "rgba(255,140,140,0.72)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(cx - 10, cy + 26);
+  ctx.lineTo(cx + 10, cy + 26);
+  ctx.lineTo(cx + 5, cy + 20);
+  ctx.moveTo(cx + 10, cy + 26);
+  ctx.lineTo(cx + 5, cy + 32);
+  ctx.stroke();
+  ctx.restore();
+}
+
+// ── Lobby rendering ──────────────────────────────────────────────────────────
+function drawLobbyBackground() {
+  // Warm hotel palette
+  const bgGrad = ctx.createLinearGradient(0, 0, WIDTH, HEIGHT);
+  bgGrad.addColorStop(0, "#1a1210");
+  bgGrad.addColorStop(0.3, "#241c18");
+  bgGrad.addColorStop(0.7, "#1e1814");
+  bgGrad.addColorStop(1, "#0f0d0b");
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+  // Tile floor checker
+  ctx.save();
+  ctx.globalAlpha = 0.06;
+  const tileSize = 42;
+  for (let row = 0; row < Math.ceil(HEIGHT / tileSize); row++) {
+    for (let col = 0; col < Math.ceil(WIDTH / tileSize); col++) {
+      if ((row + col) % 2 === 0) {
+        ctx.fillStyle = "#fff8ee";
+        ctx.fillRect(col * tileSize, row * tileSize, tileSize, tileSize);
+      }
+    }
+  }
+  ctx.restore();
+
+  // Rug under seating area
+  fillRoundedRect(280, 340, 720, 250, 18, "rgba(120, 30, 20, 0.22)");
+  strokeRoundedRect(280, 340, 720, 250, 18, "rgba(180, 140, 100, 0.2)", 2);
+}
+
+function drawLobby() {
+  drawLobbyBackground();
+
+  // ── Left wall casino door ──
+  const doorX = 0, doorY = 295, doorW = 28, doorH = 130;
+  fillRoundedRect(doorX, doorY, doorW, doorH, 4, "#1a1020");
+  strokeRoundedRect(doorX, doorY, doorW, doorH, 4, "rgba(255,215,100,0.5)", 2);
+  ctx.save();
+  ctx.shadowColor = "#ff3333";
+  ctx.shadowBlur = 8;
+  ctx.fillStyle = "#ff5555";
+  ctx.font = "bold 9px Segoe UI";
+  ctx.textAlign = "center";
+  ctx.fillText("CASINO", doorX + doorW / 2, doorY - 4);
+  ctx.shadowBlur = 0;
+  ctx.restore();
+
+  // ── Lift shafts ──
+  for (let li = 0; li < 2; li++) {
+    const lx = li === 0 ? 50 : 218;
+    const ly = 78, lw = 148, lh = 152;
+    fillRoundedRect(lx, ly, lw, lh, 10, "#1a1a2e");
+    strokeRoundedRect(lx, ly, lw, lh, 10, "rgba(180,190,220,0.55)", 2);
+    // Lift doors
+    fillRoundedRect(lx + 8, ly + 12, 58, lh - 24, 6, "#2a2a4a");
+    fillRoundedRect(lx + 82, ly + 12, 58, lh - 24, 6, "#2a2a4a");
+    // Arrow indicator
+    fillCircle(lx + lw / 2, ly - 4, 7, "#4a4");
+    ctx.save();
+    ctx.fillStyle = "#fff";
+    ctx.font = "bold 9px Segoe UI";
+    ctx.textAlign = "center";
+    ctx.fillText("▲▼", lx + lw / 2, ly + 16);
+    ctx.restore();
+  }
+
+  // ── Check-in desk ──
+  const dkX = 380, dkY = 80, dkW = 640, dkH = 80;
+  fillRoundedRect(dkX, dkY, dkW, dkH, 14, "#4a3020");
+  strokeRoundedRect(dkX, dkY, dkW, dkH, 14, "rgba(220,180,120,0.6)", 2);
+  fillRoundedRect(dkX + 10, dkY + 8, dkW - 20, 14, 7, "rgba(255,220,150,0.25)");
+  ctx.fillStyle = "#d4b88c";
+  ctx.font = "italic 14px Segoe UI";
+  ctx.textAlign = "center";
+  ctx.fillText("GRAND NEON HOTEL · CHECK-IN", dkX + dkW / 2, dkY + 42);
+  // Desk lamp
+  fillCircle(dkX + 60, dkY + 10, 8, "rgba(255,230,140,0.6)");
+  fillCircle(dkX + dkW - 60, dkY + 10, 8, "rgba(255,230,140,0.6)");
+
+  // ── Fountain basin ──
+  const fX = 530, fY = 240, fW = 220, fH = 178;
+  fillRoundedRect(fX, fY, fW, fH, 34, "#1a3038");
+  strokeRoundedRect(fX, fY, fW, fH, 34, "rgba(140,200,220,0.55)", 3);
+  fillRoundedRect(fX + 12, fY + 12, fW - 24, fH - 24, 28, "#0c1a22");
+  // Water spray
+  const fCx = fX + fW / 2, fCy = fY + fH / 2;
+  ctx.save();
+  ctx.globalAlpha = 0.18;
+  for (let s = 0; s < 8; s++) {
+    const angle = s * Math.PI / 4 + 0.2;
+    ctx.fillStyle = "#8ed0ff";
+    ctx.beginPath();
+    ctx.ellipse(fCx + Math.cos(angle) * 30, fCy + Math.sin(angle) * 24 - 10, 8, 5, angle, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+  // Central pillar
+  fillCircle(fCx, fCy, 8, "#c4e0f0");
+
+  // ── Left sofa group ──
+  const sf1X = 80, sf1Y = 325, sf1W = 210, sf1H = 195;
+  fillRoundedRect(sf1X, sf1Y, sf1W, sf1H, 16, "#3a2028");
+  strokeRoundedRect(sf1X, sf1Y, sf1W, sf1H, 16, "rgba(200,150,140,0.3)", 1);
+  fillRoundedRect(sf1X + 12, sf1Y + 35, 20, sf1H - 70, 8, "#5a3a3a");
+  fillRoundedRect(sf1X + sf1W - 32, sf1Y + 35, 20, sf1H - 70, 8, "#5a3a3a");
+  fillRoundedRect(sf1X + 35, sf1Y + sf1H - 32, sf1W - 70, 20, 8, "#5a3a3a");
+  // Cushions
+  fillRoundedRect(sf1X + 20, sf1Y + 10, 52, 30, 10, "#7a3a3a");
+  fillRoundedRect(sf1X + sf1W - 72, sf1Y + 10, 52, 30, 10, "#7a3a3a");
+  fillRoundedRect(sf1X + sf1W - 72, sf1Y + sf1H - 40, 52, 30, 10, "#7a3a3a");
+
+  // ── Right sofa group ──
+  const sf2X = 860, sf2Y = 325, sf2W = 210, sf2H = 195;
+  fillRoundedRect(sf2X, sf2Y, sf2W, sf2H, 16, "#2a2038");
+  strokeRoundedRect(sf2X, sf2Y, sf2W, sf2H, 16, "rgba(160,150,200,0.3)", 1);
+  fillRoundedRect(sf2X + 12, sf2Y + 35, 20, sf2H - 70, 8, "#3a3a5a");
+  fillRoundedRect(sf2X + sf2W - 32, sf2Y + 35, 20, sf2H - 70, 8, "#3a3a5a");
+  fillRoundedRect(sf2X + 35, sf2Y + sf2H - 32, sf2W - 70, 20, 8, "#3a3a5a");
+  fillRoundedRect(sf2X + 20, sf2Y + 10, 52, 30, 10, "#5a5a8a");
+  fillRoundedRect(sf2X + sf2W - 72, sf2Y + 10, 52, 30, 10, "#5a5a8a");
+  fillRoundedRect(sf2X + sf2W - 72, sf2Y + sf2H - 40, 52, 30, 10, "#5a5a8a");
+
+  // ── Coffee tables ──
+  for (const ct of [{ x: 465, y: 382, w: 90, h: 68 }, { x: 725, y: 382, w: 90, h: 68 }]) {
+    fillRoundedRect(ct.x, ct.y, ct.w, ct.h, 8, "#3a2818");
+    strokeRoundedRect(ct.x, ct.y, ct.w, ct.h, 8, "rgba(200,160,100,0.4)", 1);
+    fillCircle(ct.x + ct.w / 2, ct.y + ct.h / 2, 5, "#fff");
+  }
+
+  // ── Concierge desk ──
+  const cdX = 1050, cdY = 80, cdW = 150, cdH = 150;
+  fillRoundedRect(cdX, cdY, cdW, cdH, 12, "#2a2018");
+  strokeRoundedRect(cdX, cdY, cdW, cdH, 12, "rgba(200,160,99,0.5)", 2);
+  ctx.fillStyle = "#c0a070";
+  ctx.font = "bold 11px Segoe UI";
+  ctx.textAlign = "center";
+  ctx.fillText("CONCIERGE", cdX + cdW / 2, cdY + cdH / 2 + 4);
+
+  // ── Draw lobby NPCs ──
+  for (const npc of lobbyNpcs) {
+    const isStaff = npc.role === "staff";
+    const bodyColor = isStaff ? "#eeeef8" : npc.color;
+    const legColor = isStaff ? "#1e2a42" : "#18182a";
+    drawHumanoid(npc.x, npc.y, npc.size, bodyColor, npc.skin || "#f7ddc2", legColor, isStaff);
+  }
+}
+
+// ── Backstage rendering ──────────────────────────────────────────────────────
+function drawBackstageBackground() {
+  // Gritty dark backstage
+  const bgGrad = ctx.createLinearGradient(0, 0, WIDTH, HEIGHT);
+  bgGrad.addColorStop(0, "#121014");
+  bgGrad.addColorStop(0.5, "#0f0d12");
+  bgGrad.addColorStop(1, "#0a080c");
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+  // Concrete floor lines
+  ctx.save();
+  ctx.strokeStyle = "rgba(180,170,160,0.04)";
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 24; i++) {
+    const y = 60 + i * 30;
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(WIDTH, y);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawBackstage() {
+  drawBackstageBackground();
+
+  // ── Right wall stage door back to casino ──
+  const sDoorX = 1256, sDoorY = 285, sDoorW = 24, sDoorH = 150;
+  fillRoundedRect(sDoorX, sDoorY, sDoorW, sDoorH, 4, "#1a1020");
+  strokeRoundedRect(sDoorX, sDoorY, sDoorW, sDoorH, 4, "rgba(255,215,100,0.5)", 2);
+  ctx.save();
+  ctx.shadowColor = "#ff3333";
+  ctx.shadowBlur = 8;
+  ctx.fillStyle = "#ff5555";
+  ctx.font = "bold 8px Segoe UI";
+  ctx.textAlign = "center";
+  ctx.fillText("CASINO", sDoorX + sDoorW / 2, sDoorY - 4);
+  ctx.shadowBlur = 0;
+  ctx.restore();
+
+  // ── Dressing tables (2) ──
+  for (const dt of [{ x: 50, y: 80, w: 290, h: 100 }, { x: 420, y: 80, w: 290, h: 100 }]) {
+    fillRoundedRect(dt.x, dt.y, dt.w, dt.h, 10, "#1a181a");
+    strokeRoundedRect(dt.x, dt.y, dt.w, dt.h, 10, "rgba(180,180,200,0.3)", 1);
+    // Mirror
+    fillRoundedRect(dt.x + dt.w / 2 - 40, dt.y + 6, 80, 55, 8, "rgba(200,220,255,0.12)");
+    strokeRoundedRect(dt.x + dt.w / 2 - 40, dt.y + 6, 80, 55, 8, "rgba(180,200,240,0.3)", 1);
+    // Mirror light bulbs
+    for (let b = 0; b < 5; b++) {
+      fillCircle(dt.x + dt.w / 2 - 30 + b * 15, dt.y + 12, 4, "#ffdd88");
+    }
+    // Table surface
+    fillRoundedRect(dt.x + 10, dt.y + 70, dt.w - 20, 16, 5, "#332222");
+  }
+
+  // ── Equipment rack ──
+  const erX = 780, erY = 80, erW = 320, erH = 100;
+  fillRoundedRect(erX, erY, erW, erH, 10, "#14141a");
+  strokeRoundedRect(erX, erY, erW, erH, 10, "rgba(100,120,140,0.3)", 1);
+  for (let r = 0; r < 3; r++) {
+    fillRoundedRect(erX + 10, erY + 10 + r * 28, erW - 20, 22, 5, "#1a1a22");
+    // Knobs
+    for (let k = 0; k < 12; k++) {
+      fillCircle(erX + 30 + k * 24, erY + 21 + r * 28, 3, "#556");
+    }
+  }
+
+  // ── Break area sofa ──
+  const baX = 50, baY = 335, baW = 260, baH = 160;
+  fillRoundedRect(baX, baY, baW, baH, 14, "#1a1510");
+  strokeRoundedRect(baX, baY, baW, baH, 14, "rgba(150,130,110,0.25)", 1);
+  fillRoundedRect(baX + 15, baY + 40, 22, baH - 80, 8, "#333");
+  fillRoundedRect(baX + baW - 37, baY + 40, 22, baH - 80, 8, "#333");
+  fillRoundedRect(baX + 40, baY + baH - 32, baW - 80, 20, 8, "#333");
+  fillRoundedRect(baX + 25, baY + 12, 60, 35, 10, "#4a4a3a");
+  fillRoundedRect(baX + baW - 85, baY + 12, 60, 35, 10, "#4a4a3a");
+  fillRoundedRect(baX + baW - 85, baY + baH - 45, 60, 35, 10, "#4a4a3a");
+
+  // ── Mixing desk ──
+  const mdX = 650, mdY = 335, mdW = 220, mdH = 130;
+  fillRoundedRect(mdX, mdY, mdW, mdH, 10, "#10101a");
+  strokeRoundedRect(mdX, mdY, mdW, mdH, 10, "rgba(100,120,140,0.3)", 1);
+  // Faders
+  for (let f = 0; f < 8; f++) {
+    const fy = mdY + 15 + Math.random() * 40;
+    fillRoundedRect(mdX + 18 + f * 26, fy, 5, 40, 2, "#448");
+    fillCircle(mdX + 20 + f * 26, fy + 2, 4, "#99a");
+  }
+
+  // ── Storage boxes ──
+  const sbX = 960, sbY = 255, sbW = 240, sbH = 170;
+  for (let b = 0; b < 3; b++) {
+    fillRoundedRect(sbX + 8 + b * 78, sbY + 20, 70, sbH - 30, 8, "#1a1a1a");
+    strokeRoundedRect(sbX + 8 + b * 78, sbY + 20, 70, sbH - 30, 8, "rgba(150,150,150,0.2)", 1);
+    ctx.fillStyle = "#ffd700";
+    ctx.font = "bold 9px Segoe UI";
+    ctx.textAlign = "center";
+    ctx.fillText(`CASE ${b + 1}`, sbX + 43 + b * 78, sbY + sbH / 2);
+  }
+
+  // ── Amp stack ──
+  const asX = 1090, asY = 80, asW = 150, asH = 160;
+  for (let a = 0; a < 3; a++) {
+    fillRoundedRect(asX + 10, asY + 8 + a * 50, asW - 20, 44, 6, "#0a0a0f");
+    strokeRoundedRect(asX + 10, asY + 8 + a * 50, asW - 20, 44, 6, "rgba(200,200,200,0.2)", 1);
+    fillCircle(asX + asW / 2, asY + 30 + a * 50, 8, a === 0 ? "#0f0" : "#444");
+  }
+
+  // ── Draw backstage NPCs ──
+  for (const npc of backstageNpcs) {
+    const isStaff = npc.role === "staff";
+    const bodyColor = isStaff ? "#333344" : npc.color;
+    const legColor = isStaff ? "#1e1e2e" : "#18182a";
+    drawHumanoid(npc.x, npc.y, npc.size, bodyColor, npc.skin || "#f7ddc2", legColor, isStaff);
+  }
+}
+
+function updateNpcList(npcList, obstacles) {
+  for (let i = 0; i < npcList.length; i += 1) {
+    const npc = npcList[i];
     npc.moodTime -= 1;
     if (npc.moodTime <= 0) {
-      npc.vx = randomFloat(-0.9, 0.9);
-      npc.vy = randomFloat(-0.9, 0.9);
-      npc.moodTime = 30 + Math.floor(Math.random() * 100);
+      const maxSpeed = npc.role === "staff" ? STAFF_MAX_SPEED : CUSTOMER_MAX_SPEED;
+      npc.vx = randomFloat(-maxSpeed, maxSpeed);
+      npc.vy = randomFloat(-maxSpeed, maxSpeed);
+      npc.moodTime = npc.role === "customer"
+        ? 200 + Math.floor(Math.random() * 300)
+        : 60 + Math.floor(Math.random() * 80);
     }
 
     let nextX = npc.x + npc.vx;
@@ -3750,8 +5097,29 @@ function updateNpcs() {
       nextY = npc.y + npc.vy;
     }
 
+    if (npc.anchor) {
+      const dist = Math.hypot(nextX + npc.size / 2 - npc.anchor.x, nextY + npc.size / 2 - npc.anchor.y);
+      if (dist > npc.roamRadius) {
+        const angle = Math.atan2(npc.anchor.y - (npc.y + npc.size / 2), npc.anchor.x - (npc.x + npc.size / 2));
+        const speed = Math.hypot(npc.vx, npc.vy) || STAFF_MAX_SPEED * 0.5;
+        npc.vx = Math.cos(angle) * speed;
+        npc.vy = Math.sin(angle) * speed;
+        nextX = npc.x + npc.vx;
+        nextY = npc.y + npc.vy;
+      }
+    }
+
     const npcRect = { x: nextX, y: nextY, width: npc.size, height: npc.size };
-    const blocked = collidesWithWorldRect(npcRect, { ignoreNpcIndex: i, includePlayer: true });
+    let blocked = collidesWithWorldRect(npcRect, { ignoreNpcIndex: i, includePlayer: true, skipNpcs: obstacles != null });
+    // Check extra obstacles (lobby/backstage furniture)
+    if (!blocked && obstacles) {
+      for (const obs of obstacles) {
+        if (intersectsRect(npcRect, obs)) {
+          blocked = true;
+          break;
+        }
+      }
+    }
 
     if (blocked) {
       npc.vx *= -1;
@@ -3766,7 +5134,10 @@ function updateNpcs() {
 
 function drawNpcs() {
   for (const npc of npcs) {
-    drawAvatar(npc.x, npc.y, npc.size, npc.color, "rgba(255, 255, 255, 0.26)");
+    const isStaff = npc.role === "staff";
+    const bodyColor = isStaff ? "#eeeef8" : npc.color;
+    const legColor = isStaff ? "#1e2a42" : "#18182a";
+    drawHumanoid(npc.x, npc.y, npc.size, bodyColor, npc.skin || "#f7ddc2", legColor, isStaff);
   }
 }
 
@@ -3873,6 +5244,45 @@ function drawCardTable(table, isNearby, accentColor) {
   ctx.fillText(table.label, table.x + table.width / 2, table.y + table.height - 16);
 }
 
+function drawCoinFlipTable(table, isNearby) {
+  const cx = table.x + table.width / 2;
+  const cy = table.y + table.height / 2 - 8;
+
+  fillRoundedRect(table.x, table.y, table.width, table.height, 24, "#1a1230");
+  strokeRoundedRect(table.x, table.y, table.width, table.height, 24, isNearby ? "#f7d683" : "rgba(232, 236, 255, 0.75)", isNearby ? 4 : 2);
+  fillRoundedRect(table.x + 10, table.y + 12, table.width - 20, table.height - 26, 18, "#2d1d4a");
+
+  // Coin body
+  fillCircle(cx, cy + 3, 29, "rgba(0,0,0,0.3)");
+  fillCircle(cx, cy, 28, "#a87820");
+  fillCircle(cx, cy, 25, "#d4a030");
+  fillCircle(cx, cy, 22, "#e8b840");
+
+  // Coin edge notches
+  ctx.save();
+  ctx.strokeStyle = "rgba(200,155,40,0.55)";
+  ctx.lineWidth = 1.5;
+  for (let i = 0; i < 24; i += 1) {
+    const angle = (Math.PI * 2 * i) / 24;
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(angle) * 22, cy + Math.sin(angle) * 22);
+    ctx.lineTo(cx + Math.cos(angle) * 26, cy + Math.sin(angle) * 26);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // Star on coin face
+  ctx.fillStyle = "#b88a20";
+  ctx.font = "bold 18px Segoe UI";
+  ctx.textAlign = "center";
+  ctx.fillText("★", cx, cy + 6);
+
+  ctx.fillStyle = "#f4fbff";
+  ctx.font = "bold 16px Segoe UI";
+  ctx.textAlign = "center";
+  ctx.fillText(table.label, cx, table.y + table.height - 14);
+}
+
 function drawTable(table, isNearby) {
   if (table.id === "roulette") {
     drawRouletteTable(table, isNearby);
@@ -3890,12 +5300,19 @@ function drawTable(table, isNearby) {
     drawCardTable(table, isNearby, "#6b4230");
     return;
   }
+  if (table.id === "coinflip") {
+    drawCoinFlipTable(table, isNearby);
+    return;
+  }
+  if (table.id === "baccarat") {
+    drawCardTable(table, isNearby, "#1a3f6a");
+    return;
+  }
 }
 
 function drawPlayer() {
-  fillCircle(player.x + player.size / 2, player.y + player.size + 3, player.size * 0.62, "rgba(0, 0, 0, 0.28)");
-  drawAvatar(player.x, player.y, player.size, "#edf5ff", "#5db4ff");
-  strokeCircle(player.x + player.size / 2, player.y + player.size / 2, player.size * 0.58, "rgba(93, 180, 255, 0.45)", 2);
+  drawHumanoid(player.x, player.y, player.size, "#3d8eef", "#f5d9b8", "#1c2445", false);
+  strokeCircle(player.x + player.size / 2, player.y + player.size / 2, player.size * 0.72, "rgba(93, 180, 255, 0.5)", 2);
 }
 
 function drawPrompt() {
@@ -3952,31 +5369,102 @@ function updatePlayerPosition() {
   }
 
   const nextX = clamp(player.x + dx, 0, WIDTH - player.size);
-  if (!collidesWithWorldRect({ x: nextX, y: player.y, width: player.size, height: player.size })) {
-    player.x = nextX;
+  const nextY = clamp(player.y + dy, 0, HEIGHT - player.size);
+
+  // Room-specific collision check
+  let blocked = false;
+  if (currentRoom === "casino") {
+    const checkX = { x: nextX, y: player.y, width: player.size, height: PLAYER_HITBOX_H };
+    const checkY = { x: player.x, y: nextY, width: player.size, height: PLAYER_HITBOX_H };
+    blocked = collidesWithWorldRect(checkX, { skipNpcs: true });
+    if (!blocked) {
+      blocked = collidesWithWorldRect(checkY, { skipNpcs: true });
+    }
+  } else {
+    const obstacles = currentRoom === "lobby" ? lobbyObstacles : backstageObstacles;
+    const checkX = { x: nextX, y: player.y, width: player.size, height: PLAYER_HITBOX_H };
+    const checkY = { x: player.x, y: nextY, width: player.size, height: PLAYER_HITBOX_H };
+    for (const obs of obstacles) {
+      if (intersectsRect(checkX, obs)) { blocked = true; break; }
+    }
+    if (!blocked) {
+      for (const obs of obstacles) {
+        if (intersectsRect(checkY, obs)) { blocked = true; break; }
+      }
+    }
   }
 
-  const nextY = clamp(player.y + dy, 0, HEIGHT - player.size);
-  if (!collidesWithWorldRect({ x: player.x, y: nextY, width: player.size, height: player.size })) {
+  if (!blocked) {
+    player.x = nextX;
     player.y = nextY;
+  }
+
+  // ── Room transitions ──
+  const playerCenterX = player.x + player.size / 2;
+  const playerCenterY = player.y + player.size / 2;
+  const transitions = ROOM_TRANSITIONS[currentRoom];
+  if (transitions) {
+    for (const trans of transitions) {
+      const zone = trans.zone;
+      if (
+        playerCenterX >= zone.x && playerCenterX <= zone.x + zone.width &&
+        playerCenterY >= zone.y && playerCenterY <= zone.y + zone.height
+      ) {
+        currentRoom = trans.targetRoom;
+        player.x = trans.targetX;
+        player.y = trans.targetY;
+        break;
+      }
+    }
   }
 }
 
 function gameLoop() {
   updatePlayerPosition();
-  updateNpcs();
-  resolveNearbyTable();
 
-  drawBackground();
-  drawDecorativeTables();
-  drawCenterBar();
-
-  for (const table of tables) {
-    drawTable(table, nearbyTable?.id === table.id);
+  // Update NPCs for the current room
+  if (currentRoom === "casino") {
+    updateNpcList(npcs, null);
+  } else if (currentRoom === "lobby") {
+    updateNpcList(lobbyNpcs, lobbyObstacles);
+  } else if (currentRoom === "backstage") {
+    updateNpcList(backstageNpcs, backstageObstacles);
   }
 
-  drawNpcs();
-  drawPlayer();
+  resolveNearbyTable();
+
+  const viewW = WIDTH / ZOOM;
+  const viewH = HEIGHT / ZOOM;
+  const camX = clamp(player.x + player.size / 2 - viewW / 2, 0, WIDTH - viewW);
+  const camY = clamp(player.y + player.size / 2 - viewH / 2, 0, HEIGHT - viewH);
+
+  ctx.save();
+  ctx.scale(ZOOM, ZOOM);
+  ctx.translate(-camX, -camY);
+
+  if (currentRoom === "casino") {
+    drawBackground();
+    drawPerformanceStage();
+    drawEntrance();
+    drawDecorativeTables();
+    drawCenterBar();
+
+    for (const table of tables) {
+      drawTable(table, nearbyTable?.id === table.id);
+    }
+
+    drawNpcs();
+    drawPlayer();
+  } else if (currentRoom === "lobby") {
+    drawLobby();
+    drawPlayer();
+  } else if (currentRoom === "backstage") {
+    drawBackstage();
+    drawPlayer();
+  }
+
+  ctx.restore();
+
   drawPrompt();
 
   requestAnimationFrame(gameLoop);
@@ -4097,15 +5585,15 @@ function updateResponsivePanelScale() {
 
   let panelScale = 1;
   if (isLandscape && isMobileish) {
-    const widthScale = viewportWidth / 1080;
-    const heightScale = viewportHeight / 650;
-    panelScale = clamp(Math.min(widthScale, heightScale), 0.58, 1);
+    const widthScale = viewportWidth / WIDTH;
+    const heightScale = viewportHeight / HEIGHT;
+    panelScale = clamp(Math.min(widthScale, heightScale), 0.55, 1);
   }
 
   const reservedHeight = isDesktopLayout ? 220 : 250;
-  const fitWidthFromHeight = Math.max(520, (viewportHeight - reservedHeight) * (WIDTH / HEIGHT));
+  const fitWidthFromHeight = Math.max(600, (viewportHeight - reservedHeight) * (WIDTH / HEIGHT));
   const fitWidthFromViewport = viewportWidth * 0.96;
-  const appMaxWidth = clamp(Math.min(1080, fitWidthFromHeight, fitWidthFromViewport), 520, 1080);
+  const appMaxWidth = clamp(Math.min(WIDTH, fitWidthFromHeight, fitWidthFromViewport), 600, WIDTH);
 
   document.documentElement.style.setProperty("--panel-ui-scale", panelScale.toFixed(3));
   document.documentElement.style.setProperty("--app-max-width", `${appMaxWidth.toFixed(0)}px`);
@@ -4125,12 +5613,74 @@ callPokerBtn.addEventListener("click", callPoker);
 checkPokerBtn.addEventListener("click", checkPoker);
 raisePokerBtn.addEventListener("click", raisePoker);
 foldPokerBtn.addEventListener("click", foldPoker);
-if (refreshDrinkBtn) {
-  refreshDrinkBtn.addEventListener("click", refreshDrinkOffer);
-}
 if (buyDrinkBtn) {
   buyDrinkBtn.addEventListener("click", buyDrink);
 }
+
+// Coin flip listeners
+const flipCoinBtn = document.getElementById("flipCoinBtn");
+const coinHeadsBtn = document.getElementById("coinHeadsBtn");
+const coinTailsBtn = document.getElementById("coinTailsBtn");
+if (flipCoinBtn) {
+  flipCoinBtn.addEventListener("click", flipCoin);
+}
+if (coinHeadsBtn) {
+  coinHeadsBtn.addEventListener("click", () => {
+    coinChoice = "heads";
+    coinHeadsBtn.classList.add("active");
+    if (coinTailsBtn) {
+      coinTailsBtn.classList.remove("active");
+    }
+  });
+}
+if (coinTailsBtn) {
+  coinTailsBtn.addEventListener("click", () => {
+    coinChoice = "tails";
+    coinTailsBtn.classList.add("active");
+    if (coinHeadsBtn) {
+      coinHeadsBtn.classList.remove("active");
+    }
+  });
+}
+
+// Baccarat listener
+const dealBaccaratBtn = document.getElementById("dealBaccaratBtn");
+if (dealBaccaratBtn) {
+  dealBaccaratBtn.addEventListener("click", startBaccarat);
+}
+
+// ── Lobby panel listeners ──
+const checkinBtn = document.getElementById("checkinBtn");
+const checkinResultEl = document.getElementById("checkinResult");
+const checkinSuiteEl = document.getElementById("checkinSuite");
+if (checkinBtn) {
+  checkinBtn.addEventListener("click", () => {
+    if (checkinResultEl) {
+      checkinResultEl.textContent = "🛎️ Receptionist hands you a key card. Penthouse Suite on Floor 24 is ready!";
+      checkinResultEl.style.color = "#9af5a8";
+    }
+    if (checkinBtn) { checkinBtn.disabled = true; checkinBtn.textContent = "Checked In ✓"; }
+  });
+}
+
+const elevFloorEl = document.getElementById("elevatorFloor");
+const elevResultEl = document.getElementById("elevatorResult");
+function setElevatorFloor(floor, name) {
+  if (elevFloorEl) {
+    elevFloorEl.textContent = `▲ Travelling to Floor ${floor} — ${name}`;
+  }
+  if (elevResultEl) {
+    elevResultEl.textContent = `⏱️ Elevator arrives. Welcome to Floor ${floor} — ${name}.`;
+    elevResultEl.style.color = "#b8e7ff";
+  }
+}
+const floor7Btn = document.getElementById("elevFloor7");
+const floor12Btn = document.getElementById("elevFloor12");
+const floor24Btn = document.getElementById("elevFloor24");
+if (floor7Btn) floor7Btn.addEventListener("click", () => setElevatorFloor(7, "Spa & Pool"));
+if (floor12Btn) floor12Btn.addEventListener("click", () => setElevatorFloor(12, "Restaurant"));
+if (floor24Btn) floor24Btn.addEventListener("click", () => setElevatorFloor(24, "Penthouse"));
+
 generateDrinkOffer();
 
 document.querySelectorAll("[data-close-panel]").forEach((button) => {
@@ -4157,6 +5707,6 @@ setPokerButtonsInRound(false);
 updateResponsivePanelScale();
 gameLoop();
 
-  </script>
+</script>
 </body>
 </html>

@@ -1273,9 +1273,9 @@ let currentRoom = "casino"; // "casino" | "lobby" | "backstage"
 const ROOM_TRANSITIONS = {
   casino: [
     // Right entrance door → hotel lobby
-    { zone: { x: 1218, y: 280, width: 62, height: 150 }, targetRoom: "lobby",     targetX: 100, targetY: 345 },
+    { zone: { x: 1218, y: 280, width: 62, height: 130 }, targetRoom: "lobby",     targetX: 50,  targetY: 345 },
     // Top-left wall door (above stage) → backstage
-    { zone: { x: 0,    y: 90,  width: 22, height: 130 }, targetRoom: "backstage", targetX: 1150, targetY: 345 }
+    { zone: { x: 0,    y: 90,  width: 22, height: 130 }, targetRoom: "backstage", targetX: 1250, targetY: 345 }
   ],
   lobby: [
     // Left wall casino door → casino floor
@@ -1283,7 +1283,7 @@ const ROOM_TRANSITIONS = {
   ],
   backstage: [
     // Right wall stage door → casino floor
-    { zone: { x: 1256, y: 285, width: 24, height: 150 }, targetRoom: "casino", targetX: 38, targetY: 95 }
+    { zone: { x: 1256, y: 285, width: 24, height: 130 }, targetRoom: "casino", targetX: 38, targetY: 95 }
   ]
 };
 
@@ -3027,10 +3027,33 @@ function foldPoker() {
   }
 
   const lostContrib = pokerRound.playerTotalContrib || pokerRound.ante;
-  // Player's contributions stay in the pot for remaining NPCs
+  // Find the best remaining opponent — they effectively win the pot
+  const activeOpponents = pokerRound.opponents.filter((o) => !o.folded);
+  let winnerName = "the house";
+  let winnerContrib = 0;
+  for (const opp of activeOpponents) {
+    if (opp.totalContrib > winnerContrib) {
+      winnerContrib = opp.totalContrib;
+      winnerName = opp.name;
+    }
+  }
+  // Evaluate hands to find the strongest
+  if (activeOpponents.length > 0 && pokerRound.revealCount > 0) {
+    let bestRank = -1;
+    for (const opp of activeOpponents) {
+      const allCards = [...opp.cards, ...pokerRound.communityCards.slice(0, pokerRound.revealCount)];
+      if (allCards.length >= 5) {
+        const hand = evaluateBestPokerHand(allCards);
+        if (hand && hand.rank > bestRank) {
+          bestRank = hand.rank;
+          winnerName = `${opp.name} (${hand.label})`;
+        }
+      }
+    }
+  }
   pokerRound = null;
   setPokerButtonsInRound(false);
-  pokerResult.textContent = `You folded and lost ${lostContrib} WIS Tokens.`;
+  pokerResult.textContent = `You folded and lost ${lostContrib} WIS Tokens. ${winnerName} takes the pot.`;
   pokerResult.style.color = "#ff8787";
   pokerHands.textContent = "";
   renderPokerVisual(false, false);
@@ -3389,6 +3412,21 @@ function drawPerformanceStage() {
   const sw = performanceStage.width;
   const sh = performanceStage.height;
   const cx = sx + sw / 2;
+
+  // ── Backstage door above stage ──
+  const bdX = 0, bdY = 90, bdW = 22, bdH = 130;
+  fillRoundedRect(bdX, bdY + 2, bdW, bdH - 2, 4, "#1a1020");
+  strokeRoundedRect(bdX, bdY + 2, bdW, bdH - 2, 4, "rgba(255,215,100,0.5)", 2);
+  ctx.save();
+  ctx.shadowColor = "#aa66ff";
+  ctx.shadowBlur = 8;
+  ctx.fillStyle = "#cc88ff";
+  ctx.font = "bold 7px Segoe UI";
+  ctx.textAlign = "center";
+  ctx.fillText("STAGE", bdX + bdW / 2, bdY - 4);
+  ctx.fillText("DOOR", bdX + bdW / 2, bdY + 8);
+  ctx.shadowBlur = 0;
+  ctx.restore();
 
   // Shadow
   fillRoundedRect(sx + 4, sy + 6, sw, sh, 8, "rgba(0,0,0,0.38)");
@@ -4062,9 +4100,11 @@ function updatePlayerPosition() {
   // Room-specific collision check
   let blocked = false;
   if (currentRoom === "casino") {
-    blocked = collidesWithWorldRect({ x: nextX, y: player.y, width: player.size, height: player.size }, { skipNpcs: true });
+    const checkX = { x: nextX, y: player.y, width: player.size, height: PLAYER_HITBOX_H };
+    const checkY = { x: player.x, y: nextY, width: player.size, height: PLAYER_HITBOX_H };
+    blocked = collidesWithWorldRect(checkX, { skipNpcs: true });
     if (!blocked) {
-      blocked = collidesWithWorldRect({ x: player.x, y: nextY, width: player.size, height: player.size }, { skipNpcs: true });
+      blocked = collidesWithWorldRect(checkY, { skipNpcs: true });
     }
   } else {
     const obstacles = currentRoom === "lobby" ? lobbyObstacles : backstageObstacles;
@@ -4334,6 +4374,38 @@ const dealBaccaratBtn = document.getElementById("dealBaccaratBtn");
 if (dealBaccaratBtn) {
   dealBaccaratBtn.addEventListener("click", startBaccarat);
 }
+
+// ── Lobby panel listeners ──
+const checkinBtn = document.getElementById("checkinBtn");
+const checkinResultEl = document.getElementById("checkinResult");
+const checkinSuiteEl = document.getElementById("checkinSuite");
+if (checkinBtn) {
+  checkinBtn.addEventListener("click", () => {
+    if (checkinResultEl) {
+      checkinResultEl.textContent = "🛎️ Receptionist hands you a key card. Penthouse Suite on Floor 24 is ready!";
+      checkinResultEl.style.color = "#9af5a8";
+    }
+    if (checkinBtn) { checkinBtn.disabled = true; checkinBtn.textContent = "Checked In ✓"; }
+  });
+}
+
+const elevFloorEl = document.getElementById("elevatorFloor");
+const elevResultEl = document.getElementById("elevatorResult");
+function setElevatorFloor(floor, name) {
+  if (elevFloorEl) {
+    elevFloorEl.textContent = `▲ Travelling to Floor ${floor} — ${name}`;
+  }
+  if (elevResultEl) {
+    elevResultEl.textContent = `⏱️ Elevator arrives. Welcome to Floor ${floor} — ${name}.`;
+    elevResultEl.style.color = "#b8e7ff";
+  }
+}
+const floor7Btn = document.getElementById("elevFloor7");
+const floor12Btn = document.getElementById("elevFloor12");
+const floor24Btn = document.getElementById("elevFloor24");
+if (floor7Btn) floor7Btn.addEventListener("click", () => setElevatorFloor(7, "Spa & Pool"));
+if (floor12Btn) floor12Btn.addEventListener("click", () => setElevatorFloor(12, "Restaurant"));
+if (floor24Btn) floor24Btn.addEventListener("click", () => setElevatorFloor(24, "Penthouse"));
 
 generateDrinkOffer();
 
