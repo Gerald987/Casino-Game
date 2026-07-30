@@ -1290,35 +1290,35 @@ const decorativeTables = [
 
 const npcs = [
   // Staff (8) — white uniforms, anchored near tables/bar
-  { x: 455, y: 330, size: 16, vx: 0.3, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#f7ddc2", role: "staff", anchor: { x: 455, y: 330 }, roamRadius: 55, type: "male" },
+  { x: 455, y: 330, size: 16, vx: 0.3, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#f7ddc2", role: "staff", anchor: { x: 455, y: 330 }, roamRadius: 55, type: "female" },
   { x: 825, y: 330, size: 16, vx: -0.3, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#dba88a", role: "staff", anchor: { x: 825, y: 330 }, roamRadius: 55, type: "female" },
-  { x: 280, y: 200, size: 16, vx: 0.28, vy: -0.22, moodTime: 0, color: "#f0f0fa", skin: "#c47a52", role: "staff", anchor: { x: 280, y: 200 }, roamRadius: 65, type: "male" },
-  { x: 1015, y: 200, size: 16, vx: -0.28, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#f7ddc2", role: "staff", anchor: { x: 1015, y: 200 }, roamRadius: 65, type: "female" },
-  { x: 640, y: 200, size: 16, vx: 0.25, vy: -0.25, moodTime: 0, color: "#f0f0fa", skin: "#8a5a38", role: "staff", anchor: { x: 640, y: 200 }, roamRadius: 60, type: "male" },
+  { x: 280, y: 200, size: 16, vx: 0.28, vy: -0.22, moodTime: 0, color: "#f0f0fa", skin: "#c47a52", role: "staff", anchor: { x: 280, y: 200 }, roamRadius: 65, type: "female" },
+  { x: 1015, y: 200, size: 16, vx: -0.28, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#f7ddc2", role: "staff", anchor: { x: 1015, y: 200 }, roamRadius: 65, type: "male" },
+  { x: 640, y: 200, size: 16, vx: 0.25, vy: -0.25, moodTime: 0, color: "#f0f0fa", skin: "#8a5a38", role: "staff", anchor: { x: 640, y: 200 }, roamRadius: 60, type: "female" },
   { x: 640, y: 490, size: 16, vx: 0.25, vy: 0.25, moodTime: 0, color: "#f0f0fa", skin: "#dba88a", role: "staff", anchor: { x: 640, y: 490 }, roamRadius: 60, type: "female" },
   { x: 280, y: 480, size: 16, vx: -0.28, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#f7ddc2", role: "staff", anchor: { x: 280, y: 480 }, roamRadius: 58, type: "female" },
   { x: 1015, y: 480, size: 16, vx: 0.28, vy: -0.22, moodTime: 0, color: "#f0f0fa", skin: "#c47a52", role: "staff", anchor: { x: 1015, y: 480 }, roamRadius: 58, type: "male" },
-  // Customers (20) — colourful clothing, roaming the full map
-  { x: 385, y: 120, size: 16, vx: 0.38, vy: 0.28, moodTime: 0, color: "#f7cb6f", skin: "#f7ddc2", role: "customer", type: "male" },
+  // Customers (20) — colourful clothing
+  { x: 385, y: 120, size: 16, vx: 0.38, vy: 0.28, moodTime: 0, color: "#f7cb6f", skin: "#f7ddc2", role: "customer", type: "female" },
   { x: 750, y: 120, size: 16, vx: -0.32, vy: 0.3, moodTime: 0, color: "#95d8ff", skin: "#dba88a", role: "customer", type: "female" },
-  { x: 1080, y: 120, size: 16, vx: -0.28, vy: -0.38, moodTime: 0, color: "#dcb2ff", skin: "#c47a52", role: "customer", type: "male" },
-  { x: 385, y: 468, size: 16, vx: -0.28, vy: -0.38, moodTime: 0, color: "#dcb2ff", skin: "#c47a52", role: "customer", type: "female" },
-  { x: 750, y: 468, size: 16, vx: 0.35, vy: -0.3, moodTime: 0, color: "#ffb8c0", skin: "#f7ddc2", role: "customer", type: "male" },
+  { x: 1080, y: 120, size: 16, vx: -0.28, vy: -0.38, moodTime: 0, color: "#dcb2ff", skin: "#c47a52", role: "customer", type: "female" },
+  { x: 385, y: 468, size: 16, vx: -0.28, vy: -0.38, moodTime: 0, color: "#dcb2ff", skin: "#c47a52", role: "customer", type: "male" },
+  { x: 750, y: 468, size: 16, vx: 0.35, vy: -0.3, moodTime: 0, color: "#ffb8c0", skin: "#f7ddc2", role: "customer", type: "female" },
   { x: 1080, y: 468, size: 16, vx: 0.38, vy: 0.22, moodTime: 0, color: "#ffdb93", skin: "#dba88a", role: "customer", type: "female" },
-  { x: 148, y: 120, size: 16, vx: 0.3, vy: 0.4, moodTime: 0, color: "#bde3a6", skin: "#8a5a38", role: "customer", type: "child" },
-  { x: 148, y: 600, size: 14, vx: 0.38, vy: 0.22, moodTime: 0, color: "#ffdb93", skin: "#dba88a", role: "customer", type: "child" },
-  { x: 1172, y: 120, size: 16, vx: -0.35, vy: 0.3, moodTime: 0, color: "#96f0df", skin: "#f7ddc2", role: "customer", type: "male" },
+  { x: 148, y: 120, size: 16, vx: 0.3, vy: 0.4, moodTime: 0, color: "#bde3a6", skin: "#8a5a38", role: "customer", type: "female" },
+  { x: 148, y: 600, size: 14, vx: 0.38, vy: 0.22, moodTime: 0, color: "#ffdb93", skin: "#dba88a", role: "customer", type: "female" },
+  { x: 1172, y: 120, size: 16, vx: -0.35, vy: 0.3, moodTime: 0, color: "#96f0df", skin: "#f7ddc2", role: "customer", type: "female" },
   { x: 1172, y: 600, size: 16, vx: -0.3, vy: 0.35, moodTime: 0, color: "#b8c7ff", skin: "#c47a52", role: "customer", type: "female" },
   { x: 1140, y: 600, size: 16, vx: -0.38, vy: 0.25, moodTime: 0, color: "#ffd1df", skin: "#f7ddc2", role: "customer", type: "male" },
   { x: 50, y: 600, size: 14, vx: 0.32, vy: 0.3, moodTime: 0, color: "#ffe3a1", skin: "#dba88a", role: "customer", type: "child" },
   { x: 640, y: 440, size: 16, vx: -0.28, vy: 0.38, moodTime: 0, color: "#abd3f4", skin: "#8a5a38", role: "customer", type: "female" },
-  { x: 655, y: 220, size: 16, vx: 0.3, vy: 0.32, moodTime: 0, color: "#f0b8d2", skin: "#f7ddc2", role: "customer", type: "male" },
+  { x: 655, y: 220, size: 16, vx: 0.3, vy: 0.32, moodTime: 0, color: "#f0b8d2", skin: "#f7ddc2", role: "customer", type: "female" },
   { x: 250, y: 360, size: 16, vx: 0.35, vy: 0.28, moodTime: 0, color: "#c5ef9b", skin: "#dba88a", role: "customer", type: "female" },
   { x: 1060, y: 355, size: 16, vx: -0.3, vy: -0.28, moodTime: 0, color: "#f2d1a8", skin: "#c47a52", role: "customer", type: "male" },
   { x: 390, y: 480, size: 16, vx: 0.38, vy: -0.32, moodTime: 0, color: "#a6e6ff", skin: "#f7ddc2", role: "customer", type: "female" },
-  { x: 900, y: 480, size: 16, vx: -0.3, vy: -0.35, moodTime: 0, color: "#d8c2ff", skin: "#8a5a38", role: "customer", type: "male" },
+  { x: 900, y: 480, size: 16, vx: -0.3, vy: -0.35, moodTime: 0, color: "#d8c2ff", skin: "#8a5a38", role: "customer", type: "female" },
   { x: 430, y: 200, size: 16, vx: 0.28, vy: -0.3, moodTime: 0, color: "#f7c88f", skin: "#dba88a", role: "customer", type: "female" },
-  { x: 870, y: 200, size: 16, vx: -0.32, vy: -0.28, moodTime: 0, color: "#bceea7", skin: "#f7ddc2", role: "customer", type: "male" },
+  { x: 870, y: 200, size: 16, vx: -0.32, vy: -0.28, moodTime: 0, color: "#bceea7", skin: "#f7ddc2", role: "customer", type: "female" },
 ];
 
 // ── Room system ───────────────────────────────────────────────────────────────
@@ -1400,8 +1400,8 @@ const lobbyNpcs = [
 
 const backstageNpcs = [
   // Stage techs near equipment
-  { x: 885, y: 145, size: 16, vx: 0.18, vy: 0.12, moodTime: 0, color: "#333344", skin: "#f7ddc2", role: "staff", anchor: { x: 885, y: 145 }, roamRadius: 65, type: "male" },
-  { x: 980, y: 150, size: 16, vx: -0.2, vy: 0.14, moodTime: 0, color: "#2a2a3a", skin: "#dba88a", role: "staff", anchor: { x: 980, y: 150 }, roamRadius: 65, type: "male" },
+  { x: 885, y: 145, size: 16, vx: 0.18, vy: 0.12, moodTime: 0, color: "#333344", skin: "#f7ddc2", role: "staff", anchor: { x: 885, y: 145 }, roamRadius: 65, type: "female" },
+  { x: 980, y: 150, size: 16, vx: -0.2, vy: 0.14, moodTime: 0, color: "#2a2a3a", skin: "#dba88a", role: "staff", anchor: { x: 980, y: 150 }, roamRadius: 65, type: "female" },
   // Performers at dressing tables
   { x: 145, y: 155, size: 16, vx: 0.14, vy: 0.1,  moodTime: 0, color: "#ff9dac", skin: "#c47a52", role: "customer", anchor: { x: 145, y: 155 }, roamRadius: 46, type: "female" },
   { x: 440, y: 158, size: 16, vx: -0.14, vy: 0.1, moodTime: 0, color: "#a0d8ff", skin: "#8a5a38", role: "customer", anchor: { x: 440, y: 158 }, roamRadius: 46, type: "female" },
@@ -3429,18 +3429,18 @@ function drawHumanoid(x, y, size, bodyColor, skinColor, legColor, isStaff, type)
     legY = torsoY + torsoH - s;
     legGap = 1.2 * s;
   } else if (type === "female") {
-    // Female: narrower shoulders, wider hips, waist indent
+    // Female: narrower shoulders, wider hips, skirt
     headR = 5.5 * s;
     headCY = y + headR + s;
     torsoW = 8 * s;
-    torsoH = 11 * s;
+    torsoH = 10 * s;
     torsoY = headCY + headR + 2 * s;
     armW = 3 * s;
-    armH = 10 * s;
+    armH = 9 * s;
     armY = torsoY + s;
-    legW = 3.5 * s;
-    legH = 11 * s;
-    legY = torsoY + torsoH - 1.5 * s;
+    legW = 3 * s;
+    legH = 9 * s;
+    legY = torsoY + torsoH + 2 * s;
     legGap = 2 * s;
   } else {
     // Male: broader shoulders, straight build (original)
@@ -3472,10 +3472,15 @@ function drawHumanoid(x, y, size, bodyColor, skinColor, legColor, isStaff, type)
   // Torso
   fillRoundedRect(cx - torsoW / 2, torsoY, torsoW, torsoH, 3 * s, bodyColor);
 
-  // Female waist indent (darker bands on sides of torso)
+  // Female: flared skirt below torso
   if (type === "female") {
-    fillRoundedRect(cx - torsoW/2 - 1, torsoY + 4*s, 4, 2, 1, "rgba(0,0,0,0.15)");
-    fillRoundedRect(cx + torsoW/2 - 3, torsoY + 4*s, 4, 2, 1, "rgba(0,0,0,0.15)");
+    const skirtTop = torsoY + torsoH - 2 * s;
+    const skirtW = torsoW + 6 * s;
+    fillRoundedRect(cx - skirtW / 2, skirtTop, skirtW, 8 * s, 2 * s, bodyColor);
+    // Skirt detail lines (pleats)
+    for (let pl = 0; pl < 4; pl++) {
+      fillRoundedRect(cx - skirtW/2 + pl* skirtW/4, skirtTop + 1, 1.5*s, 6*s, 1, "rgba(255,255,255,0.08)");
+    }
   }
 
   // Staff badge
