@@ -63,7 +63,7 @@ const HEIGHT = canvas.height;
 const ZOOM = 2;
 
 // ── Pixel art pipeline (320×180 → upscaled 4×) ─────────────────────
-const PX_W = 320, PX_H = 180, PX_SCALE = 4;
+const PX_W = 640, PX_H = 360, PX_SCALE = 2;
 const pxCanvas = document.createElement("canvas");
 pxCanvas.width = PX_W; pxCanvas.height = PX_H;
 const pxCtx = pxCanvas.getContext("2d");
@@ -3977,111 +3977,65 @@ function drawBackstage() {
 
 // ── Floor 7: Spa & Pool ──────────────────────────────────────────────────────
 function drawFloor7() {
-  // ── Cyan-blue tile gradient background ─────────────────────────────
+  // Cyan-blue tile background
   const bg = pxCtx.createLinearGradient(0, 0, PX_W, PX_H);
-  bg.addColorStop(0, P.DBLUE);
-  bg.addColorStop(0.5, P.BLUE);
-  bg.addColorStop(1, P.BLACK);
+  bg.addColorStop(0, "#081420"); bg.addColorStop(0.5, "#0a1c28"); bg.addColorStop(1, "#040c10");
   pRect(0, 0, PX_W, PX_H, bg);
-
-  // Subtle tile floor pattern
-  pxCtx.save(); pxCtx.globalAlpha = 0.12;
-  for (let r = 0; r < PX_H / 8; r++) {
-    for (let c = 0; c < PX_W / 8; c++) {
-      if ((r + c) % 2 === 0) pRect(c * 8, r * 8, 8, 8, P.CYAN);
-    }
-  }
+  // Subtle tile floor
+  pxCtx.save(); pxCtx.globalAlpha = 0.08;
+  for (let r=0;r<24;r++)for(let c=0;c<40;c++)if((r+c)%2===0)pRect(c*16,r*16,16,16,"#70b8d8");
   pxCtx.restore();
 
-  // ── Pool — dark basin with water fill ──────────────────────────────
-  const px = 45, py = 55, pw = 240, ph = 105;
-  // Basin border
-  pHRect(px, py, pw, ph, 9, P.DBLUE);
-  pHStroke(px, py, pw, ph, 9, P.CYAN, 2);
-  // Pool deck tiles around top edge
-  pHRect(px, py, pw, 6, 4, P.DGRAY);
-  pHStroke(px, py, pw, 6, 4, P.LBLUE, 1);
+  // Pool basin
+  const px=90,py=110,pw=480,ph=210;
+  pHRect(px,py,pw,ph,18,"#060e14");
+  pHStroke(px,py,pw,ph,18,"#3ab8e8",3);
+  // Deck tiles
+  pHRect(px,py,pw,12,9,"#0e1a20");
+  pHStroke(px,py,pw,12,9,"#5ac8f0",1);
   // Water fill with gradient
-  const waterGrad = pxCtx.createLinearGradient(0, py + 6, 0, py + ph);
-  waterGrad.addColorStop(0, P.LBLUE);
-  waterGrad.addColorStop(0.5, P.BLUE);
-  waterGrad.addColorStop(1, P.DBLUE);
-  pHRect(px + 4, py + 6, pw - 8, ph - 10, 7, waterGrad);
-  // Water surface ripples — small light rects
-  pxCtx.save(); pxCtx.globalAlpha = 0.12;
-  for (let s = 0; s < 18; s++) {
-    pRect(px + 12 + s * 13, py + 10 + (s % 4) * 15, 9, 3, P.CYAN);
-  }
+  const wg=pxCtx.createLinearGradient(0,py+12,0,py+ph);
+  wg.addColorStop(0,"#0a2a38");wg.addColorStop(0.5,"#0c3448");wg.addColorStop(1,"#041820");
+  pHRect(px+8,py+12,pw-16,ph-20,14,wg);
+  // Water surface ripples — scattered light rectangles
+  pxCtx.save();pxCtx.globalAlpha=0.08;
+  for(let s=0;s<24;s++){const sx=px+16+s*20,sy=py+18+(s%5)*12;pRect(sx,sy,14,5,"#90e8ff");}
   pxCtx.restore();
-  // Lane lines — dashed strokes along pool length
-  pxCtx.save();
-  pxCtx.strokeStyle = P.CYAN;
-  pxCtx.globalAlpha = 0.15;
-  pxCtx.lineWidth = 1;
-  pxCtx.setLineDash([5, 7]);
-  for (let l = 0; l < 5; l++) {
-    pxCtx.beginPath();
-    pxCtx.moveTo(px + 7, py + 17 + l * 17);
-    pxCtx.lineTo(px + pw - 7, py + 17 + l * 17);
-    pxCtx.stroke();
-  }
-  pxCtx.setLineDash([]);
-  pxCtx.restore();
-  // 2 Pool ladders
-  for (let ld = 0; ld < 2; ld++) {
-    const lx = ld ? px + pw - 6 : px + 6;
-    pStroke(lx, py + 7, 0, ph - 14, P.LGRAY, 1);
-    for (let r = 0; r < 5; r++) {
-      const ly = py + 10 + r * (ph - 16) / 5;
-      pStroke(ld ? lx - 3 : lx, ly, ld ? 3 : 3, 0, P.LGRAY, 1);
-    }
-  }
-  // Pool depth markers
-  pxCtx.fillStyle = P.LBLUE;
-  pxCtx.font = "4px monospace";
-  pxCtx.textAlign = "right";
-  pxCtx.fillText("1.2m", px + 12, py + 58);
-  pxCtx.textAlign = "left";
-  pxCtx.fillText("2.5m", px + pw - 10, py + 72);
+  // Lane lines — dashed horizontal strokes
+  pxCtx.save();pxCtx.strokeStyle="#70d0e8";pxCtx.lineWidth=1;pxCtx.setLineDash([10,15]);
+  for(let l=0;l<5;l++){pxCtx.beginPath();pxCtx.moveTo(px+14,py+34+l*34);pxCtx.lineTo(px+pw-14,py+34+l*34);pxCtx.stroke();}
+  pxCtx.setLineDash([]);pxCtx.restore();
+  // 2 Pool ladders — vertical rails with rungs
+  for(let ld=0;ld<2;ld++){const lx=ld?px+pw-12:px+10;pxCtx.strokeStyle="#6688aa";pxCtx.lineWidth=2;
+    pxCtx.beginPath();pxCtx.moveTo(lx,py+16);pxCtx.lineTo(lx,py+80);pxCtx.stroke();
+    for(let r=0;r<5;r++){const ry=py+20+r*14;pxCtx.beginPath();pxCtx.moveTo(lx,ry);pxCtx.lineTo(lx+(ld?-8:8),ry);pxCtx.stroke();}}
+  // Depth markers
+  pxCtx.fillStyle="#7799aa";pxCtx.font="5px monospace";pxCtx.textAlign="right";pxCtx.fillText("1.2m",px+16,py+116);
+  pxCtx.textAlign="left";pxCtx.fillText("2.5m",px+pw-16,py+144);
 
-  // ── 3 Changing rooms along left wall ───────────────────────────────
-  for (let cr = 0; cr < 3; cr++) {
-    const cy = 10 + cr * 47;
-    // Room frame
-    pHRect(5, cy, 36, 42, 3, P.DGRAY);
-    pHStroke(5, cy, 36, 42, 3, P.MGRAY, 1);
+  // 3 Changing rooms along left wall
+  for(let cr=0;cr<3;cr++){const cy=20+cr*95;
+    pHRect(10,cy,74,84,6,"#0e1418");pHStroke(10,cy,74,84,6,"#88aacc",2);
     // Louver door
-    pHRect(9, cy + 24, 9, 15, 2, P.MBROWN);
-    pHStroke(9, cy + 24, 9, 15, 2, P.WOOD, 1);
-    // Door handle (small gold circle)
-    pCirc(15, cy + 32, 1, P.GOLD);
-    // Door slats (horizontal lines)
-    for (let sl = 0; sl < 4; sl++) {
-      pRect(10, cy + 26 + sl * 3, 7, 1, P.WOOD);
-    }
+    pHRect(18,cy+48,18,30,4,"#182028");pHStroke(18,cy+48,18,30,4,"#5088b8",1);
+    // Door handle
+    pCirc(30,cy+63,2,"#d0c090");
+    // Door slats — 4 horizontal bars
+    for(let sl=0;sl<4;sl++)pHRect(20,cy+52+sl*7,14,3,2,"#284058");
     // Room number plate
-    pHRect(12, cy + 2, 7, 4, 1, P.GOLD);
-    pxCtx.fillStyle = P.BLACK;
-    pxCtx.font = "3px monospace";
-    pxCtx.textAlign = "center";
-    pxCtx.fillText(String(cr + 1), 15.5, cy + 5.5);
+    pHRect(26,cy+8,16,10,2,"#c0a870");pxCtx.fillStyle="#0e1418";pxCtx.font="bold 6px monospace";pxCtx.textAlign="center";pxCtx.fillText(String(cr+1),34,cy+16);
     // Bench inside
-    pHRect(20, cy + 16, 16, 5, 1, P.WOOD);
+    pHRect(42,cy+30,36,12,3,"#2a1810");
     // Towel hook
-    pRect(22, cy + 4, 1, 3, P.WHITE);
+    pHRect(46,cy+14,2,6,1,P.WHITE);
   }
 
-  // ── Exit door at bottom center ─────────────────────────────────────
-  const ex = 147, ey = 160, ew = 25, eh = 18;
-  pHRect(ex, ey, ew, eh, 4, P.MBROWN);
-  pHStroke(ex, ey, ew, eh, 4, P.GOLD, 2);
-  // Door handle
-  pCirc(ex + 4, ey + 10, 1, P.GOLD);
-  // Lobby label
-  pxCtx.fillStyle = P.GOLD;
-  pxCtx.font = "4px monospace";
-  pxCtx.textAlign = "center";
-  pxCtx.fillText("LOBBY", ex + ew / 2, ey + 15);
+  // Exit door
+  pHRect(290,320,60,36,6,P.MBROWN);
+  pHStroke(290,320,60,36,6,"#d8c070",3);
+  pCirc(300,338,2,"#d0b860");
+  pxCtx.fillStyle="#d8c070";pxCtx.font="bold 7px monospace";pxCtx.textAlign="center";
+  pxCtx.fillText("LOBBY",320,344);
 }
 
 // ── Floor 12: Restaurant ──────────────────────────────────────────────────────
@@ -4185,135 +4139,101 @@ function drawFloor12() {
 
 // ── Floor 24: Penthouse Suite (pixel art, 320×180 on pxCtx) ──────────────────
 function drawFloor24() {
-  // Clear the pixel canvas
-  pRect(0, 0, 320, 180, P.BLACK);
+  // Dark purple luxury background
+  const bg=pxCtx.createLinearGradient(0,0,PX_W,PX_H);
+  bg.addColorStop(0,"#08040c");bg.addColorStop(0.5,"#120a1a");bg.addColorStop(1,"#04020c");
+  pRect(0,0,PX_W,PX_H,bg);
+  // Plush carpet subtle pattern
+  pxCtx.save();pxCtx.globalAlpha=0.06;
+  for(let r=0;r<22;r++)for(let c=0;c<40;c++)if((r+c)%3!==0)pRect(c*16,r*17,16,17,"#c0a8d0");
+  pxCtx.restore();
 
-  // ── BACKGROUND: dark purple luxury with plush carpet ──────────────────────
-  pRect(0, 0, 320, 180, P.DBLUE);
-  // Carpet pattern — subtle checkerboard
-  for (let r = 0; r < 5; r++) {
-    for (let c = 0; c < 10; c++) {
-      if ((r + c) % 3 !== 0) {
-        pRect(c * 32, r * 36, 32, 36, P.MGRAY);
-      }
-    }
-  }
-
-  // ── BALCONY (x=7–312, y=6–30) ────────────────────────────────────────────
-  // Outer frame / floor
-  pHRect(7, 6, 305, 24, 3, P.BLACK);
-  pHStroke(7, 6, 305, 24, 3, P.MGRAY, 1);
-  // Glass railing panels (11)
-  for (let p = 0; p < 11; p++) {
-    const px = 12 + p * 27;
-    pHRect(px, 9, 13, 17, 2, P.LGRAY);
-    pHStroke(px, 9, 13, 17, 2, P.WHITE, 1);
+  // Balcony — glass railing across top
+  pHRect(16,12,608,48,6,"#080612");
+  pHStroke(16,12,608,48,6,"#9080b8",2);
+  // Glass panels
+  for(let p=0;p<12;p++){const gx=24+p*50;
+    pHRect(gx,18,26,34,3,"rgba(100,80,140,0.18)");
+    pHStroke(gx,18,26,34,3,"rgba(120,100,160,0.4)",1);
     // Glass reflection streak
-    pRect(px + 2, 12, 2, 10, P.WHITE);
-  }
+    pxCtx.save();pxCtx.globalAlpha=0.12;pRect(gx+2,22,3,26,"#ffffff");pxCtx.restore();}
   // Balcony floor tiles
-  for (let t = 0; t < 8; t++) {
-    pRect(t * 38 + 7, 20, 38, 12, (t % 2 === 0) ? P.BLACK : P.MGRAY);
-  }
-  // City skyline silhouette (buildings in the distance)
-  for (let b = 0; b < 8; b++) {
-    const bh = 5 + Math.sin(b * 1.7) * 4;
-    pRect(15 + b * 38, 24 - bh, 10, bh, P.BLACK);
-  }
+  pxCtx.save();pxCtx.globalAlpha=0.06;
+  for(let t=0;t<40;t++)pRect(t*16,38,16,24,"#9080a0");
+  pxCtx.restore();
+  // City skyline silhouette
+  pxCtx.save();pxCtx.globalAlpha=0.1;pxCtx.fillStyle="#201830";
+  for(let b=0;b<16;b++){const bh=8+Math.sin(b*1.8)*8;pxCtx.fillRect(24+b*38,38-bh,22,bh);}
+  pxCtx.restore();
 
-  // ── KING BED (x=28–121, y=40–110) ────────────────────────────────────────
-  // Bed frame
-  pHRect(30, 56, 90, 52, 6, P.MBROWN);
-  pHStroke(30, 56, 90, 52, 6, P.WOOD, 1);
+  // King size bed — left center
+  pHRect(70,80,190,140,12,"#100820");
+  pHStroke(70,80,190,140,12,"#b0a0d0",2);
   // Headboard
-  pHRect(30, 32, 90, 10, 3, P.MGRAY);
-  pHStroke(30, 32, 90, 10, 3, P.LGRAY, 1);
-  // Tufted headboard pattern (dots)
-  for (let hb = 0; hb < 7; hb++) {
-    pCirc(40 + hb * 13, 36, 3, P.DBLUE);
-    pCirc(40 + hb * 13, 36, 1, P.LBLUE);
-  }
-  // Bedside tables
-  pHRect(24, 48, 8, 14, 2, P.BLACK);
-  pHRect(118, 48, 8, 14, 2, P.BLACK);
-  // Lamps on bedside tables — left
-  pRect(27, 42, 2, 8, P.GOLD);            // pole
-  pCirc(28, 40, 3, P.GOLD);               // shade
-  pSCirc(28, 40, 4, P.AMBER, 1);          // glow
-  // Lamps on bedside tables — right
-  pRect(121, 42, 2, 8, P.GOLD);
-  pCirc(122, 40, 3, P.GOLD);
-  pSCirc(122, 40, 4, P.AMBER, 1);
-  // Pillows (3 rounded rects)
-  for (let pi = 0; pi < 3; pi++) {
-    pHRect(35 + pi * 31, 42, 24, 12, 3, P.WHITE);
-    pHStroke(35 + pi * 31, 42, 24, 12, 3, P.LGRAY, 1);
-  }
+  pHRect(70,66,190,20,7,"#201040");
+  pHStroke(70,66,190,20,7,"#c0b0e0",1);
+  // Tufted headboard pattern — rows of dimples
+  pxCtx.save();pxCtx.globalAlpha=0.2;
+  for(let hb=0;hb<8;hb++){pCirc(90+hb*24,74,6,"#6040a0");pCirc(90+hb*24,74,2,"#8060c0");}
+  pxCtx.restore();
+  // Bedside tables + lamps
+  for(let bt of[{x:60,y:100},{x:260,y:100}]){
+    pHRect(bt.x,bt.y,16,26,4,"#0e0818");
+    pRect(bt.x+7,bt.y-6,2,10,"#664020");pCirc(bt.x+8,bt.y-8,5,"rgba(255,200,120,0.4)");
+    pSCirc(bt.x+8,bt.y-8,6,"rgba(255,180,100,0.25)",1);}
+  // 3 Pillows
+  for(let pi=0;pi<3;pi++){pHRect(84+pi*62,90,48,28,7,"#e8e0f0");pHStroke(84+pi*62,90,48,28,7,"#c0b0d0",1);}
   // Duvet blanket
-  pHRect(35, 60, 80, 44, 4, P.DRED);
-  pHStroke(35, 60, 80, 44, 4, P.RED, 1);
-  // Duvet fold line (horizontal crease)
-  pRect(35, 78, 80, 2, P.RED);
+  pHRect(80,126,170,86,8,"#2a1850");pHStroke(80,126,170,86,8,"#9078c0",1);
+  // Duvet fold crease
+  pxCtx.save();pxCtx.globalAlpha=0.18;pRect(80,158,170,3,"#402870");pxCtx.restore();
 
-  // ── COUCH (x=20–105, y=130–158) ──────────────────────────────────────────
-  // Main couch body
-  pHRect(20, 130, 85, 28, 5, P.MBROWN);
-  pHStroke(20, 130, 85, 28, 5, P.WOOD, 1);
-  // Three seat cushions
-  pHRect(24, 135, 22, 18, 3, P.DBLUE);
-  pHRect(50, 135, 22, 18, 3, P.DBLUE);
-  pHRect(76, 135, 22, 18, 3, P.DBLUE);
+  // Couch — bottom left
+  pHRect(40,260,170,56,9,"#1a0e30");
+  pHStroke(40,260,170,56,9,"#a090c0",2);
+  // 3 Cushions
+  pHRect(48,272,44,36,6,"#301860");pHRect(102,272,44,36,6,"#301860");pHRect(156,272,44,36,6,"#301860");
   // Backrest
-  pHRect(22, 130, 81, 6, 2, P.MGRAY);
+  pHRect(44,260,162,10,4,"#281050");
   // Armrests
-  pRect(20, 130, 5, 28, P.MBROWN);
-  pRect(100, 130, 5, 28, P.MBROWN);
+  pHRect(40,260,10,56,4,"#1a0e30");pHRect(200,260,10,56,4,"#1a0e30");
 
-  // ── BATHROOM (x=230–308, y=25–138) ───────────────────────────────────────
-  // Enclosure
-  pHRect(230, 25, 78, 113, 5, P.BLACK);
-  pHStroke(230, 25, 78, 113, 5, P.MGRAY, 1);
+  // Bathroom — right wall
+  pHRect(460,70,160,210,10,"#08060e");
+  pHStroke(460,70,160,210,10,"#9088a8",3);
   // Bathroom door
-  pHRect(235, 110, 14, 24, 2, P.MGRAY);
-  pHStroke(235, 110, 14, 24, 2, P.LGRAY, 1);
-  pCirc(245, 122, 2, P.GOLD);               // door knob
+  pHRect(470,228,26,46,5,"#100c18");pHStroke(470,228,26,46,5,"#a098b8",1);
+  pCirc(488,250,2,"#c0b8a0");
   // Shower cubicle
-  pHRect(260, 30, 24, 36, 3, P.DBLUE);
-  pHStroke(260, 30, 24, 36, 3, P.LGRAY, 1);
+  pHRect(520,80,46,74,6,"#04060a");pHStroke(520,80,46,74,6,"#7088b0",2);
   // Shower head
-  pCirc(272, 34, 2, P.LGRAY);
-  // Water spray lines
-  for (let d = 0; d < 5; d++) {
-    pRect(271 + d, 38, 1, 4 + d * 2, P.CYAN);
-  }
-  // Shower glass door
-  pRect(284, 30, 2, 36, P.LGRAY);
+  pCirc(544,88,3,"#aaaaaa");
+  // Water spray — dotted lines
+  pxCtx.save();pxCtx.globalAlpha=0.08;pxCtx.strokeStyle="#88c8ff";pxCtx.lineWidth=1;
+  for(let d=0;d<5;d++){pxCtx.beginPath();pxCtx.moveTo(544,92);pxCtx.lineTo(540+d*2,106+d*7);pxCtx.stroke();}
+  pxCtx.restore();
+  // Glass shower door
+  pHStroke(566,80,4,74,3,"rgba(120,180,240,0.3)",2);
   // Double sink
-  pHRect(240, 50, 15, 5, 2, P.WHITE);
-  pHRect(258, 50, 15, 5, 2, P.WHITE);
+  pHRect(480,110,30,10,3,"#ffffff");pHRect(520,110,30,10,3,"#ffffff");
   // Mirror above sinks
-  pHRect(238, 32, 38, 14, 2, P.LBLUE);
-  pHStroke(238, 32, 38, 14, 2, P.LGRAY, 1);
+  pHRect(472,84,80,28,4,"rgba(160,180,220,0.3)");pHStroke(472,84,80,28,4,"rgba(160,170,210,0.5)",2);
   // Toilet
-  pHRect(265, 85, 15, 20, 3, P.WHITE);
-  pRect(263, 93, 4, 12, P.LGRAY);           // tank
-  // Toilet seat (oval via stroked circle)
-  pSCirc(272, 93, 5, P.MGRAY, 1);
-  // Towel rack — horizontal bars
-  for (let tr = 0; tr < 3; tr++) {
-    pRect(295, 48 + tr * 6, 8, 1, P.LGRAY);
-  }
-  pHRect(296, 46, 6, 8, 1, P.WHITE);       // towel
+  pHRect(528,174,30,42,8,"#ffffff");pHRect(522,190,6,26,3,"#eeeeee");
+  // Toilet seat oval
+  pxCtx.strokeStyle="#cccccc";pxCtx.lineWidth=2;pxCtx.beginPath();
+  pxCtx.ellipse(544,186,12,5,0,0,Math.PI*2);pxCtx.stroke();
+  // Towel rack
+  pxCtx.strokeStyle="#aaaaaa";pxCtx.lineWidth=2;
+  for(let tr=0;tr<3;tr++){pxCtx.beginPath();pxCtx.moveTo(590,100+tr*12);pxCtx.lineTo(608,100+tr*12);pxCtx.stroke();}
+  pxCtx.save();pxCtx.globalAlpha=0.3;pHRect(592,98,14,14,2,"#e8e0e0");pxCtx.restore();
 
-  // ── EXIT DOOR (x=140–165, y=160–175) ─────────────────────────────────────
-  pHRect(138, 158, 28, 18, 3, P.BLACK);
-  pHStroke(138, 158, 28, 18, 3, P.GOLD, 2);
-  pCirc(142, 167, 2, P.GOLD);               // door handle
-  // "LOBBY" label
-  pxCtx.fillStyle = P.GOLD;
-  pxCtx.font = "8px monospace";
-  pxCtx.textAlign = "center";
-  pxCtx.fillText("LOBBY", 152, 172);
+  // Exit door
+  pHRect(290,320,60,36,6,P.MBROWN);
+  pHStroke(290,320,60,36,6,"#d8c070",3);
+  pCirc(300,338,2,"#d0b860");
+  pxCtx.fillStyle="#d8c070";pxCtx.font="bold 7px monospace";pxCtx.textAlign="center";
+  pxCtx.fillText("LOBBY",320,344);
 }
 
 function updateNpcList(npcList, obstacles) {
