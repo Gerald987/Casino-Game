@@ -3862,41 +3862,73 @@ function drawFloor7() {
     if ((r+c)%2===0) { ctx.fillStyle = "#80c8e0"; ctx.fillRect(c*34, r*34, 34, 34); }
   } ctx.restore();
 
-  // Pool
-  fillRoundedRect(180, 200, 1000, 430, 32, "#0a2030");
-  strokeRoundedRect(180, 200, 1000, 430, 32, "rgba(60,200,240,0.45)", 4);
-  // Water shimmer
-  ctx.save(); ctx.globalAlpha = 0.08;
-  for (let s = 0; s < 14; s++) {
-    const sx = 220 + s * 72, sy = 220 + (s%3) * 80;
-    fillRoundedRect(sx, sy, 40, 18, 8, "#a0eeff");
+  // Pool — large water-filled basin
+  fillRoundedRect(180, 220, 960, 420, 36, "#0a1a2a");
+  strokeRoundedRect(180, 220, 960, 420, 36, "rgba(70,200,240,0.55)", 5);
+  // Pool deck tiles around edge
+  fillRoundedRect(180, 220, 960, 24, 18, "#1a2a3a");
+  strokeRoundedRect(180, 220, 960, 24, 18, "rgba(100,200,240,0.3)", 2);
+  // Water gradient
+  const waterGrad = ctx.createLinearGradient(660, 244, 660, 640);
+  waterGrad.addColorStop(0, "#0a3448"); waterGrad.addColorStop(0.5, "#0c4058"); waterGrad.addColorStop(1, "#06202c");
+  fillRoundedRect(196, 244, 928, 380, 28, waterGrad);
+  // Water surface ripples
+  ctx.save(); ctx.globalAlpha = 0.06;
+  for (let s = 0; s < 18; s++) {
+    fillRoundedRect(230 + s * 55, 260 + (s%4) * 60, 36, 12, 6, "#a0eeff");
   } ctx.restore();
-  // Pool lane lines
-  ctx.save(); ctx.strokeStyle = "rgba(180,240,255,0.12)"; ctx.lineWidth = 1;
-  for (let l = 0; l < 6; l++) {
-    const ly = 280 + l * 58;
-    ctx.beginPath(); ctx.moveTo(200, ly); ctx.lineTo(1160, ly); ctx.stroke();
-  } ctx.restore();
-  ctx.fillStyle = "#44aacc"; ctx.font = "bold 42px Segoe UI"; ctx.textAlign = "center";
-  ctx.fillText("🏊", 680, 410);
+  // Lane lines painted on pool floor
+  ctx.save(); ctx.strokeStyle = "rgba(160,220,255,0.1)"; ctx.lineWidth = 2; ctx.setLineDash([20, 30]);
+  for (let l = 0; l < 5; l++) {
+    ctx.beginPath(); ctx.moveTo(220, 300 + l * 70); ctx.lineTo(1120, 300 + l * 70); ctx.stroke();
+  } ctx.setLineDash([]); ctx.restore();
+  // Pool ladder
+  for (let ld = 0; ld < 2; ld++) {
+    const lx = ld ? 1120 : 210;
+    ctx.strokeStyle = "#8899aa"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(lx, 250); ctx.lineTo(lx, 370); ctx.stroke();
+    for (let r = 0; r < 5; r++) {
+      ctx.beginPath(); ctx.moveTo(lx, 255 + r * 25); ctx.lineTo(lx + (ld ? -14 : 14), 255 + r * 25); ctx.stroke();
+    }
+  }
+  // Pool depth markers — small tile at left edge
+  ctx.fillStyle = "#99aabb"; ctx.font = "9px Segoe UI";
+  ctx.textAlign = "right";
+  ctx.fillText("1.2m", 225, 350);
+  ctx.fillText("2.5m", 1140, 500);
 
-  // 3 Changing rooms
+  // 3 Changing rooms along left wall
   for (let cr = 0; cr < 3; cr++) {
-    const cy = 50 + cr * 180;
-    fillRoundedRect(30, cy, 140, 150, 12, "#1a2030");
-    strokeRoundedRect(30, cy, 140, 150, 12, "rgba(140,160,200,0.5)", 2);
-    // Door
-    fillRoundedRect(45, cy + 100, 30, 40, 6, "#2a3a50");
-    // Label
-    ctx.fillStyle = "#88aacc"; ctx.font = "bold 11px Segoe UI"; ctx.textAlign = "center";
-    ctx.fillText(`🚿 ${cr+1}`, 100, cy + 80);
+    const cy = 40 + cr * 190;
+    // Room frame
+    fillRoundedRect(22, cy, 146, 168, 12, "#1a2030");
+    strokeRoundedRect(22, cy, 146, 168, 12, "rgba(140,170,210,0.5)", 2);
+    // Louver door
+    fillRoundedRect(38, cy + 100, 34, 56, 6, "#2a3a50");
+    strokeRoundedRect(38, cy + 100, 34, 56, 6, "rgba(180,200,240,0.3)", 1);
+    // Door handle
+    fillCircle(62, cy + 128, 4, "#d0c8b0");
+    // Door slats
+    for (let sl = 0; sl < 4; sl++) {
+      fillRoundedRect(41, cy + 106 + sl * 13, 28, 4, 2, "#3a4a60");
+    }
+    // Room number plate
+    fillRoundedRect(55, cy + 12, 30, 18, 4, "#d4c8a0");
+    ctx.fillStyle = "#1a2030"; ctx.font = "bold 11px Segoe UI"; ctx.textAlign = "center";
+    ctx.fillText(String(cr+1), 70, cy + 26);
+    // Bench inside
+    fillRoundedRect(85, cy + 60, 70, 22, 6, "#3a2a20");
+    // Towel hook
+    ctx.fillStyle = "#fff";
+    fillRoundedRect(90, cy + 20, 3, 10, 2, "#fff");
   }
 
-  // Exit door to lobby
-  fillRoundedRect(600, 650, 80, 60, 8, "#1a2828");
-  strokeRoundedRect(600, 650, 80, 60, 8, "rgba(255,200,100,0.7)", 2);
-  ctx.fillStyle = "#ffcc66"; ctx.font = "bold 10px Segoe UI"; ctx.textAlign = "center";
-  ctx.fillText("LOBBY", 640, 685);
+  // Exit door
+  fillRoundedRect(590, 640, 100, 70, 10, "#1a2830");
+  strokeRoundedRect(590, 640, 100, 70, 10, "rgba(220,200,120,0.65)", 3);
+  fillCircle(605, 675, 3, "#d4c090");
+  ctx.fillStyle = "#e0c080"; ctx.font = "bold 12px Segoe UI"; ctx.textAlign = "center";
+  ctx.fillText("LOBBY", 640, 683);
 }
 
 // ── Floor 12: Restaurant ──────────────────────────────────────────────────────
@@ -3905,125 +3937,231 @@ function drawFloor12() {
   const bg = ctx.createLinearGradient(0, 0, WIDTH, HEIGHT);
   bg.addColorStop(0, "#1a1008"); bg.addColorStop(0.5, "#281808"); bg.addColorStop(1, "#0e0804");
   ctx.fillStyle = bg; ctx.fillRect(0, 0, WIDTH, HEIGHT);
-  // Checkered floor
-  ctx.save(); ctx.globalAlpha = 0.05;
+  // Checkered tile floor
+  ctx.save(); ctx.globalAlpha = 0.06;
   for (let r = 0; r < 20; r++) for (let c = 0; c < 36; c++) {
     if ((r+c)%2===0) { ctx.fillStyle = "#ffe8c0"; ctx.fillRect(c*36, r*38, 36, 38); }
   } ctx.restore();
 
-  // 4 Tables with chairs
+  // 4 Dining tables with chairs
   const tableXs = [80, 380, 680, 980];
   for (const tx of tableXs) {
-    // Table top
-    fillRoundedRect(tx, 180, 170, 100, 16, "#3a2010");
-    strokeRoundedRect(tx, 180, 170, 100, 16, "rgba(220,170,100,0.5)", 2);
-    // Chairs (small circles around table)
-    const chairPos = [
-      {cx: tx+30, cy:180}, {cx: tx+140, cy:180},
-      {cx: tx+30, cy:280}, {cx: tx+140, cy:280}
-    ];
-    for (const ch of chairPos) {
-      fillCircle(ch.cx, ch.cy, 8, "#4a3020");
-      strokeCircle(ch.cx, ch.cy, 8, "rgba(200,160,100,0.4)", 1);
+    // Shadow under table
+    fillRoundedRect(tx + 4, 194, 170, 100, 16, "rgba(0,0,0,0.3)");
+    // Tablecloth — cream with edge detail
+    fillRoundedRect(tx, 190, 170, 100, 14, "#ebe0d0");
+    strokeRoundedRect(tx, 190, 170, 100, 14, "rgba(180,140,80,0.5)", 2);
+    // Table legs
+    fillRoundedRect(tx + 12, 274, 8, 16, 3, "#5a3a1a");
+    fillRoundedRect(tx + 150, 274, 8, 16, 3, "#5a3a1a");
+    // Place setting — plate
+    fillCircle(tx + 85, 250, 10, "#eee");
+    strokeCircle(tx + 85, 250, 10, "#ccc", 1);
+    fillCircle(tx + 85, 250, 5, "#f8f4f0");
+    // Fork (left)
+    ctx.fillStyle = "#c0c0c0"; ctx.fillRect(tx + 68, 248, 2, 12);
+    ctx.fillRect(tx + 65, 248, 8, 2);
+    // Knife (right)
+    ctx.fillRect(tx + 98, 248, 2, 12);
+    ctx.fillRect(tx + 96, 258, 8, 2);
+    // Wine glass
+    ctx.strokeStyle = "rgba(200,200,220,0.6)"; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(tx + 105, 242, 5, 0, Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(tx + 103, 242); ctx.lineTo(tx + 103, 254); ctx.stroke();
+    // Chairs — 4 wooden chairs around the table
+    const chairs = [[tx+25,190],[tx+119,190],[tx+25,280],[tx+119,280]];
+    for (const [cx, cy] of chairs) {
+      fillRoundedRect(cx, cy, 24, 8, 4, "#4a2a18"); // seat
+      fillRoundedRect(cx, cy - 14, 3, 16, 1, "#3a1a0a"); // backrest post
+      fillRoundedRect(cx + 21, cy - 14, 3, 16, 1, "#3a1a0a");
+      fillRoundedRect(cx + 2, cy - 16, 20, 4, 2, "#4a2a18"); // backrest top
+      fillRoundedRect(cx + 3, cy + 8, 3, 12, 1, "#3a1a0a"); // leg
+      fillRoundedRect(cx + 18, cy + 8, 3, 12, 1, "#3a1a0a");
     }
-    // Placemat + cutlery
-    ctx.fillStyle = "#f0e8d8"; ctx.font = "14px Segoe UI";
-    ctx.textAlign = "center";
-    ctx.fillText("🍽️", tx + 85, 240);
   }
 
-  // Kitchen wall
-  fillRoundedRect(900, 400, 280, 100, 14, "#1a1510");
-  strokeRoundedRect(900, 400, 280, 100, 14, "rgba(200,150,80,0.4)", 2);
-  // Serving window
-  fillRoundedRect(930, 420, 80, 30, 6, "#33221a");
-  ctx.fillStyle = "#e0c080"; ctx.font = "bold 11px Segoe UI"; ctx.textAlign = "center";
-  ctx.fillText("🥘 KITCHEN", 1040, 460);
+  // Kitchen area — right side
+  fillRoundedRect(900, 410, 320, 140, 16, "#1a1510");
+  strokeRoundedRect(900, 410, 320, 140, 16, "rgba(200,150,80,0.5)", 2);
+  // Serving pass-through window
+  fillRoundedRect(928, 430, 110, 34, 8, "#2a1a10");
+  strokeRoundedRect(928, 430, 110, 34, 8, "rgba(220,180,120,0.4)", 2);
+  // Counter inside
+  fillRoundedRect(928, 470, 80, 12, 5, "#3a2a1a");
+  // Stove elements
+  fillCircle(1080, 460, 12, "#222"); fillCircle(1080, 460, 8, "#f44");
+  fillCircle(1120, 460, 12, "#222"); fillCircle(1120, 460, 8, "#333");
+  // Hanging shelf
+  fillRoundedRect(1050, 425, 140, 6, 3, "#3a2a1a");
+  for (let p = 0; p < 5; p++) fillRoundedRect(1060 + p*26, 415, 10, 14, 3, "#5a4a3a");
+  // Kitchen sign
+  ctx.fillStyle = "#d4b088"; ctx.font = "bold 11px Segoe UI"; ctx.textAlign = "center";
+  ctx.fillText("KITCHEN", 1060, 500);
 
-  // Bar counter
-  fillRoundedRect(400, 500, 480, 100, 16, "#2a1510");
-  strokeRoundedRect(400, 500, 480, 100, 16, "rgba(220,160,80,0.55)", 2);
-  // Stools
-  for (let st = 0; st < 8; st++) {
-    fillCircle(430 + st * 60, 570, 8, "#554030");
-    fillRoundedRect(427 + st * 60, 555, 6, 14, 3, "#887060");
+  // Bar counter — spanning center bottom
+  fillRoundedRect(320, 530, 640, 110, 18, "#2a1510");
+  strokeRoundedRect(320, 530, 640, 110, 18, "rgba(220,160,80,0.6)", 3);
+  // Bar top surface
+  fillRoundedRect(320, 530, 640, 16, 10, "rgba(240,200,140,0.35)");
+  // Glass shelf behind bar
+  fillRoundedRect(340, 545, 600, 6, 3, "#3a2a1a");
+  // Bottles on shelf
+  for (let b = 0; b < 14; b++) {
+    const bx = 350 + b * 42;
+    fillRoundedRect(bx, 530, 12, 18, 3, "#6a4a30");
+    fillRoundedRect(bx + 2, 520, 5, 12, 2, "#886830");
   }
-  ctx.fillStyle = "#f0d090"; ctx.font = "bold 16px Segoe UI"; ctx.textAlign = "center";
-  ctx.fillText("🍸 BAR", 640, 545);
+  // Bar stools — 7 stools
+  for (let st = 0; st < 7; st++) {
+    const sx = 370 + st * 80;
+    fillCircle(sx, 600, 9, "#4a3020");
+    strokeCircle(sx, 600, 9, "rgba(180,140,80,0.3)", 1);
+    fillRoundedRect(sx-1, 585, 3, 16, 2, "#6a5040");
+  }
+  // Bar sign
+  ctx.fillStyle = "#e8d0a0"; ctx.font = "bold 18px Segoe UI"; ctx.textAlign = "center";
+  ctx.fillText("BAR", 640, 575);
 
-  // Exit
-  fillRoundedRect(600, 650, 80, 60, 8, "#1a2020");
-  strokeRoundedRect(600, 650, 80, 60, 8, "rgba(255,200,100,0.7)", 2);
-  ctx.fillStyle = "#ffcc66"; ctx.font = "bold 10px Segoe UI"; ctx.textAlign = "center";
-  ctx.fillText("LOBBY", 640, 685);
+  // Exit door
+  fillRoundedRect(590, 640, 100, 70, 10, "#1a2018");
+  strokeRoundedRect(590, 640, 100, 70, 10, "rgba(220,200,120,0.65)", 3);
+  fillCircle(605, 675, 3, "#d4c090");
+  ctx.fillStyle = "#e0c080"; ctx.font = "bold 12px Segoe UI"; ctx.textAlign = "center";
+  ctx.fillText("LOBBY", 640, 683);
 }
 
 // ── Floor 24: Penthouse Suite ─────────────────────────────────────────────────
 function drawFloor24() {
-  // Dark purple luxury
+  // Dark purple luxury background
   const bg = ctx.createLinearGradient(0, 0, WIDTH, HEIGHT);
   bg.addColorStop(0, "#0c0610"); bg.addColorStop(0.5, "#160a1e"); bg.addColorStop(1, "#08040c");
   ctx.fillStyle = bg; ctx.fillRect(0, 0, WIDTH, HEIGHT);
-  // Plush carpet
+  // Plush carpet pattern
   ctx.save(); ctx.globalAlpha = 0.04;
   for (let r = 0; r < 20; r++) for (let c = 0; c < 36; c++) {
     if ((r+c)%3!==0) { ctx.fillStyle = "#d0b8e0"; ctx.fillRect(c*38, r*38, 38, 38); }
   } ctx.restore();
 
-  // Balcony (top edge with glass railing)
-  fillRoundedRect(30, 30, 1220, 100, 14, "#0a1220");
-  strokeRoundedRect(30, 30, 1220, 100, 14, "rgba(180,160,220,0.5)", 3);
-  ctx.fillStyle = "rgba(200,190,220,0.15)";
-  const balconyLeft = 50, balconyW = 50, glassGap = 110;
+  // Balcony — glass railing across the top
+  fillRoundedRect(30, 24, 1220, 96, 12, "#0c0818");
+  strokeRoundedRect(30, 24, 1220, 96, 12, "rgba(160,140,200,0.5)", 3);
+  // Glass panels in railing
   for (let p = 0; p < 11; p++) {
-    fillRoundedRect(balconyLeft + p * (balconyW + glassGap), 50, balconyW, 60, 6, "rgba(200,190,220,0.15)");
-    strokeRoundedRect(balconyLeft + p * (balconyW + glassGap), 50, balconyW, 60, 6, "rgba(180,170,210,0.3)", 1);
+    const px = 48 + p * 108;
+    fillRoundedRect(px, 36, 50, 68, 6, "rgba(140,130,180,0.15)");
+    strokeRoundedRect(px, 36, 50, 68, 6, "rgba(160,150,190,0.35)", 1);
+    // Glass reflection streak
+    ctx.save(); ctx.globalAlpha = 0.1;
+    fillRoundedRect(px+4, 44, 6, 50, 3, "#fff");
+    ctx.restore();
   }
-  ctx.fillStyle = "#c8b8e0"; ctx.font = "bold 14px Segoe UI"; ctx.textAlign = "center";
-  ctx.fillText("🌃 CITY VIEW", 640, 90);
+  // Balcony floor tiles
+  ctx.save(); ctx.globalAlpha = 0.04;
+  for (let t = 0; t < 36; t++) { ctx.fillStyle = "#a090b0"; ctx.fillRect(t*36, 80, 36, 48); }
+  ctx.restore();
+  // City skyline silhouette in distance
+  ctx.save(); ctx.globalAlpha = 0.08;
+  ctx.fillStyle = "#302040";
+  for (let b = 0; b < 16; b++) {
+    const bh = 20 + Math.sin(b*1.7)*15;
+    ctx.fillRect(60 + b*76, 80-bh, 40, bh);
+  }
+  ctx.restore();
 
-  // King size bed
-  fillRoundedRect(200, 180, 340, 260, 22, "#1a1030");
-  strokeRoundedRect(200, 180, 340, 260, 22, "rgba(200,180,240,0.4)", 2);
+  // King size bed — left center
+  fillRoundedRect(140, 160, 380, 280, 24, "#1a1030");
+  strokeRoundedRect(140, 160, 380, 280, 24, "rgba(200,180,240,0.45)", 2);
   // Headboard
-  fillRoundedRect(200, 160, 340, 30, 10, "#2a1a5a");
+  fillRoundedRect(140, 130, 380, 40, 14, "#2a1850");
+  strokeRoundedRect(140, 130, 380, 40, 14, "rgba(220,200,255,0.3)", 1);
+  // Tufted headboard pattern
+  ctx.save(); ctx.globalAlpha = 0.15;
+  for (let hb=0;hb<7;hb++) {
+    fillCircle(180+hb*52, 148, 12, "#8060c0");
+    fillCircle(180+hb*52, 148, 4, "#a080d0");
+  } ctx.restore();
+  // Bedside tables
+  fillRoundedRect(120, 200, 30, 50, 8, "#1a1020");
+  fillRoundedRect(510, 200, 30, 50, 8, "#1a1020");
+  // Lamps on bedside tables
+  fillRoundedRect(132, 190, 6, 16, 2, "#886020");
+  fillCircle(135, 185, 8, "rgba(255,220,160,0.4)");
+  strokeCircle(135, 185, 10, "rgba(255,200,120,0.2)", 1);
+  fillRoundedRect(522, 190, 6, 16, 2, "#886020");
+  fillCircle(525, 185, 8, "rgba(255,220,160,0.4)");
+  strokeCircle(525, 185, 10, "rgba(255,200,120,0.2)", 1);
   // Pillows
-  fillRoundedRect(220, 185, 70, 50, 12, "#f0e8ff");
-  fillRoundedRect(310, 185, 70, 50, 12, "#f0e8ff");
-  fillRoundedRect(440, 185, 70, 50, 12, "#f0e8ff");
-  // Duvet
-  fillRoundedRect(220, 255, 290, 170, 14, "#3a2060");
-  ctx.fillStyle = "#ddd0f0"; ctx.font = "bold 12px Segoe UI"; ctx.textAlign = "center";
-  ctx.fillText("🛏️", 370, 340);
+  for (let pi = 0; pi < 3; pi++) {
+    fillRoundedRect(168 + pi*130, 178, 100, 56, 14, "#e8e0f0");
+    strokeRoundedRect(168 + pi*130, 178, 100, 56, 14, "rgba(220,200,240,0.5)", 1);
+  }
+  // Duvet / blanket
+  fillRoundedRect(160, 250, 340, 176, 16, "#3a2058");
+  strokeRoundedRect(160, 250, 340, 176, 16, "rgba(180,160,220,0.3)", 1);
+  // Duvet fold line
+  ctx.save(); ctx.globalAlpha = 0.15;
+  fillRoundedRect(160, 310, 340, 4, 2, "#604080");
+  ctx.restore();
 
-  // Bathroom (right side)
-  fillRoundedRect(950, 80, 280, 350, 16, "#121018");
-  strokeRoundedRect(950, 80, 280, 350, 16, "rgba(180,200,220,0.5)", 2);
-  // Shower cubicle
-  fillRoundedRect(1040, 100, 80, 120, 10, "#0a1220");
-  strokeRoundedRect(1040, 100, 80, 120, 10, "rgba(140,180,220,0.3)", 1);
-  ctx.fillText("🚿", 1080, 170);
-  // Sink
-  fillRoundedRect(970, 280, 60, 30, 8, "#fff");
-  fillRoundedRect(970, 340, 80, 50, 10, "#eee");
-  ctx.fillText("🪥", 1010, 375);
-  // Toilet
-  fillRoundedRect(1080, 300, 50, 70, 12, "#fff");
-  ctx.fillText("🚽", 1105, 350);
-
-  // Couch
-  fillRoundedRect(80, 540, 300, 100, 16, "#2a1a40");
-  strokeRoundedRect(80, 540, 300, 100, 16, "rgba(200,180,240,0.35)", 1);
+  // Couch — bottom left
+  fillRoundedRect(80, 520, 340, 110, 18, "#2a1840");
+  strokeRoundedRect(80, 520, 340, 110, 18, "rgba(200,180,240,0.4)", 2);
   // Cushions
-  fillRoundedRect(100, 555, 80, 60, 10, "#4a3070");
-  fillRoundedRect(195, 555, 80, 60, 10, "#4a3070");
-  fillRoundedRect(280, 555, 80, 60, 10, "#4a3070");
+  fillRoundedRect(95, 540, 90, 70, 12, "#4a2860");
+  fillRoundedRect(200, 540, 90, 70, 12, "#4a2860");
+  fillRoundedRect(305, 540, 90, 70, 12, "#4a2860");
+  // Couch backrest
+  fillRoundedRect(85, 520, 330, 20, 6, "#3a2060");
+  // Armrests
+  fillRoundedRect(80, 520, 20, 110, 8, "#2a1840");
+  fillRoundedRect(400, 520, 20, 110, 8, "#2a1840");
+
+  // Bathroom — right wall suite
+  fillRoundedRect(920, 140, 310, 410, 18, "#100c14");
+  strokeRoundedRect(920, 140, 310, 410, 18, "rgba(180,200,220,0.5)", 2);
+  // Bathroom door
+  fillRoundedRect(940, 450, 50, 90, 8, "#1a1420");
+  strokeRoundedRect(940, 450, 50, 90, 8, "rgba(200,200,220,0.3)", 1);
+  fillCircle(975, 495, 3, "#c0b8a0");
+  // Shower cubicle
+  fillRoundedRect(1040, 160, 90, 140, 12, "#080a14");
+  strokeRoundedRect(1040, 160, 90, 140, 12, "rgba(140,180,220,0.35)", 2);
+  // Shower head
+  fillCircle(1085, 172, 6, "#aaa");
+  for (let d = 0; d < 5; d++) {
+    ctx.save(); ctx.globalAlpha = 0.08; ctx.strokeStyle = "#88c8ff"; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(1085, 180); ctx.lineTo(1080+d*2, 210+d*6); ctx.stroke();
+    ctx.restore();
+  }
+  // Shower glass door
+  strokeRoundedRect(1130, 160, 8, 140, 4, "rgba(160,200,240,0.25)", 2);
+  // Sink and mirror
+  fillRoundedRect(960, 220, 60, 16, 6, "#fff");
+  fillRoundedRect(1030, 220, 60, 16, 6, "#fff");
+  // Mirror above sinks
+  fillRoundedRect(950, 160, 150, 55, 8, "rgba(200,210,240,0.25)");
+  strokeRoundedRect(950, 160, 150, 55, 8, "rgba(180,190,220,0.5)", 2);
+  // Toilet
+  fillRoundedRect(1060, 350, 60, 80, 14, "#fff");
+  fillRoundedRect(1050, 380, 10, 50, 5, "#eee");
+  // Toilet seat oval
+  ctx.strokeStyle = "#ddd"; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.ellipse(1090, 370, 22, 8, 0, 0, Math.PI*2); ctx.stroke();
+  // Heated towel rack
+  ctx.strokeStyle = "#bbb"; ctx.lineWidth = 2;
+  for (let tr = 0; tr < 3; tr++) {
+    ctx.beginPath(); ctx.moveTo(1180, 200+tr*20); ctx.lineTo(1210, 200+tr*20); ctx.stroke();
+  }
+  ctx.save(); ctx.globalAlpha = 0.3;
+  fillRoundedRect(1182, 197, 26, 26, 4, "#e8e0e0");
+  ctx.restore();
 
   // Exit door
-  fillRoundedRect(600, 650, 80, 60, 8, "#1a2020");
-  strokeRoundedRect(600, 650, 80, 60, 8, "rgba(255,200,100,0.7)", 2);
-  ctx.fillStyle = "#ffcc66"; ctx.font = "bold 10px Segoe UI"; ctx.textAlign = "center";
-  ctx.fillText("LOBBY", 640, 685);
+  fillRoundedRect(590, 640, 100, 70, 10, "#1a1820");
+  strokeRoundedRect(590, 640, 100, 70, 10, "rgba(220,200,120,0.65)", 3);
+  fillCircle(605, 675, 3, "#d4c090");
+  ctx.fillStyle = "#e0c080"; ctx.font = "bold 12px Segoe UI"; ctx.textAlign = "center";
+  ctx.fillText("LOBBY", 640, 683);
 }
 
 function updateNpcList(npcList, obstacles) {
