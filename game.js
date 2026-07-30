@@ -1277,46 +1277,59 @@ let currentRoom = "lobby"; // "casino" | "lobby" | "backstage"
 
 // Door interactables: press E near these to change rooms
 const casinoDoors = [
-  { id: "doorTolobby",    name: "Hotel Lobby",   label: "Go to Lobby",    zone: { x: 1218, y: 280, width: 62, height: 130 }, targetRoom: "lobby",     targetX: 50,  targetY: 345 },
+  { id: "doorTolobby",    name: "Hotel Lobby",   label: "Go to Lobby",    zone: { x: 1218, y: 280, width: 62, height: 130 }, targetRoom: "lobby",     targetX: 46, targetY: 345 },
   { id: "doorTobackstage", name: "Backstage",     label: "Go Backstage",  zone: { x: 0,    y: 90,  width: 22, height: 130 }, targetRoom: "backstage", targetX: 1240, targetY: 345 }
 ];
 const lobbyDoors = [
-  { id: "doorTocasino",    name: "Casino Floor",  label: "Go to Casino",  zone: { x: 0, y: 295, width: 28, height: 130 }, targetRoom: "casino",    targetX: 1190, targetY: 345 }
+  { id: "doorTocasino",    name: "Casino Floor",  label: "Go to Casino",  zone: { x: 2, y: 280, width: 34, height: 120 }, targetRoom: "casino",    targetX: 1190, targetY: 345 }
 ];
 const backstageDoors = [
   { id: "doorTocasino",    name: "Casino Floor",  label: "Go to Casino",  zone: { x: 1256, y: 285, width: 24, height: 130 }, targetRoom: "casino",    targetX: 38, targetY: 95 }
+];
+
+// ── Floor room doors (back to lobby only) ──
+const floor7Doors = [
+  { id: "doorTolobby", name: "Hotel Lobby", label: "Back to Lobby", zone: { x: 600, y: 650, width: 80, height: 60 }, targetRoom: "lobby", targetX: 200, targetY: 200 }
+];
+const floor12Doors = [
+  { id: "doorTolobby", name: "Hotel Lobby", label: "Back to Lobby", zone: { x: 600, y: 650, width: 80, height: 60 }, targetRoom: "lobby", targetX: 200, targetY: 200 }
+];
+const floor24Doors = [
+  { id: "doorTolobby", name: "Hotel Lobby", label: "Back to Lobby", zone: { x: 600, y: 650, width: 80, height: 60 }, targetRoom: "lobby", targetX: 200, targetY: 200 }
 ];
 
 // Transition zones: used by door interactables only (not automatic)
 const ROOM_TRANSITIONS = {
   casino: [].concat(casinoDoors),
   lobby: [].concat(lobbyDoors),
-  backstage: [].concat(backstageDoors)
+  backstage: [].concat(backstageDoors),
+  floor7: [].concat(floor7Doors),
+  floor12: [].concat(floor12Doors),
+  floor24: [].concat(floor24Doors)
 };
 
 // ── Lobby data ────────────────────────────────────────────────────────────────
 const lobbyObstacles = [
-  { x: 50,  y: 78,  width: 148, height: 152 }, // Lift shaft 1
-  { x: 218, y: 78,  width: 148, height: 152 }, // Lift shaft 2
+  { x: 60,  y: 70,  width: 120, height: 140 }, // Lift shaft 1 (shrunk)
+  { x: 200, y: 70,  width: 120, height: 140 }, // Lift shaft 2 (shrunk)
   { x: 380, y: 80,  width: 640, height: 80  }, // Check-in desk
-  { x: 530, y: 240, width: 220, height: 178 }, // Fountain basin
-  // Left sofa — split into armrests so player can approach seats
-  { x: 80,  y: 325, width: 16,  height: 50  }, // Left armrest
-  { x: 80,  y: 490, width: 16,  height: 50  }, // Left sofa base
-  { x: 284, y: 325, width: 16,  height: 50  }, // Right armrest
-  { x: 284, y: 490, width: 16,  height: 50  }, // Right sofa base
-  // Right sofa — same pattern
-  { x: 860, y: 325, width: 16,  height: 50  }, // Left armrest
-  { x: 860, y: 490, width: 16,  height: 50  }, // Left sofa base
-  { x: 1064, y: 325, width: 16,  height: 50  }, // Right armrest
-  { x: 1064, y: 490, width: 16,  height: 50  }, // Right sofa base
-  { x: 465, y: 382, width: 90,  height: 38  }, // Coffee table L (thinner)
-  { x: 725, y: 382, width: 90,  height: 38  }, // Coffee table R (thinner)
-  { x: 1050, y: 80,  width: 150, height: 150 }, // Concierge desk
+  // Left sofa — slim armrest posts
+  { x: 90,  y: 320, width: 16,  height: 40 }, // armrest top
+  { x: 90,  y: 540, width: 16,  height: 40 }, // base bottom
+  { x: 210, y: 320, width: 16,  height: 40 }, // armrest top
+  { x: 210, y: 540, width: 16,  height: 40 }, // base bottom
+  // Right sofa — slim armrest posts
+  { x: 880, y: 320, width: 16,  height: 40 },
+  { x: 880, y: 540, width: 16,  height: 40 },
+  { x: 1000, y: 320, width: 16,  height: 40 },
+  { x: 1000, y: 540, width: 16,  height: 40 },
+  { x: 465, y: 390, width: 80,  height: 30 }, // Coffee table L
+  { x: 725, y: 390, width: 80,  height: 30 }, // Coffee table R
+  { x: 1060, y: 80,  width: 140, height: 150 }, // Concierge desk
 ];
 
 const lobbyInteractables = [
-  { id: "elevator", name: "Hotel Lifts",     label: "Take Lift",  hitbox: { x: 50,  y: 78, width: 316, height: 152 } },
+  { id: "elevator", name: "Hotel Lifts",     label: "Take Lift",  hitbox: { x: 60,  y: 70, width: 260, height: 140 } },
   { id: "checkin",  name: "Check-in Desk",   label: "Check In",   hitbox: { x: 380, y: 80, width: 640, height: 80  } }
 ];
 
@@ -1327,13 +1340,33 @@ const lobbyNpcs = [
   { x: 800, y: 162, size: 16, vx: 0.14, vy: 0.1,  moodTime: 0, color: "#eeeef8", skin: "#c47a52", role: "staff", anchor: { x: 800, y: 162 }, roamRadius: 52 },
   // Concierge near desk
   { x: 1090, y: 185, size: 16, vx: 0.18, vy: 0.14, moodTime: 0, color: "#d4a84a", skin: "#f7ddc2", role: "staff", anchor: { x: 1090, y: 185 }, roamRadius: 42 },
-  // Guests walking around
-  { x: 240, y: 420, size: 16, vx: 0.3,  vy: 0.22, moodTime: 0, color: "#ff9dac", skin: "#f7ddc2", role: "customer" },
+  // Guests walking around (adjusted for no fountain)
+  { x: 400, y: 400, size: 16, vx: 0.3,  vy: 0.22, moodTime: 0, color: "#ff9dac", skin: "#f7ddc2", role: "customer" },
   { x: 660, y: 525, size: 16, vx: -0.28, vy: 0.2, moodTime: 0, color: "#95d8ff", skin: "#dba88a", role: "customer" },
   { x: 880, y: 445, size: 16, vx: 0.22, vy: -0.28, moodTime: 0, color: "#dcb2ff", skin: "#c47a52", role: "customer" },
   { x: 450, y: 595, size: 16, vx: 0.28, vy: -0.2, moodTime: 0, color: "#f7cb6f", skin: "#dba88a", role: "customer" },
   { x: 785, y: 315, size: 16, vx: 0.2,  vy: 0.28, moodTime: 0, color: "#bde3a6", skin: "#8a5a38", role: "customer" },
   { x: 1025, y: 580, size: 16, vx: -0.25, vy: -0.2, moodTime: 0, color: "#ffb8c0", skin: "#f7ddc2", role: "customer" }
+];
+
+// ── Floor room data ───────────────────────────────────────────────────────────
+const floor7Obstacles = [
+  { x: 100, y: 150, width: 400, height: 380 }, // Pool
+  { x: 560, y: 100, width: 80, height: 500 },  // Changing rooms
+  { x: 740, y: 400, width: 100, height: 60 },  // Sauna
+  { x: 900, y: 150, width: 60, height: 200 },  // Hot tub
+];
+const floor12Obstacles = [
+  { x: 150, y: 200, width: 180, height: 120 }, // Table 1
+  { x: 400, y: 200, width: 180, height: 120 }, // Table 2
+  { x: 650, y: 200, width: 180, height: 120 }, // Table 3
+  { x: 900, y: 200, width: 180, height: 120 }, // Table 4
+  { x: 500, y: 450, width: 280, height: 100 }, // Bar counter
+];
+const floor24Obstacles = [
+  { x: 300, y: 150, width: 200, height: 300 }, // Bed
+  { x: 600, y: 150, width: 120, height: 200 }, // Lounge chair
+  { x: 800, y: 400, width: 250, height: 120 }, // Desk/table
 ];
 
 // ── Backstage data ────────────────────────────────────────────────────────────
@@ -1588,6 +1621,9 @@ function getCurrentRoomDoors() {
   if (currentRoom === "casino") return casinoDoors;
   if (currentRoom === "lobby") return lobbyDoors;
   if (currentRoom === "backstage") return backstageDoors;
+  if (currentRoom === "floor7") return floor7Doors;
+  if (currentRoom === "floor12") return floor12Doors;
+  if (currentRoom === "floor24") return floor24Doors;
   return [];
 }
 
@@ -3610,7 +3646,7 @@ function drawLobby() {
   drawLobbyBackground();
 
   // ── Left wall casino door ──
-  const doorX = 0, doorY = 295, doorW = 28, doorH = 130;
+  const doorX = 2, doorY = 280, doorW = 34, doorH = 120;
   fillRoundedRect(doorX, doorY, doorW, doorH, 4, "#1a1020");
   strokeRoundedRect(doorX, doorY, doorW, doorH, 4, "rgba(255,215,100,0.5)", 2);
   ctx.save();
@@ -3625,20 +3661,19 @@ function drawLobby() {
 
   // ── Lift shafts ──
   for (let li = 0; li < 2; li++) {
-    const lx = li === 0 ? 50 : 218;
-    const ly = 78, lw = 148, lh = 152;
+    const lx = li === 0 ? 60 : 200;
+    const ly = 70, lw = 120, lh = 140;
     fillRoundedRect(lx, ly, lw, lh, 10, "#1a1a2e");
     strokeRoundedRect(lx, ly, lw, lh, 10, "rgba(180,190,220,0.55)", 2);
     // Lift doors
-    fillRoundedRect(lx + 8, ly + 12, 58, lh - 24, 6, "#2a2a4a");
-    fillRoundedRect(lx + 82, ly + 12, 58, lh - 24, 6, "#2a2a4a");
-    // Arrow indicator
-    fillCircle(lx + lw / 2, ly - 4, 7, "#4a4");
+    fillRoundedRect(lx + 6, ly + 10, 48, lh - 20, 5, "#2a2a4a");
+    fillRoundedRect(lx + 66, ly + 10, 48, lh - 20, 5, "#2a2a4a");
+    fillCircle(lx + lw / 2, ly - 4, 6, "#4a4");
     ctx.save();
     ctx.fillStyle = "#fff";
-    ctx.font = "bold 9px Segoe UI";
+    ctx.font = "bold 8px Segoe UI";
     ctx.textAlign = "center";
-    ctx.fillText("▲▼", lx + lw / 2, ly + 16);
+    ctx.fillText("▲▼", lx + lw / 2, ly + 14);
     ctx.restore();
   }
 
@@ -3651,52 +3686,25 @@ function drawLobby() {
   ctx.font = "italic 14px Segoe UI";
   ctx.textAlign = "center";
   ctx.fillText("GRAND NEON HOTEL · CHECK-IN", dkX + dkW / 2, dkY + 42);
-  // Desk lamp
   fillCircle(dkX + 60, dkY + 10, 8, "rgba(255,230,140,0.6)");
   fillCircle(dkX + dkW - 60, dkY + 10, 8, "rgba(255,230,140,0.6)");
 
-  // ── Fountain basin ──
-  const fX = 530, fY = 240, fW = 220, fH = 178;
-  fillRoundedRect(fX, fY, fW, fH, 34, "#1a3038");
-  strokeRoundedRect(fX, fY, fW, fH, 34, "rgba(140,200,220,0.55)", 3);
-  fillRoundedRect(fX + 12, fY + 12, fW - 24, fH - 24, 28, "#0c1a22");
-  // Water spray
-  const fCx = fX + fW / 2, fCy = fY + fH / 2;
-  ctx.save();
-  ctx.globalAlpha = 0.18;
-  for (let s = 0; s < 8; s++) {
-    const angle = s * Math.PI / 4 + 0.2;
-    ctx.fillStyle = "#8ed0ff";
-    ctx.beginPath();
-    ctx.ellipse(fCx + Math.cos(angle) * 30, fCy + Math.sin(angle) * 24 - 10, 8, 5, angle, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.restore();
-  // Central pillar
-  fillCircle(fCx, fCy, 8, "#c4e0f0");
-
-  // ── Left sofa group ──
-  const sf1X = 80, sf1Y = 325, sf1W = 210, sf1H = 195;
-  fillRoundedRect(sf1X, sf1Y, sf1W, sf1H, 16, "#3a2028");
-  strokeRoundedRect(sf1X, sf1Y, sf1W, sf1H, 16, "rgba(200,150,140,0.3)", 1);
-  fillRoundedRect(sf1X + 12, sf1Y + 35, 20, sf1H - 70, 8, "#5a3a3a");
-  fillRoundedRect(sf1X + sf1W - 32, sf1Y + 35, 20, sf1H - 70, 8, "#5a3a3a");
-  fillRoundedRect(sf1X + 35, sf1Y + sf1H - 32, sf1W - 70, 20, 8, "#5a3a3a");
+  // ── Left sofa group (slim) ──
+  const sf1X = 90, sf1Y = 320, sf1W = 120, sf1H = 240;
+  fillRoundedRect(sf1X, sf1Y, sf1W, sf1H, 14, "#3a2028");
+  strokeRoundedRect(sf1X, sf1Y, sf1W, sf1H, 14, "rgba(200,150,140,0.3)", 1);
   // Cushions
-  fillRoundedRect(sf1X + 20, sf1Y + 10, 52, 30, 10, "#7a3a3a");
-  fillRoundedRect(sf1X + sf1W - 72, sf1Y + 10, 52, 30, 10, "#7a3a3a");
-  fillRoundedRect(sf1X + sf1W - 72, sf1Y + sf1H - 40, 52, 30, 10, "#7a3a3a");
+  fillRoundedRect(sf1X + 15, sf1Y + 15, 90, 60, 10, "#7a3a3a");
+  fillRoundedRect(sf1X + 15, sf1Y + 85, 90, 60, 10, "#7a3a3a");
+  fillRoundedRect(sf1X + 15, sf1Y + 155, 90, 60, 10, "#7a3a3a");
 
-  // ── Right sofa group ──
-  const sf2X = 860, sf2Y = 325, sf2W = 210, sf2H = 195;
-  fillRoundedRect(sf2X, sf2Y, sf2W, sf2H, 16, "#2a2038");
-  strokeRoundedRect(sf2X, sf2Y, sf2W, sf2H, 16, "rgba(160,150,200,0.3)", 1);
-  fillRoundedRect(sf2X + 12, sf2Y + 35, 20, sf2H - 70, 8, "#3a3a5a");
-  fillRoundedRect(sf2X + sf2W - 32, sf2Y + 35, 20, sf2H - 70, 8, "#3a3a5a");
-  fillRoundedRect(sf2X + 35, sf2Y + sf2H - 32, sf2W - 70, 20, 8, "#3a3a5a");
-  fillRoundedRect(sf2X + 20, sf2Y + 10, 52, 30, 10, "#5a5a8a");
-  fillRoundedRect(sf2X + sf2W - 72, sf2Y + 10, 52, 30, 10, "#5a5a8a");
-  fillRoundedRect(sf2X + sf2W - 72, sf2Y + sf2H - 40, 52, 30, 10, "#5a5a8a");
+  // ── Right sofa group (slim) ──
+  const sf2X = 880, sf2Y = 320, sf2W = 120, sf2H = 240;
+  fillRoundedRect(sf2X, sf2Y, sf2W, sf2H, 14, "#2a2038");
+  strokeRoundedRect(sf2X, sf2Y, sf2W, sf2H, 14, "rgba(160,150,200,0.3)", 1);
+  fillRoundedRect(sf2X + 15, sf2Y + 15, 90, 60, 10, "#5a5a8a");
+  fillRoundedRect(sf2X + 15, sf2Y + 85, 90, 60, 10, "#5a5a8a");
+  fillRoundedRect(sf2X + 15, sf2Y + 155, 90, 60, 10, "#5a5a8a");
 
   // ── Coffee tables ──
   for (const ct of [{ x: 465, y: 382, w: 90, h: 68 }, { x: 725, y: 382, w: 90, h: 68 }]) {
@@ -3839,6 +3847,99 @@ function drawBackstage() {
     const legColor = isStaff ? "#1e1e2e" : "#18182a";
     drawHumanoid(npc.x, npc.y, npc.size, bodyColor, npc.skin || "#f7ddc2", legColor, isStaff);
   }
+}
+
+// ── Floor 7: Spa & Pool ──────────────────────────────────────────────────────
+function drawFloor7() {
+  // Cyan-blue gradient background
+  const bg = ctx.createLinearGradient(0, 0, WIDTH, HEIGHT);
+  bg.addColorStop(0, "#0a1a22"); bg.addColorStop(0.5, "#0d202a"); bg.addColorStop(1, "#061014");
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, WIDTH, HEIGHT);
+  // Tile floor
+  ctx.save(); ctx.globalAlpha = 0.05;
+  for (let r = 0; r < 20; r++) for (let c = 0; c < 36; c++) {
+    if ((r+c)%2===0) { ctx.fillStyle="#a0e0ff"; ctx.fillRect(c*36, r*38, 36, 38); }
+  } ctx.restore();
+  // Pool
+  fillRoundedRect(100, 150, 400, 380, 28, "#0c2a3a");
+  strokeRoundedRect(100, 150, 400, 380, 28, "rgba(80,200,255,0.4)", 3);
+  ctx.fillStyle = "#22aadd"; ctx.font = "bold 28px Segoe UI"; ctx.textAlign = "center";
+  ctx.fillText("🏊", 300, 340);
+  // Changing rooms
+  fillRoundedRect(560, 100, 80, 500, 14, "#1a1a2a");
+  for (let i=0; i<4;i++) { ctx.fillStyle="#44aacc"; ctx.font="12px Segoe UI"; ctx.fillText("🚿", 600, 180+i*120); }
+  // Sauna
+  fillRoundedRect(740, 400, 100, 60, 12, "#331a1a");
+  ctx.fillStyle="#ff6644"; ctx.font="16px Segoe UI"; ctx.fillText("🔥", 790, 440);
+  // Hot tub
+  fillRoundedRect(900, 150, 60, 200, 14, "#0a2a36");
+  strokeRoundedRect(900, 150, 60, 200, 14, "rgba(100,220,255,0.5)", 2);
+  ctx.fillStyle="#a0eeff"; ctx.font="bold 20px Segoe UI"; ctx.fillText("♨️", 930, 260);
+  // Exit door
+  fillRoundedRect(600, 650, 80, 60, 8, "#1a2020"); strokeRoundedRect(600, 650, 80, 60, 8, "rgba(255,200,100,0.7)", 2);
+  ctx.fillStyle="#ffcc66"; ctx.font="bold 10px Segoe UI"; ctx.fillText("LOBBY", 640, 685);
+  // NPC walkers
+  const poolNpcs = [
+    {x:180,y:530,s:14,c:"#ddd",sk:"#e8c8a0",r:"staff",a:{x:180,y:530},rd:40},
+    {x:300,y:100,s:14,c:"#bdf",sk:"#dbb",r:"customer"},
+    {x:920,y:100,s:14,c:"#fda",sk:"#f7ddc2",r:"customer"},
+  ];
+  for (let n of poolNpcs) drawHumanoid(n.x,n.y,n.s,n.c,n.sk||"#f7ddc2","#223",n.r==="staff");
+}
+
+// ── Floor 12: Restaurant ──────────────────────────────────────────────────────
+function drawFloor12() {
+  const bg = ctx.createLinearGradient(0, 0, WIDTH, HEIGHT);
+  bg.addColorStop(0, "#1a1208"); bg.addColorStop(0.5, "#2a1a0a"); bg.addColorStop(1, "#0f0a04");
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, WIDTH, HEIGHT);
+  // Floor
+  ctx.save(); ctx.globalAlpha=0.06;
+  for (let r=0;r<20;r++) for(let c=0;c<36;c++){if((r+c)%2===0){ctx.fillStyle="#ffd";ctx.fillRect(c*36,r*38,36,38);}} ctx.restore();
+  // Tables
+  for (let t of [{x:150,y:200},{x:400,y:200},{x:650,y:200},{x:900,y:200}]) {
+    fillRoundedRect(t.x,t.y,180,120,18,"#3a2010"); strokeRoundedRect(t.x,t.y,180,120,18,"rgba(200,150,80,0.4)",2);
+    drawChip(t.x+60,t.y+50,6,"#b23f54","#f9d98f");
+    drawChip(t.x+120,t.y+55,6,"#226f89","#d3f0ff");
+  }
+  // Bar
+  fillRoundedRect(500,450,280,100,16,"#2a1510");
+  strokeRoundedRect(500,450,280,100,16,"rgba(220,160,80,0.5)",2);
+  ctx.fillStyle="#f0d090"; ctx.font="bold 18px Segoe UI"; ctx.textAlign="center";
+  ctx.fillText("🍸 BAR 🍸", 640, 510);
+  // Exit
+  fillRoundedRect(600,650,80,60,8,"#1a2020"); strokeRoundedRect(600,650,80,60,8,"rgba(255,200,100,0.7)",2);
+  ctx.fillStyle="#ffcc66"; ctx.font="bold 10px Segoe UI"; ctx.fillText("LOBBY", 640, 685);
+}
+
+// ── Floor 24: Penthouse Suite ─────────────────────────────────────────────────
+function drawFloor24() {
+  const bg = ctx.createLinearGradient(0,0,WIDTH,HEIGHT);
+  bg.addColorStop(0,"#0f0814"); bg.addColorStop(0.5,"#1a0e22"); bg.addColorStop(1,"#0a0610");
+  ctx.fillStyle=bg; ctx.fillRect(0,0,WIDTH,HEIGHT);
+  // Window wall
+  for (let w=0;w<4;w++) {
+    fillRoundedRect(50+w*300,60,220,340,12,"#0a1230");
+    strokeRoundedRect(50+w*300,60,220,340,12,"rgba(180,160,220,0.5)",2);
+    ctx.save(); ctx.globalAlpha=0.15;
+    for(let s=0;s<12;s++) fillCircle(160+w*300,90+s*28,2,"#fff");
+    ctx.restore();
+  }
+  // Bed
+  fillRoundedRect(300,150,200,300,20,"#2a1840");
+  fillRoundedRect(320,170,160,80,14,"#4a3070");
+  fillRoundedRect(320,260,80,150,14,"#3a2050");
+  // Lounge
+  fillRoundedRect(600,150,120,200,16,"#1a1040"); strokeRoundedRect(600,150,120,200,16,"rgba(200,180,240,0.4)",2);
+  // Desk
+  fillRoundedRect(800,400,250,120,14,"#222");
+  fillRoundedRect(820,420,210,20,8,"#3a2a1a");
+  // Chandelier
+  ctx.save(); ctx.globalAlpha=0.4;
+  for(let d=0;d<6;d++) fillCircle(200+d*180,30,12*d%3+6,"rgba(255,240,200,0.6)");
+  ctx.restore();
+  // Exit
+  fillRoundedRect(600,650,80,60,8,"#1a2020"); strokeRoundedRect(600,650,80,60,8,"rgba(255,200,100,0.7)",2);
+  ctx.fillStyle="#ffcc66"; ctx.font="bold 10px Segoe UI"; ctx.fillText("LOBBY", 640, 685);
 }
 
 function updateNpcList(npcList, obstacles) {
@@ -4155,7 +4256,13 @@ function updatePlayerPosition() {
       blocked = collidesWithWorldRect(checkY, { skipNpcs: false });
     }
   } else {
-    const obstacles = currentRoom === "lobby" ? lobbyObstacles : backstageObstacles;
+    let obstacles;
+    if (currentRoom === "lobby") obstacles = lobbyObstacles;
+    else if (currentRoom === "backstage") obstacles = backstageObstacles;
+    else if (currentRoom === "floor7") obstacles = floor7Obstacles;
+    else if (currentRoom === "floor12") obstacles = floor12Obstacles;
+    else if (currentRoom === "floor24") obstacles = floor24Obstacles;
+    else obstacles = [];
     const checkX = { x: nextX, y: player.y, width: player.size, height: PLAYER_HITBOX_H };
     const checkY = { x: player.x, y: nextY, width: player.size, height: PLAYER_HITBOX_H };
     for (const obs of obstacles) {
@@ -4186,6 +4293,12 @@ function gameLoop() {
     updateNpcList(lobbyNpcs, lobbyObstacles);
   } else if (currentRoom === "backstage") {
     updateNpcList(backstageNpcs, backstageObstacles);
+  } else if (currentRoom === "floor7") {
+    updateNpcList([], floor7Obstacles);
+  } else if (currentRoom === "floor12") {
+    updateNpcList([], floor12Obstacles);
+  } else if (currentRoom === "floor24") {
+    updateNpcList([], floor24Obstacles);
   }
 
   resolveNearbyTable();
@@ -4217,6 +4330,15 @@ function gameLoop() {
     drawPlayer();
   } else if (currentRoom === "backstage") {
     drawBackstage();
+    drawPlayer();
+  } else if (currentRoom === "floor7") {
+    drawFloor7();
+    drawPlayer();
+  } else if (currentRoom === "floor12") {
+    drawFloor12();
+    drawPlayer();
+  } else if (currentRoom === "floor24") {
+    drawFloor24();
     drawPlayer();
   }
 
@@ -4433,11 +4555,13 @@ if (checkinBtn) {
 const elevFloorEl = document.getElementById("elevatorFloor");
 const elevResultEl = document.getElementById("elevatorResult");
 function openElevatorFloor(floorId) {
-  // Hide elevator panel, show the floor panel
-  if (elevatorPanel) elevatorPanel.classList.add("hidden");
-  if (floorId === 7 && floor7Panel) floor7Panel.classList.remove("hidden");
-  if (floorId === 12 && floor12Panel) floor12Panel.classList.remove("hidden");
-  if (floorId === 24 && floor24Panel) floor24Panel.classList.remove("hidden");
+  activePanel = null;
+  modalBackdrop.classList.add("hidden");
+  if (floorId === 7)  { currentRoom = "floor7";  player.x = 580; player.y = 100; }
+  if (floorId === 12) { currentRoom = "floor12"; player.x = 640; player.y = 100; }
+  if (floorId === 24) { currentRoom = "floor24"; player.x = 640; player.y = 100; }
+  nearbyTable = null;
+  updateNearbyText();
 }
 const floor7Btn = document.getElementById("elevFloor7");
 const floor12Btn = document.getElementById("elevFloor12");
