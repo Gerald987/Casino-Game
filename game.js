@@ -214,6 +214,8 @@ let rouletteWheelRotation = 0;
 let rouletteBallAngle = 0;
 let joystickPointerId = null;
 let currentDrinkOffer = null;
+let floorMessage = "";
+let floorMessageTimer = 0;
 const joystickVector = { x: 0, y: 0 };
 const joystickMaxDistance = 36;
 
@@ -1351,23 +1353,33 @@ const lobbyNpcs = [
 
 // ── Floor room data ───────────────────────────────────────────────────────────
 const floor7Obstacles = [
-  { x: 180, y: 200, width: 1000, height: 430 }, // Pool
-  { x: 30,  y: 50,  width: 140, height: 150 },  // Changing room 1
-  { x: 30,  y: 230, width: 140, height: 150 },  // Changing room 2
-  { x: 30,  y: 410, width: 140, height: 150 },  // Changing room 3
+  { x: 180, y: 220, width: 960, height: 420 }, // Pool
+  { x: 22,  y: 40,  width: 146, height: 168 },  // Changing room 1
+  { x: 22,  y: 230, width: 146, height: 168 },  // Changing room 2
+  { x: 22,  y: 420, width: 146, height: 168 },  // Changing room 3
+];
+const floor7Interactables = [
+  { id: "pool_swim", name: "Swimming Pool", label: "Swim", hitbox: { x: 300, y: 260, width: 700, height: 200 } }
 ];
 const floor12Obstacles = [
-  { x: 80,  y: 180, width: 170, height: 100 }, // Table 1
-  { x: 380, y: 180, width: 170, height: 100 }, // Table 2
-  { x: 680, y: 180, width: 170, height: 100 }, // Table 3
-  { x: 980, y: 180, width: 170, height: 100 }, // Table 4
-  { x: 900, y: 400, width: 280, height: 100 }, // Kitchen wall
-  { x: 400, y: 500, width: 480, height: 100 }, // Bar counter
+  { x: 80,  y: 190, width: 170, height: 100 }, // Table 1
+  { x: 380, y: 190, width: 170, height: 100 }, // Table 2
+  { x: 680, y: 190, width: 170, height: 100 }, // Table 3
+  { x: 980, y: 190, width: 170, height: 100 }, // Table 4
+  { x: 900, y: 410, width: 320, height: 140 }, // Kitchen
+  { x: 320, y: 530, width: 640, height: 110 }, // Bar counter
+];
+const floor12Interactables = [
+  { id: "bar_order", name: "Bar Counter", label: "Order Drink", hitbox: { x: 500, y: 540, width: 280, height: 80 } }
 ];
 const floor24Obstacles = [
-  { x: 200, y: 180, width: 340, height: 260 }, // King bed
-  { x: 950, y: 80,  width: 280, height: 350 }, // Bathroom
-  { x: 80,  y: 540, width: 300, height: 100 }, // Couch
+  { x: 140, y: 160, width: 380, height: 280 }, // King bed
+  { x: 920, y: 140, width: 310, height: 410 }, // Bathroom
+  { x: 80,  y: 520, width: 340, height: 110 }, // Couch
+];
+const floor24Interactables = [
+  { id: "bed_rest", name: "King Bed", label: "Rest", hitbox: { x: 200, y: 200, width: 260, height: 180 } },
+  { id: "balcony_view", name: "Balcony", label: "Look Out", hitbox: { x: 400, y: 30, width: 480, height: 80 } }
 ];
 
 // ── Backstage data ────────────────────────────────────────────────────────────
@@ -1665,6 +1677,30 @@ function resolveNearbyTable() {
         const dist = distanceToRect(playerCenterX, playerCenterY, lbItem.hitbox);
         if (dist <= interactDistance) {
           nearbyTable = lbItem;
+          break;
+        }
+      }
+    } else if (currentRoom === "floor7" && floor7Interactables) {
+      for (const fi of floor7Interactables) {
+        const dist = distanceToRect(playerCenterX, playerCenterY, fi.hitbox);
+        if (dist <= interactDistance) {
+          nearbyTable = fi;
+          break;
+        }
+      }
+    } else if (currentRoom === "floor12" && floor12Interactables) {
+      for (const fi of floor12Interactables) {
+        const dist = distanceToRect(playerCenterX, playerCenterY, fi.hitbox);
+        if (dist <= interactDistance) {
+          nearbyTable = fi;
+          break;
+        }
+      }
+    } else if (currentRoom === "floor24" && floor24Interactables) {
+      for (const fi of floor24Interactables) {
+        const dist = distanceToRect(playerCenterX, playerCenterY, fi.hitbox);
+        if (dist <= interactDistance) {
+          nearbyTable = fi;
           break;
         }
       }
@@ -4413,6 +4449,17 @@ function drawPlayer() {
 }
 
 function drawPrompt() {
+  // Floor interaction message
+  if (floorMessageTimer > 0) {
+    ctx.fillStyle = "rgba(3, 12, 21, 0.85)";
+    ctx.fillRect(WIDTH/2 - 260, HEIGHT/2 - 30, 520, 60);
+    ctx.strokeStyle = "rgba(247, 214, 131, 0.7)"; ctx.lineWidth = 2;
+    ctx.strokeRect(WIDTH/2 - 260, HEIGHT/2 - 30, 520, 60);
+    ctx.fillStyle = "#dff4ff"; ctx.font = "bold 16px Segoe UI"; ctx.textAlign = "center";
+    ctx.fillText(floorMessage, WIDTH/2, HEIGHT/2 + 5);
+    return;
+  }
+
   if (!nearbyTable || activePanel) {
     return;
   }
@@ -4507,6 +4554,7 @@ function updatePlayerPosition() {
 
 function gameLoop() {
   updatePlayerPosition();
+  if (floorMessageTimer > 0) floorMessageTimer -= 1;
 
   // Update NPCs for the current room
   if (currentRoom === "casino") {
@@ -4585,6 +4633,18 @@ function handleKeyDown(event) {
       currentRoom = door.targetRoom;
       player.x = door.targetX;
       player.y = door.targetY;
+      nearbyTable = null;
+      updateNearbyText();
+    } else if (nearbyTable.id && nearbyTable.id.startsWith("pool_") || nearbyTable.id === "bar_order" || nearbyTable.id === "bed_rest" || nearbyTable.id === "balcony_view") {
+      // Floor interactable — show result message
+      const messages = {
+        "pool_swim": "You dive into the pool. The water is perfectly heated.",
+        "bar_order": "A bartender pours you a complimentary cocktail.",
+        "bed_rest": "You sink into the king bed. Pure luxury.",
+        "balcony_view": "The city stretches endlessly below. Stunning view.",
+      };
+      floorMessage = messages[nearbyTable.id] || "Nice!";
+      floorMessageTimer = 180;
       nearbyTable = null;
       updateNearbyText();
     } else {
