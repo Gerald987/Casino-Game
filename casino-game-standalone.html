@@ -1378,6 +1378,53 @@ const joystickThumb = document.getElementById("joystickThumb");
 const WIDTH = canvas.width;
 const HEIGHT = canvas.height;
 const ZOOM = 2;
+
+// ── Pixel art pipeline (320×180 → upscaled 4×) ─────────────────────
+const PX_W = 320, PX_H = 180, PX_SCALE = 4;
+const pxCanvas = document.createElement("canvas");
+pxCanvas.width = PX_W; pxCanvas.height = PX_H;
+const pxCtx = pxCanvas.getContext("2d");
+pxCtx.imageSmoothingEnabled = false;
+// 24-color retro palette
+const P = {
+  BLACK:  "#0a0a10", WHITE:  "#f0f0e8",
+  DGRAY:  "#1a1a22", MGRAY:  "#3a3a44", LGRAY:  "#6a6a74",
+  DBROWN: "#2a1a0a", MBROWN: "#5a3a1a", LBROWN: "#8a6a3a",
+  WOOD:   "#4a2a10", FLOOR:  "#1a1818",
+  DRED:   "#4a1020", RED:    "#8a2040", LRED:   "#c04060",
+  DBLUE:  "#0a1a3a", BLUE:   "#1a3a6a", LBLUE:  "#3a5aaa",
+  DGREEN: "#0a2a1a", GREEN:  "#1a5a3a", LGREEN: "#3a8a5a",
+  GOLD:   "#8a6a20", AMBER:  "#6a4a10", CYAN:   "#2a6a6a",
+};
+// Pixel drawing helpers
+function px(r, g, b) { return "rgb("+Math.floor(r)+","+Math.floor(g)+","+Math.floor(b)+")"; }
+function pRect(x, y, w, h, c) { pxCtx.fillStyle = c; pxCtx.fillRect(x, y, w, h); }
+function pStroke(x, y, w, h, c, lw) {
+  pxCtx.strokeStyle = c; pxCtx.lineWidth = lw || 1; pxCtx.strokeRect(x, y, w, h);
+}
+function pHRect(x, y, w, h, r, c) { // rounded rect at pixel scale
+  pxCtx.fillStyle = c;
+  const rr = Math.min(r, w/2, h/2);
+  pxCtx.beginPath(); pxCtx.moveTo(x+rr, y);
+  pxCtx.lineTo(x+w-rr, y); pxCtx.quadraticCurveTo(x+w, y, x+w, y+rr);
+  pxCtx.lineTo(x+w, y+h-rr); pxCtx.quadraticCurveTo(x+w, y+h, x+w-rr, y+h);
+  pxCtx.lineTo(x+rr, y+h); pxCtx.quadraticCurveTo(x, y+h, x, y+h-rr);
+  pxCtx.lineTo(x, y+rr); pxCtx.quadraticCurveTo(x, y, x+rr, y);
+  pxCtx.closePath(); pxCtx.fill();
+}
+function pHStroke(x, y, w, h, r, c, lw) {
+  pxCtx.strokeStyle = c; pxCtx.lineWidth = lw || 1;
+  const rr = Math.min(r, w/2, h/2);
+  pxCtx.beginPath(); pxCtx.moveTo(x+rr, y);
+  pxCtx.lineTo(x+w-rr, y); pxCtx.quadraticCurveTo(x+w, y, x+w, y+rr);
+  pxCtx.lineTo(x+w, y+h-rr); pxCtx.quadraticCurveTo(x+w, y+h, x+w-rr, y+h);
+  pxCtx.lineTo(x+rr, y+h); pxCtx.quadraticCurveTo(x, y+h, x, y+h-rr);
+  pxCtx.lineTo(x, y+rr); pxCtx.quadraticCurveTo(x, y, x+rr, y);
+  pxCtx.closePath(); pxCtx.stroke();
+}
+function pCirc(x, y, r, c) { pxCtx.fillStyle = c; pxCtx.beginPath(); pxCtx.arc(x, y, r, 0, Math.PI*2); pxCtx.fill(); }
+function pSCirc(x, y, r, c, lw) { pxCtx.strokeStyle = c; pxCtx.lineWidth = lw || 1; pxCtx.beginPath(); pxCtx.arc(x, y, r, 0, Math.PI*2); pxCtx.stroke(); }
+
 const STAFF_MAX_SPEED = 0.42;
 const CUSTOMER_MAX_SPEED = 0.5;
 const INTERACT_KEY = "e";
@@ -2560,35 +2607,35 @@ const decorativeTables = [
 
 const npcs = [
   // Staff (8) — white uniforms, anchored near tables/bar
-  { x: 455, y: 330, size: 16, vx: 0.3, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#f7ddc2", role: "staff", anchor: { x: 455, y: 330 }, roamRadius: 55 },
-  { x: 825, y: 330, size: 16, vx: -0.3, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#dba88a", role: "staff", anchor: { x: 825, y: 330 }, roamRadius: 55 },
-  { x: 280, y: 200, size: 16, vx: 0.28, vy: -0.22, moodTime: 0, color: "#f0f0fa", skin: "#c47a52", role: "staff", anchor: { x: 280, y: 200 }, roamRadius: 65 },
-  { x: 1015, y: 200, size: 16, vx: -0.28, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#f7ddc2", role: "staff", anchor: { x: 1015, y: 200 }, roamRadius: 65 },
-  { x: 640, y: 200, size: 16, vx: 0.25, vy: -0.25, moodTime: 0, color: "#f0f0fa", skin: "#8a5a38", role: "staff", anchor: { x: 640, y: 200 }, roamRadius: 60 },
-  { x: 640, y: 490, size: 16, vx: 0.25, vy: 0.25, moodTime: 0, color: "#f0f0fa", skin: "#dba88a", role: "staff", anchor: { x: 640, y: 490 }, roamRadius: 60 },
-  { x: 280, y: 480, size: 16, vx: -0.28, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#f7ddc2", role: "staff", anchor: { x: 280, y: 480 }, roamRadius: 58 },
-  { x: 1015, y: 480, size: 16, vx: 0.28, vy: -0.22, moodTime: 0, color: "#f0f0fa", skin: "#c47a52", role: "staff", anchor: { x: 1015, y: 480 }, roamRadius: 58 },
+  { x: 455, y: 330, size: 16, vx: 0.3, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#f7ddc2", role: "staff", anchor: { x: 455, y: 330 }, roamRadius: 55, type: "male" },
+  { x: 825, y: 330, size: 16, vx: -0.3, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#dba88a", role: "staff", anchor: { x: 825, y: 330 }, roamRadius: 55, type: "female" },
+  { x: 280, y: 200, size: 16, vx: 0.28, vy: -0.22, moodTime: 0, color: "#f0f0fa", skin: "#c47a52", role: "staff", anchor: { x: 280, y: 200 }, roamRadius: 65, type: "male" },
+  { x: 1015, y: 200, size: 16, vx: -0.28, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#f7ddc2", role: "staff", anchor: { x: 1015, y: 200 }, roamRadius: 65, type: "female" },
+  { x: 640, y: 200, size: 16, vx: 0.25, vy: -0.25, moodTime: 0, color: "#f0f0fa", skin: "#8a5a38", role: "staff", anchor: { x: 640, y: 200 }, roamRadius: 60, type: "male" },
+  { x: 640, y: 490, size: 16, vx: 0.25, vy: 0.25, moodTime: 0, color: "#f0f0fa", skin: "#dba88a", role: "staff", anchor: { x: 640, y: 490 }, roamRadius: 60, type: "female" },
+  { x: 280, y: 480, size: 16, vx: -0.28, vy: 0.22, moodTime: 0, color: "#f0f0fa", skin: "#f7ddc2", role: "staff", anchor: { x: 280, y: 480 }, roamRadius: 58, type: "female" },
+  { x: 1015, y: 480, size: 16, vx: 0.28, vy: -0.22, moodTime: 0, color: "#f0f0fa", skin: "#c47a52", role: "staff", anchor: { x: 1015, y: 480 }, roamRadius: 58, type: "male" },
   // Customers (20) — colourful clothing, roaming the full map
-  { x: 385, y: 120, size: 16, vx: 0.38, vy: 0.28, moodTime: 0, color: "#f7cb6f", skin: "#f7ddc2", role: "customer" },
-  { x: 750, y: 120, size: 16, vx: -0.32, vy: 0.3, moodTime: 0, color: "#95d8ff", skin: "#dba88a", role: "customer" },
-  { x: 1080, y: 120, size: 16, vx: -0.28, vy: -0.38, moodTime: 0, color: "#dcb2ff", skin: "#c47a52", role: "customer" },
-  { x: 385, y: 468, size: 16, vx: -0.28, vy: -0.38, moodTime: 0, color: "#dcb2ff", skin: "#c47a52", role: "customer" },
-  { x: 750, y: 468, size: 16, vx: 0.35, vy: -0.3, moodTime: 0, color: "#ffb8c0", skin: "#f7ddc2", role: "customer" },
-  { x: 1080, y: 468, size: 16, vx: 0.38, vy: 0.22, moodTime: 0, color: "#ffdb93", skin: "#dba88a", role: "customer" },
-  { x: 148, y: 120, size: 16, vx: 0.3, vy: 0.4, moodTime: 0, color: "#bde3a6", skin: "#8a5a38", role: "customer" },
-  { x: 148, y: 600, size: 16, vx: 0.38, vy: 0.22, moodTime: 0, color: "#ffdb93", skin: "#dba88a", role: "customer" },
-  { x: 1172, y: 120, size: 16, vx: -0.35, vy: 0.3, moodTime: 0, color: "#96f0df", skin: "#f7ddc2", role: "customer" },
-  { x: 1172, y: 600, size: 16, vx: -0.3, vy: 0.35, moodTime: 0, color: "#b8c7ff", skin: "#c47a52", role: "customer" },
-  { x: 1140, y: 600, size: 16, vx: -0.38, vy: 0.25, moodTime: 0, color: "#ffd1df", skin: "#f7ddc2", role: "customer" },
-  { x: 50, y: 600, size: 16, vx: 0.32, vy: 0.3, moodTime: 0, color: "#ffe3a1", skin: "#dba88a", role: "customer" },
-  { x: 640, y: 440, size: 16, vx: -0.28, vy: 0.38, moodTime: 0, color: "#abd3f4", skin: "#8a5a38", role: "customer" },
-  { x: 655, y: 220, size: 16, vx: 0.3, vy: 0.32, moodTime: 0, color: "#f0b8d2", skin: "#f7ddc2", role: "customer" },
-  { x: 250, y: 360, size: 16, vx: 0.35, vy: 0.28, moodTime: 0, color: "#c5ef9b", skin: "#dba88a", role: "customer" },
-  { x: 1060, y: 355, size: 16, vx: -0.3, vy: -0.28, moodTime: 0, color: "#f2d1a8", skin: "#c47a52", role: "customer" },
-  { x: 390, y: 480, size: 16, vx: 0.38, vy: -0.32, moodTime: 0, color: "#a6e6ff", skin: "#f7ddc2", role: "customer" },
-  { x: 900, y: 480, size: 16, vx: -0.3, vy: -0.35, moodTime: 0, color: "#d8c2ff", skin: "#8a5a38", role: "customer" },
-  { x: 430, y: 200, size: 16, vx: 0.28, vy: -0.3, moodTime: 0, color: "#f7c88f", skin: "#dba88a", role: "customer" },
-  { x: 870, y: 200, size: 16, vx: -0.32, vy: -0.28, moodTime: 0, color: "#bceea7", skin: "#f7ddc2", role: "customer" },
+  { x: 385, y: 120, size: 16, vx: 0.38, vy: 0.28, moodTime: 0, color: "#f7cb6f", skin: "#f7ddc2", role: "customer", type: "male" },
+  { x: 750, y: 120, size: 16, vx: -0.32, vy: 0.3, moodTime: 0, color: "#95d8ff", skin: "#dba88a", role: "customer", type: "female" },
+  { x: 1080, y: 120, size: 16, vx: -0.28, vy: -0.38, moodTime: 0, color: "#dcb2ff", skin: "#c47a52", role: "customer", type: "male" },
+  { x: 385, y: 468, size: 16, vx: -0.28, vy: -0.38, moodTime: 0, color: "#dcb2ff", skin: "#c47a52", role: "customer", type: "female" },
+  { x: 750, y: 468, size: 16, vx: 0.35, vy: -0.3, moodTime: 0, color: "#ffb8c0", skin: "#f7ddc2", role: "customer", type: "male" },
+  { x: 1080, y: 468, size: 16, vx: 0.38, vy: 0.22, moodTime: 0, color: "#ffdb93", skin: "#dba88a", role: "customer", type: "female" },
+  { x: 148, y: 120, size: 16, vx: 0.3, vy: 0.4, moodTime: 0, color: "#bde3a6", skin: "#8a5a38", role: "customer", type: "child" },
+  { x: 148, y: 600, size: 14, vx: 0.38, vy: 0.22, moodTime: 0, color: "#ffdb93", skin: "#dba88a", role: "customer", type: "child" },
+  { x: 1172, y: 120, size: 16, vx: -0.35, vy: 0.3, moodTime: 0, color: "#96f0df", skin: "#f7ddc2", role: "customer", type: "male" },
+  { x: 1172, y: 600, size: 16, vx: -0.3, vy: 0.35, moodTime: 0, color: "#b8c7ff", skin: "#c47a52", role: "customer", type: "female" },
+  { x: 1140, y: 600, size: 16, vx: -0.38, vy: 0.25, moodTime: 0, color: "#ffd1df", skin: "#f7ddc2", role: "customer", type: "male" },
+  { x: 50, y: 600, size: 14, vx: 0.32, vy: 0.3, moodTime: 0, color: "#ffe3a1", skin: "#dba88a", role: "customer", type: "child" },
+  { x: 640, y: 440, size: 16, vx: -0.28, vy: 0.38, moodTime: 0, color: "#abd3f4", skin: "#8a5a38", role: "customer", type: "female" },
+  { x: 655, y: 220, size: 16, vx: 0.3, vy: 0.32, moodTime: 0, color: "#f0b8d2", skin: "#f7ddc2", role: "customer", type: "male" },
+  { x: 250, y: 360, size: 16, vx: 0.35, vy: 0.28, moodTime: 0, color: "#c5ef9b", skin: "#dba88a", role: "customer", type: "female" },
+  { x: 1060, y: 355, size: 16, vx: -0.3, vy: -0.28, moodTime: 0, color: "#f2d1a8", skin: "#c47a52", role: "customer", type: "male" },
+  { x: 390, y: 480, size: 16, vx: 0.38, vy: -0.32, moodTime: 0, color: "#a6e6ff", skin: "#f7ddc2", role: "customer", type: "female" },
+  { x: 900, y: 480, size: 16, vx: -0.3, vy: -0.35, moodTime: 0, color: "#d8c2ff", skin: "#8a5a38", role: "customer", type: "male" },
+  { x: 430, y: 200, size: 16, vx: 0.28, vy: -0.3, moodTime: 0, color: "#f7c88f", skin: "#dba88a", role: "customer", type: "female" },
+  { x: 870, y: 200, size: 16, vx: -0.32, vy: -0.28, moodTime: 0, color: "#bceea7", skin: "#f7ddc2", role: "customer", type: "male" },
 ];
 
 // ── Room system ───────────────────────────────────────────────────────────────
@@ -2654,20 +2701,31 @@ const lobbyInteractables = [
 
 const lobbyNpcs = [
   // Receptionists anchored behind desk
-  { x: 490, y: 162, size: 16, vx: 0.12, vy: 0.08, moodTime: 0, color: "#eeeef8", skin: "#f7ddc2", role: "staff", anchor: { x: 490, y: 162 }, roamRadius: 52 },
-  { x: 640, y: 162, size: 16, vx: -0.12, vy: 0.08, moodTime: 0, color: "#eeeef8", skin: "#dba88a", role: "staff", anchor: { x: 640, y: 162 }, roamRadius: 52 },
-  { x: 800, y: 162, size: 16, vx: 0.14, vy: 0.1,  moodTime: 0, color: "#eeeef8", skin: "#c47a52", role: "staff", anchor: { x: 800, y: 162 }, roamRadius: 52 },
+  { x: 490, y: 162, size: 16, vx: 0.12, vy: 0.08, moodTime: 0, color: "#eeeef8", skin: "#f7ddc2", role: "staff", anchor: { x: 490, y: 162 }, roamRadius: 52, type: "female" },
+  { x: 640, y: 162, size: 16, vx: -0.12, vy: 0.08, moodTime: 0, color: "#eeeef8", skin: "#dba88a", role: "staff", anchor: { x: 640, y: 162 }, roamRadius: 52, type: "male" },
+  { x: 800, y: 162, size: 16, vx: 0.14, vy: 0.1,  moodTime: 0, color: "#eeeef8", skin: "#c47a52", role: "staff", anchor: { x: 800, y: 162 }, roamRadius: 52, type: "female" },
   // Concierge near desk
-  { x: 1090, y: 185, size: 16, vx: 0.18, vy: 0.14, moodTime: 0, color: "#d4a84a", skin: "#f7ddc2", role: "staff", anchor: { x: 1090, y: 185 }, roamRadius: 42 },
+  { x: 1090, y: 185, size: 16, vx: 0.18, vy: 0.14, moodTime: 0, color: "#d4a84a", skin: "#f7ddc2", role: "staff", anchor: { x: 1090, y: 185 }, roamRadius: 42, type: "male" },
   // Guests walking around (adjusted for no fountain)
-  { x: 400, y: 400, size: 16, vx: 0.3,  vy: 0.22, moodTime: 0, color: "#ff9dac", skin: "#f7ddc2", role: "customer" },
-  { x: 660, y: 525, size: 16, vx: -0.28, vy: 0.2, moodTime: 0, color: "#95d8ff", skin: "#dba88a", role: "customer" },
-  { x: 880, y: 445, size: 16, vx: 0.22, vy: -0.28, moodTime: 0, color: "#dcb2ff", skin: "#c47a52", role: "customer" },
-  { x: 450, y: 595, size: 16, vx: 0.28, vy: -0.2, moodTime: 0, color: "#f7cb6f", skin: "#dba88a", role: "customer" },
-  { x: 785, y: 315, size: 16, vx: 0.2,  vy: 0.28, moodTime: 0, color: "#bde3a6", skin: "#8a5a38", role: "customer" },
-  { x: 1025, y: 580, size: 16, vx: -0.25, vy: -0.2, moodTime: 0, color: "#ffb8c0", skin: "#f7ddc2", role: "customer" }
+  { x: 400, y: 400, size: 16, vx: 0.3,  vy: 0.22, moodTime: 0, color: "#ff9dac", skin: "#f7ddc2", role: "customer", type: "female" },
+  { x: 660, y: 525, size: 16, vx: -0.28, vy: 0.2, moodTime: 0, color: "#95d8ff", skin: "#dba88a", role: "customer", type: "male" },
+  { x: 880, y: 445, size: 16, vx: 0.22, vy: -0.28, moodTime: 0, color: "#dcb2ff", skin: "#c47a52", role: "customer", type: "female" },
+  { x: 450, y: 595, size: 16, vx: 0.28, vy: -0.2, moodTime: 0, color: "#f7cb6f", skin: "#dba88a", role: "customer", type: "male" },
+  { x: 785, y: 315, size: 14, vx: 0.2,  vy: 0.28, moodTime: 0, color: "#bde3a6", skin: "#8a5a38", role: "customer", type: "child" },
+  { x: 1025, y: 580, size: 16, vx: -0.25, vy: -0.2, moodTime: 0, color: "#ffb8c0", skin: "#f7ddc2", role: "customer", type: "female" }
 ];
 
+const backstageNpcs = [
+  // Stage techs near equipment
+  { x: 885, y: 145, size: 16, vx: 0.18, vy: 0.12, moodTime: 0, color: "#333344", skin: "#f7ddc2", role: "staff", anchor: { x: 885, y: 145 }, roamRadius: 65, type: "male" },
+  { x: 980, y: 150, size: 16, vx: -0.2, vy: 0.14, moodTime: 0, color: "#2a2a3a", skin: "#dba88a", role: "staff", anchor: { x: 980, y: 150 }, roamRadius: 65, type: "male" },
+  // Performers at dressing tables
+  { x: 145, y: 155, size: 16, vx: 0.14, vy: 0.1,  moodTime: 0, color: "#ff9dac", skin: "#c47a52", role: "customer", anchor: { x: 145, y: 155 }, roamRadius: 46, type: "female" },
+  { x: 440, y: 158, size: 16, vx: -0.14, vy: 0.1, moodTime: 0, color: "#a0d8ff", skin: "#8a5a38", role: "customer", anchor: { x: 440, y: 158 }, roamRadius: 46, type: "female" },
+  // Crew in break area
+  { x: 185, y: 435, size: 16, vx: 0.22, vy: 0.18, moodTime: 0, color: "#889099", skin: "#f7ddc2", role: "staff", anchor: { x: 185, y: 435 }, roamRadius: 72, type: "male" },
+  { x: 270, y: 460, size: 16, vx: -0.18, vy: 0.22, moodTime: 0, color: "#667788", skin: "#dba88a", role: "staff", anchor: { x: 270, y: 460 }, roamRadius: 72, type: "male" }
+];
 // ── Floor room data ───────────────────────────────────────────────────────────
 const floor7Obstacles = [
   { x: 180, y: 220, width: 960, height: 420 }, // Pool
@@ -2708,18 +2766,6 @@ const backstageObstacles = [
   { x: 650, y: 335, width: 220, height: 130 }, // Mixing desk
   { x: 960, y: 255, width: 240, height: 170 }, // Storage boxes
   { x: 1090, y: 80, width: 150, height: 160 }, // Amp stack
-];
-
-const backstageNpcs = [
-  // Stage techs near equipment
-  { x: 885, y: 145, size: 16, vx: 0.18, vy: 0.12, moodTime: 0, color: "#333344", skin: "#f7ddc2", role: "staff", anchor: { x: 885, y: 145 }, roamRadius: 65 },
-  { x: 980, y: 150, size: 16, vx: -0.2, vy: 0.14, moodTime: 0, color: "#2a2a3a", skin: "#dba88a", role: "staff", anchor: { x: 980, y: 150 }, roamRadius: 65 },
-  // Performers at dressing tables
-  { x: 145, y: 155, size: 16, vx: 0.14, vy: 0.1,  moodTime: 0, color: "#ff9dac", skin: "#c47a52", role: "customer", anchor: { x: 145, y: 155 }, roamRadius: 46 },
-  { x: 440, y: 158, size: 16, vx: -0.14, vy: 0.1, moodTime: 0, color: "#a0d8ff", skin: "#8a5a38", role: "customer", anchor: { x: 440, y: 158 }, roamRadius: 46 },
-  // Crew in break area
-  { x: 185, y: 435, size: 16, vx: 0.22, vy: 0.18, moodTime: 0, color: "#889099", skin: "#f7ddc2", role: "staff", anchor: { x: 185, y: 435 }, roamRadius: 72 },
-  { x: 270, y: 460, size: 16, vx: -0.18, vy: 0.22, moodTime: 0, color: "#667788", skin: "#dba88a", role: "staff", anchor: { x: 270, y: 460 }, roamRadius: 72 }
 ];
 
 const keyState = {
@@ -4677,25 +4723,57 @@ function drawChip(x, y, radius, baseColor, ringColor) {
   strokeCircle(x, y, radius - 6, ringColor, 1.5);
 }
 
-function drawHumanoid(x, y, size, bodyColor, skinColor, legColor, isStaff) {
+function drawHumanoid(x, y, size, bodyColor, skinColor, legColor, isStaff, type) {
+  type = type || "male";
   const cx = x + size / 2;
   const s = size / 16;
 
-  const headR = 5.5 * s;
-  const headCY = y + headR + s;
+  // Proportion overrides by type
+  let headR, headCY, torsoW, torsoH, torsoY, armW, armH, armY, legW, legH, legY, legGap;
 
-  const torsoW = 10 * s;
-  const torsoH = 12 * s;
-  const torsoY = headCY + headR + 2 * s;
-
-  const armW = 3.5 * s;
-  const armH = 10 * s;
-  const armY = torsoY + s;
-
-  const legW = 4 * s;
-  const legH = 11 * s;
-  const legY = torsoY + torsoH - 1.5 * s;
-  const legGap = 1.5 * s;
+  if (type === "child") {
+    // Child: shorter, bigger head, squatter torso
+    headR = 7 * s;
+    headCY = y + headR + s;
+    torsoW = 8 * s;
+    torsoH = 8 * s;
+    torsoY = headCY + headR + s;
+    armW = 2.5 * s;
+    armH = 6 * s;
+    armY = torsoY + 0.5 * s;
+    legW = 3 * s;
+    legH = 6 * s;
+    legY = torsoY + torsoH - s;
+    legGap = 1.2 * s;
+  } else if (type === "female") {
+    // Female: narrower shoulders, wider hips, waist indent
+    headR = 5.5 * s;
+    headCY = y + headR + s;
+    torsoW = 8 * s;
+    torsoH = 11 * s;
+    torsoY = headCY + headR + 2 * s;
+    armW = 3 * s;
+    armH = 10 * s;
+    armY = torsoY + s;
+    legW = 3.5 * s;
+    legH = 11 * s;
+    legY = torsoY + torsoH - 1.5 * s;
+    legGap = 2 * s;
+  } else {
+    // Male: broader shoulders, straight build (original)
+    headR = 5.5 * s;
+    headCY = y + headR + s;
+    torsoW = 10 * s;
+    torsoH = 12 * s;
+    torsoY = headCY + headR + 2 * s;
+    armW = 3.5 * s;
+    armH = 10 * s;
+    armY = torsoY + s;
+    legW = 4 * s;
+    legH = 11 * s;
+    legY = torsoY + torsoH - 1.5 * s;
+    legGap = 1.5 * s;
+  }
 
   // Shadow
   fillCircle(cx, legY + legH + 3, size * 0.62, "rgba(0,0,0,0.2)");
@@ -4711,6 +4789,12 @@ function drawHumanoid(x, y, size, bodyColor, skinColor, legColor, isStaff) {
   // Torso
   fillRoundedRect(cx - torsoW / 2, torsoY, torsoW, torsoH, 3 * s, bodyColor);
 
+  // Female waist indent (darker bands on sides of torso)
+  if (type === "female") {
+    fillRoundedRect(cx - torsoW/2 - 1, torsoY + 4*s, 4, 2, 1, "rgba(0,0,0,0.15)");
+    fillRoundedRect(cx + torsoW/2 - 3, torsoY + 4*s, 4, 2, 1, "rgba(0,0,0,0.15)");
+  }
+
   // Staff badge
   if (isStaff) {
     fillRoundedRect(cx + torsoW * 0.05, torsoY + 2.5 * s, 3.5 * s, 2.5 * s, 0.8 * s, "rgba(255,220,110,0.85)");
@@ -4722,6 +4806,11 @@ function drawHumanoid(x, y, size, bodyColor, skinColor, legColor, isStaff) {
   // Eyes
   fillCircle(cx - headR * 0.36, headCY + headR * 0.1, headR * 0.22, "#1a1220");
   fillCircle(cx + headR * 0.36, headCY + headR * 0.1, headR * 0.22, "#1a1220");
+
+  // Female: hair (simple arc on top)
+  if (type === "female") {
+    fillRoundedRect(cx - headR*0.8, headCY - headR*1.1, headR*1.6, headR*0.8, headR*0.4, "rgba(0,0,0,0.2)");
+  }
 }
 
 function drawBackground() {
@@ -5081,7 +5170,7 @@ function drawLobby() {
     const isStaff = npc.role === "staff";
     const bodyColor = isStaff ? "#eeeef8" : npc.color;
     const legColor = isStaff ? "#1e2a42" : "#18182a";
-    drawHumanoid(npc.x, npc.y, npc.size, bodyColor, npc.skin || "#f7ddc2", legColor, isStaff);
+    drawHumanoid(npc.x, npc.y, npc.size, bodyColor, npc.skin || "#f7ddc2", legColor, isStaff, npc.type || "male");
   }
 }
 
@@ -5199,7 +5288,7 @@ function drawBackstage() {
     const isStaff = npc.role === "staff";
     const bodyColor = isStaff ? "#333344" : npc.color;
     const legColor = isStaff ? "#1e1e2e" : "#18182a";
-    drawHumanoid(npc.x, npc.y, npc.size, bodyColor, npc.skin || "#f7ddc2", legColor, isStaff);
+    drawHumanoid(npc.x, npc.y, npc.size, bodyColor, npc.skin || "#f7ddc2", legColor, isStaff, npc.type || "male");
   }
 }
 
@@ -5587,7 +5676,7 @@ function drawNpcs() {
     const isStaff = npc.role === "staff";
     const bodyColor = isStaff ? "#eeeef8" : npc.color;
     const legColor = isStaff ? "#1e2a42" : "#18182a";
-    drawHumanoid(npc.x, npc.y, npc.size, bodyColor, npc.skin || "#f7ddc2", legColor, isStaff);
+    drawHumanoid(npc.x, npc.y, npc.size, bodyColor, npc.skin || "#f7ddc2", legColor, isStaff, npc.type || "male");
   }
 }
 
