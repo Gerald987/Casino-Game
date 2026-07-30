@@ -67,8 +67,8 @@ const INTERACT_KEY = "e";
 const INTERACT_KEY_TEXT = INTERACT_KEY.toUpperCase();
 
 const player = {
-  x: 300,
-  y: 200,
+  x: 50,
+  y: 345,
   size: 20,
   speed: 3.2,
   color: "#f4f7ff"
@@ -1273,7 +1273,7 @@ const npcs = [
 ];
 
 // ── Room system ───────────────────────────────────────────────────────────────
-let currentRoom = "casino"; // "casino" | "lobby" | "backstage"
+let currentRoom = "lobby"; // "casino" | "lobby" | "backstage"
 
 // Door interactables: press E near these to change rooms
 const casinoDoors = [
