@@ -681,16 +681,49 @@ static void visit_bar(void) {
   printf("Bartender serves: %s (free)\n", BAR_DRINKS[idx]);
 }
 
+/* ── Floor visits (text descriptions) ──────────────────────────────────── */
+static void visit_floor7(void) {
+  printf("\n╔══════════════════════════════════╗\n");
+  printf("║    Floor 7 — Spa & Pool         ║\n");
+  printf("╚══════════════════════════════════╝\n");
+  printf("A heated indoor pool stretches across the floor.\n");
+  printf("Steam rises from a hot tub as guests relax poolside.\n");
+  printf("Three private changing rooms line the left wall.\n");
+  printf("The air smells of chlorine and eucalyptus.\n");
+}
+
+static void visit_floor12(void) {
+  printf("\n╔══════════════════════════════════╗\n");
+  printf("║    Floor 12 — Restaurant        ║\n");
+  printf("╚══════════════════════════════════╝\n");
+  printf("Skyline Terrace seats guests at four candle-lit tables.\n");
+  printf("The bar counter gleams under warm amber light.\n");
+  printf("Through the kitchen window, chefs prep the tasting menu.\n");
+  printf("Live jazz drifts from a grand piano in the corner.\n");
+}
+
+static void visit_floor24(void) {
+  printf("\n╔══════════════════════════════════╗\n");
+  printf("║    Floor 24 — Penthouse Suite   ║\n");
+  printf("╚══════════════════════════════════╝\n");
+  printf("The presidential suite commands a 360-degree view.\n");
+  printf("A king bed draped in silk faces floor-to-ceiling windows.\n");
+  printf("The marble bathroom features a rain shower and deep soak tub.\n");
+  printf("Through glass doors, a private balcony overlooks the city.\n");
+}
+
 /* ── Main ───────────────────────────────────────────────────────────── */
 int main(void) {
   srand((unsigned int)time(NULL));
   int balance = 1000;
 
   printf("=== Neon Floor Casino (C Edition) ===\n");
-  printf("Use menu numbers to pick a table.\n");
+  printf("Start in the Grand Neon Hotel lobby.\n");
+  printf("Take the lifts to visit the floors, or step onto the casino floor.\n");
 
   while (1) {
     printf("\nBalance: %d WIS Tokens\n", balance);
+    printf("── CASINO GAMES ──\n");
     printf("1) Roulette\n");
     printf("2) Slots\n");
     printf("3) Blackjack\n");
@@ -698,37 +731,30 @@ int main(void) {
     printf("5) Coin Flip\n");
     printf("6) Baccarat\n");
     printf("7) Center Bar (Free Drink)\n");
-    printf("8) Exit\n");
-    int choice = read_int("Select: ", 1, 8);
+    printf("── HOTEL FLOORS ──\n");
+    printf("8) Floor 7 — Spa & Pool\n");
+    printf("9) Floor 12 — Restaurant\n");
+    printf("10) Floor 24 — Penthouse Suite\n");
+    printf("── ──\n");
+    printf("11) Exit\n");
+    int choice = read_int("Select: ", 1, 11);
 
-    if (choice == 8) {
+    if (choice == 11) {
       printf("Thanks for playing.\n");
       break;
     }
     switch (choice) {
-      case 1:
-        play_roulette(&balance);
-        break;
-      case 2:
-        play_slots(&balance);
-        break;
-      case 3:
-        play_blackjack(&balance);
-        break;
-      case 4:
-        play_poker(&balance);
-        break;
-      case 5:
-        play_coin_flip(&balance);
-        break;
-      case 6:
-        play_baccarat(&balance);
-        break;
-      case 7:
-        visit_bar();
-        break;
-      default:
-        break;
+      case 1: play_roulette(&balance); break;
+      case 2: play_slots(&balance); break;
+      case 3: play_blackjack(&balance); break;
+      case 4: play_poker(&balance); break;
+      case 5: play_coin_flip(&balance); break;
+      case 6: play_baccarat(&balance); break;
+      case 7: visit_bar(); break;
+      case 8: visit_floor7(); break;
+      case 9: visit_floor12(); break;
+      case 10: visit_floor24(); break;
+      default: break;
     }
   }
   return 0;
