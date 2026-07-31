@@ -1379,8 +1379,8 @@ const WIDTH = canvas.width;
 const HEIGHT = canvas.height;
 const ZOOM = 2;
 
-// ── Pixel art pipeline (320×180 → upscaled 4×) ─────────────────────
-const PX_W = 640, PX_H = 360, PX_SCALE = 2;
+// ── Pixel art pipeline (1280×720 high-res, 1× upscale) ─────────────
+const PX_W = 1280, PX_H = 720, PX_SCALE = 1;
 const pxCanvas = document.createElement("canvas");
 pxCanvas.width = PX_W; pxCanvas.height = PX_H;
 const pxCtx = pxCanvas.getContext("2d");
@@ -5304,60 +5304,61 @@ function drawFloor7() {
   bg.addColorStop(0, "#081420"); bg.addColorStop(0.5, "#0a1c28"); bg.addColorStop(1, "#040c10");
   pRect(0, 0, PX_W, PX_H, bg);
   // Subtle tile floor
-  pxCtx.save(); pxCtx.globalAlpha = 0.08;
-  for (let r=0;r<24;r++)for(let c=0;c<40;c++)if((r+c)%2===0)pRect(c*16,r*16,16,16,"#70b8d8");
+  pxCtx.save(); pxCtx.globalAlpha = 0.06;
+  for (let r=0;r<48;r++)for(let c=0;c<80;c++)if((r+c)%2===0)pRect(c*16,r*16,16,16,"#70b8d8");
   pxCtx.restore();
 
   // Pool basin
-  const px=90,py=110,pw=480,ph=210;
-  pHRect(px,py,pw,ph,18,"#060e14");
-  pHStroke(px,py,pw,ph,18,"#3ab8e8",3);
+  const px=180,py=220,pw=960,ph=420;
+  pHRect(px,py,pw,ph,36,"#060e14");
+  pHStroke(px,py,pw,ph,36,"#3ab8e8",5);
   // Deck tiles
-  pHRect(px,py,pw,12,9,"#0e1a20");
-  pHStroke(px,py,pw,12,9,"#5ac8f0",1);
+  pHRect(px,py,pw,24,18,"#0e1a20");
+  pHStroke(px,py,pw,24,18,"#5ac8f0",2);
   // Water fill with gradient
-  const wg=pxCtx.createLinearGradient(0,py+12,0,py+ph);
+  const wg=pxCtx.createLinearGradient(0,py+24,0,py+ph);
   wg.addColorStop(0,"#0a2a38");wg.addColorStop(0.5,"#0c3448");wg.addColorStop(1,"#041820");
-  pHRect(px+8,py+12,pw-16,ph-20,14,wg);
-  // Water surface ripples — scattered light rectangles
-  pxCtx.save();pxCtx.globalAlpha=0.08;
-  for(let s=0;s<24;s++){const sx=px+16+s*20,sy=py+18+(s%5)*12;pRect(sx,sy,14,5,"#90e8ff");}
+  pHRect(px+16,py+24,pw-32,ph-40,28,wg);
+  // Water surface ripples
+  pxCtx.save();pxCtx.globalAlpha=0.06;
+  for(let s=0;s<36;s++){const sx=px+32+s*28,sy=py+36+(s%7)*20;pRect(sx,sy,28,8,"#90e8ff");}
   pxCtx.restore();
-  // Lane lines — dashed horizontal strokes
-  pxCtx.save();pxCtx.strokeStyle="#70d0e8";pxCtx.lineWidth=1;pxCtx.setLineDash([10,15]);
-  for(let l=0;l<5;l++){pxCtx.beginPath();pxCtx.moveTo(px+14,py+34+l*34);pxCtx.lineTo(px+pw-14,py+34+l*34);pxCtx.stroke();}
+  // Lane lines
+  pxCtx.save();pxCtx.strokeStyle="#70d0e8";pxCtx.lineWidth=2;pxCtx.setLineDash([20,30]);
+  for(let l=0;l<5;l++){pxCtx.beginPath();pxCtx.moveTo(px+28,py+68+l*68);pxCtx.lineTo(px+pw-28,py+68+l*68);pxCtx.stroke();}
   pxCtx.setLineDash([]);pxCtx.restore();
-  // 2 Pool ladders — vertical rails with rungs
-  for(let ld=0;ld<2;ld++){const lx=ld?px+pw-12:px+10;pxCtx.strokeStyle="#6688aa";pxCtx.lineWidth=2;
-    pxCtx.beginPath();pxCtx.moveTo(lx,py+16);pxCtx.lineTo(lx,py+80);pxCtx.stroke();
-    for(let r=0;r<5;r++){const ry=py+20+r*14;pxCtx.beginPath();pxCtx.moveTo(lx,ry);pxCtx.lineTo(lx+(ld?-8:8),ry);pxCtx.stroke();}}
+  // 2 Pool ladders
+  for(let ld=0;ld<2;ld++){const lx=ld?px+pw-24:px+20;pxCtx.strokeStyle="#6688aa";pxCtx.lineWidth=4;
+    pxCtx.beginPath();pxCtx.moveTo(lx,py+32);pxCtx.lineTo(lx,py+160);pxCtx.stroke();
+    for(let r=0;r<5;r++){const ry=py+40+r*28;pxCtx.beginPath();pxCtx.moveTo(lx,ry);pxCtx.lineTo(lx+(ld?-16:16),ry);pxCtx.stroke();}}
   // Depth markers
-  pxCtx.fillStyle="#7799aa";pxCtx.font="5px monospace";pxCtx.textAlign="right";pxCtx.fillText("1.2m",px+16,py+116);
-  pxCtx.textAlign="left";pxCtx.fillText("2.5m",px+pw-16,py+144);
+  pxCtx.fillStyle="#7799aa";pxCtx.font="bold 10px monospace";pxCtx.textAlign="right";pxCtx.fillText("1.2m",px+32,py+232);
+  pxCtx.textAlign="left";pxCtx.fillText("2.5m",px+pw-32,py+288);
 
-  // 3 Changing rooms along left wall
-  for(let cr=0;cr<3;cr++){const cy=20+cr*95;
-    pHRect(10,cy,74,84,6,"#0e1418");pHStroke(10,cy,74,84,6,"#88aacc",2);
+  // 3 Changing rooms
+  for(let cr=0;cr<3;cr++){const cy=40+cr*190;
+    pHRect(22,cy,146,168,12,"#0e1418");pHStroke(22,cy,146,168,12,"#88aacc",3);
     // Louver door
-    pHRect(18,cy+48,18,30,4,"#182028");pHStroke(18,cy+48,18,30,4,"#5088b8",1);
+    pHRect(38,cy+100,34,56,8,"#182028");pHStroke(38,cy+100,34,56,8,"#5088b8",2);
     // Door handle
-    pCirc(30,cy+63,2,"#d0c090");
-    // Door slats — 4 horizontal bars
-    for(let sl=0;sl<4;sl++)pHRect(20,cy+52+sl*7,14,3,2,"#284058");
+    pCirc(62,cy+128,4,"#d0c090");
+    // Door slats
+    for(let sl=0;sl<4;sl++)pHRect(41,cy+106+sl*14,28,6,3,"#284058");
     // Room number plate
-    pHRect(26,cy+8,16,10,2,"#c0a870");pxCtx.fillStyle="#0e1418";pxCtx.font="bold 6px monospace";pxCtx.textAlign="center";pxCtx.fillText(String(cr+1),34,cy+16);
+    pHRect(55,cy+12,30,18,4,"#c0a870");pxCtx.fillStyle="#0e1418";pxCtx.font="bold 11px monospace";pxCtx.textAlign="center";pxCtx.fillText(String(cr+1),70,cy+26);
     // Bench inside
-    pHRect(42,cy+30,36,12,3,"#2a1810");
-    // Towel hook
-    pHRect(46,cy+14,2,6,1,P.WHITE);
+    pHRect(85,cy+60,70,22,6,"#2a1810");
+    // Towel rack
+    pHRect(46,cy+40,40,4,2,"#aaa");
+    pHRect(46,cy+20,3,24,2,"#fff");
   }
 
   // Exit door
-  pHRect(290,320,60,36,6,P.MBROWN);
-  pHStroke(290,320,60,36,6,"#d8c070",3);
-  pCirc(300,338,2,"#d0b860");
-  pxCtx.fillStyle="#d8c070";pxCtx.font="bold 7px monospace";pxCtx.textAlign="center";
-  pxCtx.fillText("LOBBY",320,344);
+  pHRect(590,640,100,70,12,P.MBROWN);
+  pHStroke(590,640,100,70,12,"#d8c070",4);
+  pCirc(605,675,3,"#d0b860");
+  pxCtx.fillStyle="#d8c070";pxCtx.font="bold 12px monospace";pxCtx.textAlign="center";
+  pxCtx.fillText("LOBBY",640,683);
 }
 
 // ── Floor 12: Restaurant ──────────────────────────────────────────────────────
@@ -5461,132 +5462,105 @@ function drawFloor12() {
 
 // ── Floor 24: Penthouse Suite (pixel art, 320×180 on pxCtx) ──────────────────
 function drawFloor24() {
-  // Dark purple luxury background
   const bg=pxCtx.createLinearGradient(0,0,PX_W,PX_H);
   bg.addColorStop(0,"#08040c");bg.addColorStop(0.5,"#120a1a");bg.addColorStop(1,"#04020c");
   pRect(0,0,PX_W,PX_H,bg);
-  // Plush carpet subtle pattern
+  // Plush carpet
   pxCtx.save();pxCtx.globalAlpha=0.06;
-  for(let r=0;r<22;r++)for(let c=0;c<40;c++)if((r+c)%3!==0)pRect(c*16,r*17,16,17,"#c0a8d0");
+  for(let r=0;r<44;r++)for(let c=0;c<80;c++)if((r+c)%3!==0)pRect(c*16,r*17,16,17,"#c0a8d0");
   pxCtx.restore();
-  // Crown molding along ceiling
-  pHRect(0,60,PX_W,4,2,"rgba(255,255,255,0.04)");
+  // Crown molding
+  pHRect(0,120,PX_W,8,4,"rgba(255,255,255,0.04)");
 
-  // ── Chandelier (center ceiling) ──
-  const chX=320,chY=62;
-  pRect(chX-1,chY,3,8,"#d0c080"); // chain
-  pHRect(chX-18,chY+8,36,5,3,"#c0b060"); // top bar
-  for(let a=0;a<5;a++){const ax=chX-14+a*7; pRect(ax,chY+13,1,10,"#c0a840");} // arms
-  for(let a=0;a<5;a++){pCirc(chX-14+a*7,chY+26,3,"#e8d080"); pCirc(chX-14+a*7,chY+26,4,"rgba(255,240,160,0.3)");} // lights
-  // Chandelier glow
+  // Chandelier
+  const chX=640,chY=124;
+  pRect(chX-2,chY,4,16,"#d0c080");
+  pHRect(chX-36,chY+16,72,10,6,"#c0b060");
+  for(let a=0;a<5;a++){const ax=chX-28+a*14; pRect(ax,chY+26,2,20,"#c0a840");}
+  for(let a=0;a<5;a++){pCirc(chX-28+a*14,chY+52,6,"#e8d080");pCirc(chX-28+a*14,chY+52,8,"rgba(255,240,160,0.3)");}
+  pxCtx.save();pxCtx.globalAlpha=0.05;
+  for(let g=0;g<3;g++)pCirc(chX,chY+80+g*16,36,px(255,240,160)); pxCtx.restore();
+
+  // Wall paintings
+  pHRect(40,160,100,72,8,"#1a1020");pHStroke(40,160,100,72,8,"#806040",4);
+  pHRect(50,170,80,20,4,"#2a1840");pRect(50,170,80,2,"#604080");
+  pHRect(50,210,80,14,4,"#1a1020");
+  pRect(50,140,4,28,"#806040");pRect(136,140,4,28,"#806040");
+  pHRect(1140,160,100,72,8,"#1a1020");pHStroke(1140,160,100,72,8,"#806040",4);
+  pHRect(1150,170,80,20,4,"#2a1840");pRect(1150,170,80,2,"#604080");
+  pHRect(1150,210,80,14,4,"#1a1020");
+  pRect(1150,140,4,28,"#806040");pRect(1236,140,4,28,"#806040");
+
+  // Balcony
+  pHRect(30,24,1220,96,12,"#080612");pHStroke(30,24,1220,96,12,"#9080b8",4);
+  for(let p=0;p<12;p++){const gx=48+p*100;
+    pHRect(gx,36,48,68,6,"rgba(100,80,140,0.18)");pHStroke(gx,36,48,68,6,"rgba(120,100,160,0.4)",2);
+    pxCtx.save();pxCtx.globalAlpha=0.12;pRect(gx+4,44,6,50,"#ffffff");pxCtx.restore();}
   pxCtx.save();pxCtx.globalAlpha=0.06;
-  for(let g=0;g<3;g++)fillCircle(chX,chY+40+g*8,18,px(255,240,160)); pxCtx.restore();
-
-  // ── Wall paintings ──
-  // Left painting
-  pHRect(20,80,50,36,4,"#1a1020");pHStroke(20,80,50,36,4,"#806040",2);
-  pHRect(25,85,40,10,2,"#2a1840");pRect(25,85,40,1,"#604080");
-  pRect(25,70,2,14,"#806040");pRect(68,70,2,14,"#806040"); // brackets
-  // Right painting
-  pHRect(570,80,50,36,4,"#1a1020");pHStroke(570,80,50,36,4,"#806040",2);
-  pHRect(575,85,40,10,2,"#2a1840");pRect(575,85,40,1,"#604080");
-  pRect(575,70,2,14,"#806040");pRect(618,70,2,14,"#806040");
-
-  // Balcony — glass railing across top
-  pHRect(16,12,608,48,6,"#080612");
-  pHStroke(16,12,608,48,6,"#9080b8",2);
-  // Glass panels
-  for(let p=0;p<12;p++){const gx=24+p*50;
-    pHRect(gx,18,26,34,3,"rgba(100,80,140,0.18)");
-    pHStroke(gx,18,26,34,3,"rgba(120,100,160,0.4)",1);
-    // Glass reflection streak
-    pxCtx.save();pxCtx.globalAlpha=0.12;pRect(gx+2,22,3,26,"#ffffff");pxCtx.restore();}
-  // Balcony floor tiles
-  pxCtx.save();pxCtx.globalAlpha=0.06;
-  for(let t=0;t<40;t++)pRect(t*16,38,16,24,"#9080a0");
+  for(let t=0;t<40;t++)pRect(t*32,76,32,48,"#9080a0");
   pxCtx.restore();
-  // City skyline silhouette
   pxCtx.save();pxCtx.globalAlpha=0.1;pxCtx.fillStyle="#201830";
-  for(let b=0;b<16;b++){const bh=8+Math.sin(b*1.8)*8;pxCtx.fillRect(24+b*38,38-bh,22,bh);}
+  for(let b=0;b<16;b++){const bh=16+Math.sin(b*1.8)*16;pxCtx.fillRect(48+b*76,76-bh,44,bh);}
   pxCtx.restore();
 
-  // King size bed — left center
-  pHRect(70,80,190,140,12,"#100820");
-  pHStroke(70,80,190,140,12,"#b0a0d0",2);
+  // King bed
+  pHRect(140,160,420,280,24,"#100820");pHStroke(140,160,420,280,24,"#b0a0d0",3);
   // Headboard
-  pHRect(70,66,190,20,7,"#201040");
-  pHStroke(70,66,190,20,7,"#c0b0e0",1);
-  // Tufted headboard pattern — rows of dimples
+  pHRect(140,130,420,40,14,"#201040");pHStroke(140,130,420,40,14,"#c0b0e0",2);
   pxCtx.save();pxCtx.globalAlpha=0.2;
-  for(let hb=0;hb<8;hb++){pCirc(90+hb*24,74,6,"#6040a0");pCirc(90+hb*24,74,2,"#8060c0");}
+  for(let hb=0;hb<8;hb++){pCirc(180+hb*52,148,12,"#6040a0");pCirc(180+hb*52,148,4,"#8060c0");}
   pxCtx.restore();
   // Bedside tables + lamps
-  for(let bt of[{x:60,y:100},{x:260,y:100}]){
-    pHRect(bt.x,bt.y,16,26,4,"#0e0818");
-    pRect(bt.x+7,bt.y-6,2,10,"#664020");pCirc(bt.x+8,bt.y-8,5,"rgba(255,200,120,0.4)");
-    pSCirc(bt.x+8,bt.y-8,6,"rgba(255,180,100,0.25)",1);
-    // Alarm clock on left table
-    if(bt.x===60){pHRect(bt.x+2,bt.y+2,8,6,2,"#302020");pCirc(bt.x+6,bt.y+5,2,"#fff");}}
-  // Rug under bed
-  pHRect(50,200,230,140,20,"rgba(80,40,60,0.25)");
-  pHStroke(50,200,230,140,20,"rgba(120,80,100,0.2)",2);
-  // Inner rug pattern
+  for(let bt of[{x:120,y:200},{x:520,y:200}]){
+    pHRect(bt.x,bt.y,32,52,8,"#0e0818");
+    pRect(bt.x+14,bt.y-12,4,20,"#664020");pCirc(bt.x+16,bt.y-16,10,"rgba(255,200,120,0.4)");
+    pSCirc(bt.x+16,bt.y-16,12,"rgba(255,180,100,0.25)",2);
+    if(bt.x===120){pHRect(bt.x+4,bt.y+4,16,12,4,"#302020");pCirc(bt.x+12,bt.y+10,4,"#fff");}}
+  // Rug
+  pHRect(100,400,460,290,40,"rgba(80,40,60,0.25)");pHStroke(100,400,460,290,40,"rgba(120,80,100,0.2)",3);
   pxCtx.save();pxCtx.globalAlpha=0.08;
-  for(let rp=0;rp<3;rp++)pHRect(80+rp*60,205,30,130,8,"#604060");
+  for(let rp=0;rp<3;rp++)pHRect(160+rp*120,410,60,260,16,"#604060");
   pxCtx.restore();
-  // 3 Pillows
-  for(let pi=0;pi<3;pi++){pHRect(84+pi*62,90,48,28,7,"#e8e0f0");pHStroke(84+pi*62,90,48,28,7,"#c0b0d0",1);}
-  // Duvet blanket
-  pHRect(80,126,170,86,8,"#2a1850");pHStroke(80,126,170,86,8,"#9078c0",1);
-  // Duvet fold crease
-  pxCtx.save();pxCtx.globalAlpha=0.18;pRect(80,158,170,3,"#402870");pxCtx.restore();
+  // Pillows
+  for(let pi=0;pi<3;pi++){pHRect(168+pi*130,178,100,56,14,"#e8e0f0");pHStroke(168+pi*130,178,100,56,14,"#c0b0d0",2);}
+  // Duvet
+  pHRect(160,250,340,176,16,"#2a1850");pHStroke(160,250,340,176,16,"#9078c0",2);
+  pxCtx.save();pxCtx.globalAlpha=0.18;pRect(160,310,340,6,"#402870");pxCtx.restore();
 
-  // Couch — bottom left
-  pHRect(40,260,170,56,9,"#1a0e30");
-  pHStroke(40,260,170,56,9,"#a090c0",2);
-  // 3 Cushions
-  pHRect(48,272,44,36,6,"#301860");pHRect(102,272,44,36,6,"#301860");pHRect(156,272,44,36,6,"#301860");
-  // Backrest
-  pHRect(44,260,162,10,4,"#281050");
-  // Armrests
-  pHRect(40,260,10,56,4,"#1a0e30");pHRect(200,260,10,56,4,"#1a0e30");
+  // Couch
+  pHRect(80,520,340,110,18,"#1a0e30");pHStroke(80,520,340,110,18,"#a090c0",3);
+  pHRect(95,540,90,70,12,"#301860");pHRect(200,540,90,70,12,"#301860");pHRect(305,540,90,70,12,"#301860");
+  pHRect(85,520,330,20,6,"#281050");
+  pHRect(80,520,20,110,8,"#1a0e30");pHRect(400,520,20,110,8,"#1a0e30");
 
-  // Bathroom — right wall
-  pHRect(460,70,160,210,10,"#08060e");
-  pHStroke(460,70,160,210,10,"#9088a8",3);
-  // Bathroom door
-  pHRect(470,228,26,46,5,"#100c18");pHStroke(470,228,26,46,5,"#a098b8",1);
-  pCirc(488,250,2,"#c0b8a0");
-  // Shower cubicle
-  pHRect(520,80,46,74,6,"#04060a");pHStroke(520,80,46,74,6,"#7088b0",2);
-  // Shower head
-  pCirc(544,88,3,"#aaaaaa");
-  // Water spray — dotted lines
+  // Bathroom
+  pHRect(920,140,310,410,18,"#08060e");pHStroke(920,140,310,410,18,"#9088a8",4);
+  pHRect(940,450,50,90,8,"#100c18");pHStroke(940,450,50,90,8,"#a098b8",2);
+  pCirc(975,495,3,"#c0b8a0");
+  // Shower
+  pHRect(1040,160,90,140,12,"#04060a");pHStroke(1040,160,90,140,12,"#7088b0",3);
+  pCirc(1085,172,6,"#aaa");
   pxCtx.save();pxCtx.globalAlpha=0.08;pxCtx.strokeStyle="#88c8ff";pxCtx.lineWidth=1;
-  for(let d=0;d<5;d++){pxCtx.beginPath();pxCtx.moveTo(544,92);pxCtx.lineTo(540+d*2,106+d*7);pxCtx.stroke();}
+  for(let d=0;d<5;d++){pxCtx.beginPath();pxCtx.moveTo(1085,180);pxCtx.lineTo(1080+d*2,210+d*7);pxCtx.stroke();}
   pxCtx.restore();
-  // Glass shower door
-  pHStroke(566,80,4,74,3,"rgba(120,180,240,0.3)",2);
-  // Double sink
-  pHRect(480,110,30,10,3,"#ffffff");pHRect(520,110,30,10,3,"#ffffff");
-  // Mirror above sinks
-  pHRect(472,84,80,28,4,"rgba(160,180,220,0.3)");pHStroke(472,84,80,28,4,"rgba(160,170,210,0.5)",2);
+  pHStroke(1130,160,8,140,4,"rgba(120,180,240,0.3)",3);
+  // Double sink + mirror
+  pHRect(960,220,60,16,6,"#fff");pHRect(1030,220,60,16,6,"#fff");
+  pHRect(950,160,150,55,8,"rgba(160,180,220,0.3)");pHStroke(950,160,150,55,8,"rgba(160,170,210,0.5)",2);
   // Toilet
-  pHRect(528,174,30,42,8,"#ffffff");pHRect(522,190,6,26,3,"#eeeeee");
-  // Toilet seat oval
-  pxCtx.strokeStyle="#cccccc";pxCtx.lineWidth=2;pxCtx.beginPath();
-  pxCtx.ellipse(544,186,12,5,0,0,Math.PI*2);pxCtx.stroke();
+  pHRect(1060,350,60,80,14,"#fff");pHRect(1050,380,10,50,5,"#eee");
+  pxCtx.strokeStyle="#ddd";pxCtx.lineWidth=2;pxCtx.beginPath();
+  pxCtx.ellipse(1090,370,22,8,0,0,Math.PI*2);pxCtx.stroke();
   // Towel rack
-  pxCtx.strokeStyle="#aaaaaa";pxCtx.lineWidth=2;
-  for(let tr=0;tr<3;tr++){pxCtx.beginPath();pxCtx.moveTo(590,100+tr*12);pxCtx.lineTo(608,100+tr*12);pxCtx.stroke();}
-  pxCtx.save();pxCtx.globalAlpha=0.3;pHRect(592,98,14,14,2,"#e8e0e0");pxCtx.restore();
+  pxCtx.strokeStyle="#bbb";pxCtx.lineWidth=2;
+  for(let tr=0;tr<3;tr++){pxCtx.beginPath();pxCtx.moveTo(1180,200+tr*20);pxCtx.lineTo(1210,200+tr*20);pxCtx.stroke();}
+  pxCtx.save();pxCtx.globalAlpha=0.3;pHRect(1182,197,26,26,4,"#e8e0e0");pxCtx.restore();
 
-  // Exit door
-  pHRect(290,320,60,36,6,P.MBROWN);
-  pHStroke(290,320,60,36,6,"#d8c070",3);
-  pCirc(300,338,2,"#d0b860");
-  pxCtx.fillStyle="#d8c070";pxCtx.font="bold 7px monospace";pxCtx.textAlign="center";
-  pxCtx.fillText("LOBBY",320,344);
+  // Exit
+  pHRect(590,640,100,70,12,P.MBROWN);pHStroke(590,640,100,70,12,"#d8c070",4);
+  pCirc(605,675,3,"#d0b860");
+  pxCtx.fillStyle="#d8c070";pxCtx.font="bold 12px monospace";pxCtx.textAlign="center";
+  pxCtx.fillText("LOBBY",640,683);
 }
 
 function updateNpcList(npcList, obstacles) {
@@ -5837,26 +5811,28 @@ function drawPlayer() {
 }
 
 function drawPixelPlayer() {
-  // Draw player as pixel art on pxCtx (640x360 coords)
   const px = player.x / PX_SCALE, py = player.y / PX_SCALE, ps = player.size / PX_SCALE;
-  const cx = px + ps/2, s = ps/12;
-  const hR = 4*s, hCY = py + hR + s;
-  const tW = 6*s, tH = 8*s, tY = hCY + hR + s;
+  const cx = px + ps/2, s = ps/8;
+  const hR = 6*s, hCY = py + hR + s;
+  const tW = 8*s, tH = 12*s, tY = hCY + hR + 2*s;
   // Shadow
-  pCirc(cx, tY+tH+2, ps*0.5, "rgba(0,0,0,0.25)");
+  pCirc(cx, tY+tH+4, ps*0.6, "rgba(0,0,0,0.25)");
   // Legs
-  pRect(cx-tW/3-1, tY+tH-2, 2*s, 6*s, "#1e2a42");
-  pRect(cx+tW/3-1, tY+tH-2, 2*s, 6*s, "#1e2a42");
+  pHRect(cx-tW/3-1, tY+tH, 2.5*s, 8*s, 2, "#1e2a42");
+  pHRect(cx+tW/3-1, tY+tH, 2.5*s, 8*s, 2, "#1e2a42");
   // Arms
-  pRect(cx-tW/2-2*s, tY+1, 2*s, 6*s, "#f0dcc0");
-  pRect(cx+tW/2, tY+1, 2*s, 6*s, "#f0dcc0");
+  pHRect(cx-tW/2-2.5*s, tY+2, 2.5*s, 7*s, 2, "#f0dcc0");
+  pHRect(cx+tW/2, tY+2, 2.5*s, 7*s, 2, "#f0dcc0");
   // Torso
-  pHRect(cx-tW/2, tY, tW, tH, 2, "#f4f7ff");
+  pHRect(cx-tW/2, tY, tW, tH, 3, "#f4f7ff");
+  pHStroke(cx-tW/2, tY, tW, tH, 3, "#d0d8e0", 1);
   // Head
   pCirc(cx, hCY, hR, "#f0dcc0");
   // Eyes
-  pRect(cx-hR*0.4, hCY+1, 1, 1, "#1a1220");
-  pRect(cx+hR*0.2, hCY+1, 1, 1, "#1a1220");
+  pRect(cx-hR*0.4, hCY+1, 2, 2, "#1a1220");
+  pRect(cx+hR*0.2, hCY+1, 2, 2, "#1a1220");
+  // Mouth
+  pRect(cx-2, hCY+hR*0.5, 4, 1, "#c0a080");
 }
 
 function drawPrompt() {
