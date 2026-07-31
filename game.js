@@ -4152,6 +4152,28 @@ function drawFloor24() {
   pxCtx.save();pxCtx.globalAlpha=0.06;
   for(let r=0;r<22;r++)for(let c=0;c<40;c++)if((r+c)%3!==0)pRect(c*16,r*17,16,17,"#c0a8d0");
   pxCtx.restore();
+  // Crown molding along ceiling
+  pHRect(0,60,PX_W,4,2,"rgba(255,255,255,0.04)");
+
+  // ── Chandelier (center ceiling) ──
+  const chX=320,chY=62;
+  pRect(chX-1,chY,3,8,"#d0c080"); // chain
+  pHRect(chX-18,chY+8,36,5,3,"#c0b060"); // top bar
+  for(let a=0;a<5;a++){const ax=chX-14+a*7; pRect(ax,chY+13,1,10,"#c0a840");} // arms
+  for(let a=0;a<5;a++){pCirc(chX-14+a*7,chY+26,3,"#e8d080"); pCirc(chX-14+a*7,chY+26,4,"rgba(255,240,160,0.3)");} // lights
+  // Chandelier glow
+  pxCtx.save();pxCtx.globalAlpha=0.06;
+  for(let g=0;g<3;g++)fillCircle(chX,chY+40+g*8,18,px(255,240,160)); pxCtx.restore();
+
+  // ── Wall paintings ──
+  // Left painting
+  pHRect(20,80,50,36,4,"#1a1020");pHStroke(20,80,50,36,4,"#806040",2);
+  pHRect(25,85,40,10,2,"#2a1840");pRect(25,85,40,1,"#604080");
+  pRect(25,70,2,14,"#806040");pRect(68,70,2,14,"#806040"); // brackets
+  // Right painting
+  pHRect(570,80,50,36,4,"#1a1020");pHStroke(570,80,50,36,4,"#806040",2);
+  pHRect(575,85,40,10,2,"#2a1840");pRect(575,85,40,1,"#604080");
+  pRect(575,70,2,14,"#806040");pRect(618,70,2,14,"#806040");
 
   // Balcony — glass railing across top
   pHRect(16,12,608,48,6,"#080612");
@@ -4185,7 +4207,16 @@ function drawFloor24() {
   for(let bt of[{x:60,y:100},{x:260,y:100}]){
     pHRect(bt.x,bt.y,16,26,4,"#0e0818");
     pRect(bt.x+7,bt.y-6,2,10,"#664020");pCirc(bt.x+8,bt.y-8,5,"rgba(255,200,120,0.4)");
-    pSCirc(bt.x+8,bt.y-8,6,"rgba(255,180,100,0.25)",1);}
+    pSCirc(bt.x+8,bt.y-8,6,"rgba(255,180,100,0.25)",1);
+    // Alarm clock on left table
+    if(bt.x===60){pHRect(bt.x+2,bt.y+2,8,6,2,"#302020");pCirc(bt.x+6,bt.y+5,2,"#fff");}}
+  // Rug under bed
+  pHRect(50,200,230,140,20,"rgba(80,40,60,0.25)");
+  pHStroke(50,200,230,140,20,"rgba(120,80,100,0.2)",2);
+  // Inner rug pattern
+  pxCtx.save();pxCtx.globalAlpha=0.08;
+  for(let rp=0;rp<3;rp++)pHRect(80+rp*60,205,30,130,8,"#604060");
+  pxCtx.restore();
   // 3 Pillows
   for(let pi=0;pi<3;pi++){pHRect(84+pi*62,90,48,28,7,"#e8e0f0");pHStroke(84+pi*62,90,48,28,7,"#c0b0d0",1);}
   // Duvet blanket
@@ -4485,8 +4516,30 @@ function drawTable(table, isNearby) {
 }
 
 function drawPlayer() {
-  drawHumanoid(player.x, player.y, player.size, "#3d8eef", "#f5d9b8", "#1c2445", false);
-  strokeCircle(player.x + player.size / 2, player.y + player.size / 2, player.size * 0.72, "rgba(93, 180, 255, 0.5)", 2);
+  drawHumanoid(player.x, player.y, player.size, "#f4f7ff", "#f0dcc0", "#1e2a42", false);
+}
+
+function drawPixelPlayer() {
+  // Draw player as pixel art on pxCtx (640x360 coords)
+  const px = player.x / PX_SCALE, py = player.y / PX_SCALE, ps = player.size / PX_SCALE;
+  const cx = px + ps/2, s = ps/12;
+  const hR = 4*s, hCY = py + hR + s;
+  const tW = 6*s, tH = 8*s, tY = hCY + hR + s;
+  // Shadow
+  pCirc(cx, tY+tH+2, ps*0.5, "rgba(0,0,0,0.25)");
+  // Legs
+  pRect(cx-tW/3-1, tY+tH-2, 2*s, 6*s, "#1e2a42");
+  pRect(cx+tW/3-1, tY+tH-2, 2*s, 6*s, "#1e2a42");
+  // Arms
+  pRect(cx-tW/2-2*s, tY+1, 2*s, 6*s, "#f0dcc0");
+  pRect(cx+tW/2, tY+1, 2*s, 6*s, "#f0dcc0");
+  // Torso
+  pHRect(cx-tW/2, tY, tW, tH, 2, "#f4f7ff");
+  // Head
+  pCirc(cx, hCY, hR, "#f0dcc0");
+  // Eyes
+  pRect(cx-hR*0.4, hCY+1, 1, 1, "#1a1220");
+  pRect(cx+hR*0.2, hCY+1, 1, 1, "#1a1220");
 }
 
 function drawPrompt() {
@@ -4645,16 +4698,16 @@ function gameLoop() {
   } else if (currentRoom === "floor7") {
     pxCtx.clearRect(0, 0, PX_W, PX_H);
     drawFloor7();
+    drawPixelPlayer();
     ctx.drawImage(pxCanvas, 0, 0, PX_W, PX_H, 0, 0, WIDTH, HEIGHT);
-    drawPlayer();
   } else if (currentRoom === "floor12") {
     drawFloor12();
     drawPlayer();
   } else if (currentRoom === "floor24") {
     pxCtx.clearRect(0, 0, PX_W, PX_H);
     drawFloor24();
+    drawPixelPlayer();
     ctx.drawImage(pxCanvas, 0, 0, PX_W, PX_H, 0, 0, WIDTH, HEIGHT);
-    drawPlayer();
   }
 
   ctx.restore();
